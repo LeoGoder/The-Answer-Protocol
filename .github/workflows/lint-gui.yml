@@ -3,10 +3,10 @@ name: Lint C++ (GUI)
 on:
   push:
     branches:
-      - dev
+      - Dev
   pull_request:
     branches:
-      - dev
+      - Dev
 
 jobs:
   cpplint:
@@ -15,7 +15,7 @@ jobs:
       - name: Retrive code
         uses: actions/checkout@v4
 
-      - name: Python config
+      - name: Python configuration
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
