@@ -6,22 +6,30 @@ import (
 	"net"
 
 	"tap/server/internal/dispatcher"
+	"tap/server/internal/game"
 	"tap/server/internal/protocol"
+	"tap/server/internal/server"
 )
 
-func handleClient(connected net.Conn) {
-	defer connected.Close()
+func handleClient(connected net.Conn, registry *server.Registry) {
+	authenticated := false
+	username := ""
+
+	defer func() {
+		if authenticated {
+			registry.Remove(username)
+			fmt.Println("Disconnected user:", username)
+		}
+
+		connected.Close()
+	}()
 
 	fmt.Println("Client connected:", connected.RemoteAddr())
 
-	_, err := connected.Write([]byte("OK hello proto=1\n"))
-	if err != nil {
+	if err := server.Send(connected, "OK hello proto=1"); err != nil {
 		fmt.Println("Write error:", err)
 		return
 	}
-
-	authenticated := false
-	username := ""
 
 	reader := bufio.NewReader(connected)
 
@@ -32,40 +40,78 @@ func handleClient(connected net.Conn) {
 			return
 		}
 
-		fmt.Print("Received: ", message)
-
 		cmd := protocol.Parse(message)
 
 		if cmd.Name == "" {
 			continue
 		}
 
-		target := dispatcher.Route(cmd)
+		// ========================================
+		// VALIDATION
+		// ========================================
+
+		if err := protocol.Validate(cmd); err != nil {
+			fmt.Println("Invalid syntax:", err)
+
+			if err := server.Send(
+				connected,
+				"ERR 400 BAD_REQUEST",
+			); err != nil {
+				fmt.Println("Write error:", err)
+				return
+			}
+
+			continue
+		}
 
 		fmt.Println("Command:", cmd.Name)
 		fmt.Println("Args:", cmd.Args)
-		fmt.Println("Route:", target)
+
+		target := dispatcher.Route(cmd)
 
 		switch target {
+
+		// ========================================
+		// SESSION COMMANDS
+		// ========================================
+
 		case dispatcher.Session:
 			switch cmd.Name {
 
 			case "CONNECT":
 				if authenticated {
-					fmt.Println("Already authenticated as:", username)
+					if err := server.Send(
+						connected,
+						"ERR 201 NAME_IN_USE",
+					); err != nil {
+						fmt.Println("Write error:", err)
+						return
+					}
+
 					continue
 				}
 
-				if len(cmd.Args) != 1 {
-					fmt.Println("Invalid CONNECT syntax")
+				requestedUsername := cmd.Args[0]
+
+				if !registry.Add(requestedUsername) {
+					if err := server.Send(
+						connected,
+						"ERR 201 NAME_IN_USE",
+					); err != nil {
+						fmt.Println("Write error:", err)
+						return
+					}
+
 					continue
 				}
 
-				username = cmd.Args[0]
+				username = requestedUsername
 				authenticated = true
 
-				_, err := connected.Write([]byte("OK connected\n"))
-				if err != nil {
+				if err := server.Send(
+					connected,
+					"OK connected",
+				); err != nil {
 					fmt.Println("Write error:", err)
 					return
 				}
@@ -73,12 +119,58 @@ func handleClient(connected net.Conn) {
 				fmt.Println("Authenticated:", username)
 
 			case "QUIT":
-				_, err := connected.Write([]byte("OK bye\n"))
-				if err != nil {
+				if err := server.Send(
+					connected,
+					"OK bye",
+				); err != nil {
 					fmt.Println("Write error:", err)
 				}
+
 				return
 			}
+
+		// ========================================
+		// GAME COMMANDS
+		// ========================================
+
+		case dispatcher.Game:
+			if !authenticated {
+				fmt.Println(
+					"Game command rejected: client not authenticated",
+				)
+				continue
+			}
+
+			response := game.Handle(
+				cmd,
+				registry.Count(),
+			)
+
+			if response == "" {
+				fmt.Println(
+					"No response for command:",
+					cmd.Name,
+				)
+				continue
+			}
+
+			if err := server.Send(
+				connected,
+				response,
+			); err != nil {
+				fmt.Println("Write error:", err)
+				return
+			}
+
+		// ========================================
+		// UNKNOWN COMMAND
+		// ========================================
+
+		case dispatcher.Invalid:
+			fmt.Println(
+				"Invalid command:",
+				cmd.Name,
+			)
 		}
 	}
 }
@@ -86,7 +178,12 @@ func handleClient(connected net.Conn) {
 func main() {
 	fmt.Println("TAP server starting...")
 
-	listener, err := net.Listen("tcp", ":4242")
+	registry := server.NewRegistry()
+
+	listener, err := net.Listen(
+		"tcp",
+		":4242",
+	)
 	if err != nil {
 		fmt.Println("Listen error:", err)
 		return
@@ -102,6 +199,9 @@ func main() {
 			continue
 		}
 
-		go handleClient(connected)
+		go handleClient(
+			connected,
+			registry,
+		)
 	}
 }
