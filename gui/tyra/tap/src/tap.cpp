@@ -1,9 +1,10 @@
 #include <tyra>
 #include "tap.hpp"
+#include "game_state.hpp"
 
 namespace Tyra {
 
-Tap::Tap(Engine* t_engine) : engine(t_engine) {}
+Tap::Tap(Engine* t_engine) : engine(t_engine), game_state() {}
 
 Tap::~Tap() {
     engine->renderer.getTextureRepository().freeBySprite(sprite);
@@ -11,18 +12,27 @@ Tap::~Tap() {
 
 void Tap::init() {
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
-
     loadSprite();
     loadTexture();
+    Scene scene = game_state.get_actual_scene();
+    TYRA_LOG("scene value %d", scene);
 }
 
 void Tap::loop() {
     auto& renderer = engine->renderer;
 
     renderer.beginFrame();
-
-    renderer.renderer2D.render(sprite);
-
+    Scene scene = game_state.get_actual_scene();
+    switch(scene) {
+        case splash_screen:
+            renderer.renderer2D.render(sprite);
+        case main_menu:
+            break;
+        case settings:
+            break;
+        default:
+            break;
+    }
     renderer.endFrame();
 }
 
