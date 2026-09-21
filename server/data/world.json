@@ -1,0 +1,36 @@
+{
+  "start_room": "room.start",
+
+  "rooms": {
+    "room.start": {
+      "name": "Start Room",
+      "description": "The starting room.",
+      "exits": {
+        "up": "room.transition"
+      },
+      "items": ["apple", "banane"],
+      "npcs": []
+    },
+
+    "room.transition": {
+      "name": "Transition Room",
+      "description": "A room connecting the start and end rooms.",
+      "exits": {
+        "up": "room.end",
+        "down": "room.start"
+      },
+      "items": ["orange", "potato"],
+      "npcs": []
+    },
+
+    "room.end": {
+      "name": "End Room",
+      "description": "The final room.",
+      "exits": {
+        "down": "room.transition"
+      },
+      "items": ["tomato", "bed"],
+      "npcs": []
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# TAP Server – Integration Notes
+
+- Server module: `server/`, Go **1.18.1**, TCP port **4242**.
+- Architecture: `main` = TCP/session, `protocol` = parse/validate TAP commands, `game` = world/player state.
+- Transport: UTF-8 text, one command per line, terminated by `\n`.
+- On connection: Server sends `OK hello proto=1`; client must then send `CONNECT <username>`.
+- TAP command names are case-insensitive. Complex responses use JSON as required by the RFC.
+- Supported commands: `CONNECT LOOK MOVE QUIT CHAT WHO GROUP TAKE DROP INVENTORY TALK ATTACK STATUS QUEST QUESTS`.
+- `LOOK` takes **no arguments** and returns the current room, exits, players, items and NPCs.
+- `MOVE <direction>` means **change Room through an exit**; it is not character movement inside the GUI scene.
+- GUI movement/animation inside a Room is client-side only; Server tracks only the player's current Room.
+- Current test map: `room.start --up--> room.transition --up--> room.end`.
+- Return path: `room.end --down--> room.transition --down--> room.start`.
+- `room.start` has no `down` exit; `room.end` has no `up` exit. Invalid exits return `ERR 301 NO_EXIT`.
+- Exit keys (`up` / `down`) are protocol identifiers; the GUI may draw the actual doors anywhere on screen.
+- World data is stored in `data/world.json`; project game data should stay in JSON for consistency.
+- Items/NPCs in `world.json` are room data, not protocol definitions. Keep test rooms empty unless real game content is agreed.
+- `WHO` counts all currently connected players; `LOOK` lists players currently in the same Room.
+- Standard RFC errors are kept where defined; `ERR 202 NOT_AUTHENTICATED` and `ERR 400 ...` are local protocol extensions.
+- Run Server: `cd server && go run ./cmd/server`
+- Run smoke tests with no extra manual clients connected: `cd server/tests && ./smoke.sh`
+- Reference specification: `rfc/protocol-rfc.html`.

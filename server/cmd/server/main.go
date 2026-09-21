@@ -5,172 +5,109 @@ import (
 	"fmt"
 	"net"
 
-	"tap/server/internal/dispatcher"
 	"tap/server/internal/game"
 	"tap/server/internal/protocol"
-	"tap/server/internal/server"
 )
 
-func handleClient(connected net.Conn, registry *server.Registry) {
-	authenticated := false
+func send(conn net.Conn, message string) bool {
+	if _, err := conn.Write([]byte(message + "\n")); err != nil {
+		fmt.Println("Write error:", err)
+		return false
+	}
+	return true
+}
+
+func handleClient(conn net.Conn, state *game.State) {
 	username := ""
 
 	defer func() {
-		if authenticated {
-			registry.Remove(username)
+		if username != "" {
+			state.RemovePlayer(username)
 			fmt.Println("Disconnected user:", username)
 		}
-
-		connected.Close()
+		conn.Close()
 	}()
 
-	fmt.Println("Client connected:", connected.RemoteAddr())
-
-	if err := server.Send(connected, "OK hello proto=1"); err != nil {
-		fmt.Println("Write error:", err)
+	fmt.Println("Client connected:", conn.RemoteAddr())
+	if !send(conn, protocol.OKHello) {
 		return
 	}
 
-	reader := bufio.NewReader(connected)
-
+	reader := bufio.NewReader(conn)
 	for {
-		message, err := reader.ReadString('\n')
+		line, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Client disconnected:", connected.RemoteAddr())
+			fmt.Println("Client disconnected:", conn.RemoteAddr())
 			return
 		}
 
-		cmd := protocol.Parse(message)
-
+		cmd := protocol.Parse(line)
 		if cmd.Name == "" {
 			continue
 		}
-
-		// ========================================
-		// VALIDATION
-		// ========================================
-
 		if err := protocol.Validate(cmd); err != nil {
 			fmt.Println("Invalid syntax:", err)
-
-			if err := server.Send(
-				connected,
-				"ERR 400 BAD_REQUEST",
-			); err != nil {
-				fmt.Println("Write error:", err)
+			if !send(conn, protocol.ErrBadRequest) {
 				return
 			}
-
 			continue
 		}
 
 		fmt.Println("Command:", cmd.Name)
 		fmt.Println("Args:", cmd.Args)
 
-		target := dispatcher.Route(cmd)
+		switch cmd.Name {
+		case "QUIT":
+			send(conn, protocol.OKBye)
+			return
 
-		switch target {
-
-		// ========================================
-		// SESSION COMMANDS
-		// ========================================
-
-		case dispatcher.Session:
-			switch cmd.Name {
-
-			case "CONNECT":
-				if authenticated {
-					if err := server.Send(
-						connected,
-						"ERR 201 NAME_IN_USE",
-					); err != nil {
-						fmt.Println("Write error:", err)
-						return
-					}
-
-					continue
-				}
-
-				requestedUsername := cmd.Args[0]
-
-				if !registry.Add(requestedUsername) {
-					if err := server.Send(
-						connected,
-						"ERR 201 NAME_IN_USE",
-					); err != nil {
-						fmt.Println("Write error:", err)
-						return
-					}
-
-					continue
-				}
-
-				username = requestedUsername
-				authenticated = true
-
-				if err := server.Send(
-					connected,
-					"OK connected",
-				); err != nil {
-					fmt.Println("Write error:", err)
+		case "CONNECT":
+			if username != "" {
+				if !send(conn, protocol.ErrBadRequest) {
 					return
 				}
+				continue
+			}
 
-				fmt.Println("Authenticated:", username)
-
-			case "QUIT":
-				if err := server.Send(
-					connected,
-					"OK bye",
-				); err != nil {
-					fmt.Println("Write error:", err)
+			requested := cmd.Args[0]
+			if !state.AddPlayer(requested) {
+				if !send(conn, protocol.ErrNameInUse) {
+					return
 				}
-
-				return
-			}
-
-		// ========================================
-		// GAME COMMANDS
-		// ========================================
-
-		case dispatcher.Game:
-			if !authenticated {
-				fmt.Println(
-					"Game command rejected: client not authenticated",
-				)
 				continue
 			}
 
-			response := game.Handle(
-				cmd,
-				registry.Count(),
-			)
+			username = requested
+			fmt.Println("Authenticated:", username)
+			if !send(conn, protocol.OKConnected) {
+				return
+			}
 
+		case "LOOK", "MOVE", "CHAT", "WHO", "GROUP",
+			"TAKE", "DROP", "INVENTORY", "TALK",
+			"ATTACK", "STATUS", "QUEST", "QUESTS":
+
+			if username == "" {
+				fmt.Println("Game command rejected: client not authenticated")
+				if !send(conn, protocol.ErrNotAuthenticated) {
+					return
+				}
+				continue
+			}
+
+			response := state.Handle(username, cmd)
 			if response == "" {
-				fmt.Println(
-					"No response for command:",
-					cmd.Name,
-				)
-				continue
+				response = protocol.ErrBadRequest
 			}
-
-			if err := server.Send(
-				connected,
-				response,
-			); err != nil {
-				fmt.Println("Write error:", err)
+			if !send(conn, response) {
 				return
 			}
 
-		// ========================================
-		// UNKNOWN COMMAND
-		// ========================================
-
-		case dispatcher.Invalid:
-			fmt.Println(
-				"Invalid command:",
-				cmd.Name,
-			)
+		default:
+			fmt.Println("Unknown command:", cmd.Name)
+			if !send(conn, protocol.ErrUnknownCommand) {
+				return
+			}
 		}
 	}
 }
@@ -178,12 +115,14 @@ func handleClient(connected net.Conn, registry *server.Registry) {
 func main() {
 	fmt.Println("TAP server starting...")
 
-	registry := server.NewRegistry()
+	state, err := game.LoadState()
+	if err != nil {
+		fmt.Println("World load error:", err)
+		return
+	}
+	fmt.Println("World loaded successfully")
 
-	listener, err := net.Listen(
-		"tcp",
-		":4242",
-	)
+	listener, err := net.Listen("tcp", ":4242")
 	if err != nil {
 		fmt.Println("Listen error:", err)
 		return
@@ -191,17 +130,12 @@ func main() {
 	defer listener.Close()
 
 	fmt.Println("Server listening on port 4242")
-
 	for {
-		connected, err := listener.Accept()
+		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Accept error:", err)
 			continue
 		}
-
-		go handleClient(
-			connected,
-			registry,
-		)
+		go handleClient(conn, state)
 	}
 }
