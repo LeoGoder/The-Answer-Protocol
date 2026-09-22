@@ -1,4 +1,5 @@
 #pragma once
+#include "game_scene.hpp"
 
 enum Scene {
     splash_screen = 0,
@@ -10,7 +11,8 @@ class GameState {
     private:
         Scene actual_scene;
         Scene next_scene;
-
+        bool init_scene;
+        GameScene *game_scene = nullptr;
     public:
         GameState();
         ~GameState();
@@ -22,11 +24,27 @@ class GameState {
             next_scene = new_scene;
         }
 
+        void set_game_scene(GameScene *new_game_scene) {
+            game_scene = new_game_scene;
+        }
+
+        void set_init_scene(bool state) {
+            init_scene = state;
+        }
+
         Scene get_actual_scene() const {
             return actual_scene;
         }
 
         Scene get_next_scene() const {
             return next_scene;
+        }
+
+        GameScene *get_game_scene() {
+            return game_scene;
+        }
+
+        bool get_init_scene() const {
+            return init_scene;
         }
 };

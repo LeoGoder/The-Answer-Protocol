@@ -1,0 +1,16 @@
+-xc++
+-std=c++20
+-D_EE
+-DINTELLISENSE
+-Dalignas(x)=__attribute__((aligned(x)))
+-include
+functional
+-Igui/tyra/engine/inc
+-Igui/tyra/tap/inc
+-Igui/ps2dev-intellisense/ps2sdk/ee/include
+-Igui/ps2dev-intellisense/ps2sdk/common/include
+-Igui/ps2dev-intellisense/ps2sdk/ports/include
+-Igui/ps2dev-intellisense/gsKit/include
+-Igui/ps2dev-intellisense/ee/include
+-Igui/ps2dev-intellisense/tyra/inc
+-Igui/ps2dev-intellisense/ee/lib/gcc/mips64r5900el-ps2-elf/11.3.0/include-fixed
