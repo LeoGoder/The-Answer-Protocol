@@ -5,6 +5,8 @@
 
 namespace Tyra {
 
+const bool IS_REAL_PS2_VIA_USB = true;
+
 class Tap : public Game {
     public:
         Tap(Engine* engine);

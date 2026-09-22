@@ -21,7 +21,6 @@ int main() {
   }
 
   Tyra::Engine engine(options);
-
   Demo::DemoGame game(&engine);
   engine.run(&game);
   SleepThread();
