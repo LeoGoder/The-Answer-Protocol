@@ -13,8 +13,6 @@ Tap::~Tap() {
 
 void Tap::init() {
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
-    // loadSprite();
-    // loadTexture();
 }
 
 void Tap::loop() {

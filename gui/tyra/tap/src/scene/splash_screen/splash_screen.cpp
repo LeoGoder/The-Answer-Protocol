@@ -1,6 +1,7 @@
 #include <tyra>
 #include "splash_screen.hpp"
 #include "debug/debug.hpp"
+#include "helper.hpp"
 
 void SplashScreen::load_background() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
@@ -15,15 +16,9 @@ void SplashScreen::load_background() {
 
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
     this->engine = engine;
-    auto &renderer = this->engine->renderer;
-    auto &textureRepository = renderer.getTextureRepository();
-    auto filepath = Tyra::FileUtils::fromCwd("oui.png");
-    // TYRA_LOG("filepath: %s", filepath);
-    // auto filepath = std::string("mass:/oui.png");
-    auto *texture = textureRepository.add(filepath);
-    texture->addLink(background.id);
+    load_image(&background, engine, "oui.png");
     SplashScreen::load_background();
-    TYRA_LOG("background loaded");
+    TYRA_LOG("all assets loaded in memory");
 }
 
 SplashScreen::~SplashScreen() {
