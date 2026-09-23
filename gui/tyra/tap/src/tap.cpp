@@ -13,6 +13,7 @@ Tap::~Tap() {
 
 void Tap::init() {
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
+    engine->renderer.core.renderer2D.setTextureMappingType(game_state.texture_filter);
 }
 
 void Tap::loop() {

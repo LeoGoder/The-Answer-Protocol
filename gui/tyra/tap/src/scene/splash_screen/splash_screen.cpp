@@ -32,6 +32,6 @@ void SplashScreen::update() {
 
 void SplashScreen::draw() {
     auto& renderer = engine->renderer;
-    // renderer.renderer2D.render(background);
+    renderer.renderer2D.render(background);
     draw_text(this->engine, "quoi une phrase", &font, 100, 100);
 }

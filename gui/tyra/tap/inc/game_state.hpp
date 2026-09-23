@@ -14,8 +14,8 @@ class GameState {
         Scene next_scene;
         bool init_scene;
         GameScene *game_scene = nullptr;
-        Tyra::PipelineTextureMappingType texture_filter = Tyra::TyraNearest;
     public:
+        Tyra::PipelineTextureMappingType texture_filter = Tyra::TyraNearest;
         GameState();
         ~GameState();
         void set_actual_scene(Scene new_scene) {

@@ -11,6 +11,7 @@ int main(int argc, char **argv) {
     }
     Tyra::Engine engine(options);
     sleep(3);
+    Tyra::PipelineTextureMappingType texture_filter = Tyra::TyraNearest;
     Tyra::Tap game(&engine);
     engine.run(&game);
     return 0;
