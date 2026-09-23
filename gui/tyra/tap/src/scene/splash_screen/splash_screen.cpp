@@ -17,6 +17,7 @@ void SplashScreen::load_background() {
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
     this->engine = engine;
     load_image(&background, engine, "oui.png");
+    load_image(&font, engine, "test_font.png");
     SplashScreen::load_background();
     TYRA_LOG("all assets loaded in memory");
 }
@@ -31,5 +32,6 @@ void SplashScreen::update() {
 
 void SplashScreen::draw() {
     auto& renderer = engine->renderer;
-    renderer.renderer2D.render(background);
+    // renderer.renderer2D.render(background);
+    draw_text(this->engine, "quoi une phrase", &font, 100, 100);
 }

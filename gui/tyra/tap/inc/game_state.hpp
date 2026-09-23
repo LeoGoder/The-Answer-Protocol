@@ -1,5 +1,6 @@
 #pragma once
 #include "game_scene.hpp"
+#include "renderer/3d/pipeline/shared/pipeline_texture_mapping_type.hpp"
 
 enum Scene {
     splash_screen = 0,
@@ -13,6 +14,7 @@ class GameState {
         Scene next_scene;
         bool init_scene;
         GameScene *game_scene = nullptr;
+        Tyra::PipelineTextureMappingType texture_filter = Tyra::TyraNearest;
     public:
         GameState();
         ~GameState();
