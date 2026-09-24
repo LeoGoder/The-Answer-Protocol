@@ -4,8 +4,8 @@
 
 enum Scene {
     splash_screen = 0,
-    main_menu = 1,
-    settings = 2, // welcome back settings menu
+    game = 1,
+    end_screen = 2, // welcome back settings menu
 };
 
 class GameState {

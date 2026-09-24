@@ -30,9 +30,9 @@ void Tap::loop() {
             case splash_screen:
                 game_state.set_game_scene(new SplashScreen(engine));
                 break;
-            case main_menu:
+            case game:
                 break;
-            case settings:
+            case end_screen:
                 break;
             default:
                 break;
