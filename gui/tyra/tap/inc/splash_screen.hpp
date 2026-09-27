@@ -2,6 +2,7 @@
 #include <tyra>
 #include <string>
 #include "game_scene.hpp"
+#include "button.hpp"
 
 enum State {
     welcome = 0,
@@ -18,6 +19,8 @@ class SplashScreen : public GameScene {
         Tyra::Color font_color;
         bool color_sens = false;
         State current_state = welcome;
+        std::vector<Button> button_list;
+        int selected_id;
     public:
         SplashScreen(Tyra::Engine* engine);
         ~SplashScreen();

@@ -1,4 +1,5 @@
 #include "renderer/models/color.hpp"
+#include "helper.hpp"
 #include <tyra>
 
 
@@ -10,19 +11,20 @@ void load_image(Tyra::Sprite *sprite, Tyra::Engine* engine, std::string img_path
     texture->addLink(sprite->id);
 }
 
+int get_text_len(const std::string text, float scale) {
+    int text_len = text.length() * (CHAR_WIDTH * scale);
+    return text_len;
+}
+
 void draw_text(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font, float x, float y, float scale) {
-    const int char_width = 16;
-    const int char_height = 16;
-    const int char_per_row = 16;
-    const int first_char = 32;
     float default_scale = font->scale;
-    float scaled_width = char_width * scale;
-    float scaled_height = char_height * scale;
+    float scaled_width = CHAR_WIDTH * scale;
+    float scaled_height = CHAR_HEIGHT * scale;
     float temp_x = x;
     float temp_y = y;
 
     font->mode = Tyra::SpriteMode::MODE_REPEAT;
-    font->size.set(char_width, char_height);
+    font->size.set(CHAR_WIDTH, CHAR_HEIGHT);
     font->scale = scale;
     for (char c : text) {
         if (c == ' ') {
@@ -35,12 +37,12 @@ void draw_text(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font,
             continue;
         }
         int ascii_value = static_cast<int>(c);
-        int index = ascii_value - first_char;
-        int col = index % char_per_row;
-        int row = index / char_per_row;
+        int index = ascii_value - FIRST_CHAR;
+        int col = index % CHAR_PER_ROW;
+        int row = index / CHAR_PER_ROW;
 
-        float offset_x = static_cast<float>(col * char_width);
-        float offset_y = static_cast<float>(row * char_height);
+        float offset_x = static_cast<float>(col * CHAR_WIDTH);
+        float offset_y = static_cast<float>(row * CHAR_HEIGHT);
 
         font->offset.set(offset_x, offset_y);
         font->position.set(temp_x, temp_y);
@@ -51,19 +53,15 @@ void draw_text(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font,
 }
 
 void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font, float x, float y, Tyra::Color color, float scale) {
-    const int char_width = 16;
-    const int char_height = 16;
-    const int char_per_row = 16;
-    const int first_char = 32;
     float temp_x = x;
     float temp_y = y;
     Tyra::Color default_color = font->color;
     float default_scale = font->scale;
-    float scaled_width = char_width * scale;
-    float scaled_height = char_height * scale;
+    float scaled_width = CHAR_WIDTH * scale;
+    float scaled_height = CHAR_HEIGHT * scale;
 
     font->mode = Tyra::SpriteMode::MODE_REPEAT;
-    font->size.set(char_width, char_height);
+    font->size.set(CHAR_WIDTH, CHAR_HEIGHT);
     font->scale = scale;
     font->color.set(color);
     for (char c : text) {
@@ -77,12 +75,12 @@ void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite 
             continue;
         }
         int ascii_value = static_cast<int>(c);
-        int index = ascii_value - first_char;
-        int col = index % char_per_row;
-        int row = index / char_per_row;
+        int index = ascii_value - FIRST_CHAR;
+        int col = index % CHAR_PER_ROW;
+        int row = index / CHAR_PER_ROW;
 
-        float offset_x = static_cast<float>(col * char_width);
-        float offset_y = static_cast<float>(row * char_height);
+        float offset_x = static_cast<float>(col * CHAR_WIDTH);
+        float offset_y = static_cast<float>(row * CHAR_HEIGHT);
 
         font->offset.set(offset_x, offset_y);
         font->position.set(temp_x, temp_y);

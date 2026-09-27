@@ -14,6 +14,11 @@ void SplashScreen::load_background() {
     TYRA_LOG("background created!");
 }
 
+// temp function
+void temp_function() {
+    TYRA_LOG("salam");
+}
+
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
     this->engine = engine;
     // load_image(&background, engine, "oui.png");
@@ -24,12 +29,21 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     font_color.g = 128.0f;
     font_color.b = 128.0f;
     SplashScreen::load_background();
+    selected_id = 0;
+    button_list.push_back(Button("Load", "None", temp_function, this->engine));
+    button_list.push_back(Button("New game", "None", temp_function, this->engine));
+    button_list.push_back(Button("option", "None", temp_function, this->engine));
     TYRA_LOG("all assets loaded in memory");
 }
 
 SplashScreen::~SplashScreen() {
     this->engine->renderer.getTextureRepository().freeBySprite(background);
+    this->engine->renderer.getTextureRepository().freeBySprite(mn_background);
     this->engine->renderer.getTextureRepository().freeBySprite(font);
+    // selected_id = 0;
+    // for (int i = 0; i < 3; i++) {
+    //     button_list.push_back(Button("Load", "None", temp_function));
+    // }
 }
 
 void SplashScreen::update() {
@@ -49,6 +63,8 @@ void SplashScreen::update() {
                 current_state = main_menu;
             break;
         case main_menu:
+            if (pad.getClicked().Cross)
+                this->button_list[this->selected_id].on_click();
             break;
         default:
             break;
@@ -58,21 +74,28 @@ void SplashScreen::update() {
 void SplashScreen::draw_welcome_screen() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
     auto& renderer = engine->renderer;
-    // renderer.renderer2D.render(background);
     draw_text_color(this->engine, "Press start", &font, screenSettings.getWidth() - 170, screenSettings.getHeight() - 20, font_color, 1.0f);
 }
 
 void SplashScreen::draw_main_menu() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
+    const std::string load = "Load";
+    const std::string new_game = "New game";
+    const std::string option = "Options";
     mn_background.mode = Tyra::SpriteMode::MODE_STRETCH;
     mn_background.size = Tyra::Vec2(256.0f, 256.0f);
     mn_background.position =
         Tyra::Vec2(screenSettings.getWidth() / 2.0F - mn_background.size.x / 2.0F,
              screenSettings.getHeight() / 2.0F - mn_background.size.y / 2.0F);
     this->engine->renderer.renderer2D.render(mn_background);
+    // draw here all options possible 
+    this->button_list[0].draw_button(&font, (screenSettings.getWidth() - this->button_list[0].get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.3f), 1.0f);
+    this->button_list[1].draw_button(&font, (screenSettings.getWidth() - this->button_list[1].get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.0f), 1.0f);
+    this->button_list[2].draw_button(&font, (screenSettings.getWidth() - this->button_list[2].get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) + (mn_background.size.y * 0.3f), 1.0f);
 }
 
 void SplashScreen::draw() {
+    // renderer.renderer2D.render(background);
     switch (current_state) {
         case welcome:
             SplashScreen::draw_welcome_screen();

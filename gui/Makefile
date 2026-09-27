@@ -1,6 +1,3 @@
-docker:
-	docker compose run --rm compiler bash
-
 pcsx2:
 	./squashfs-root/AppRun "$(PWD)/tyra/tap/bin/tap.elf"
 
