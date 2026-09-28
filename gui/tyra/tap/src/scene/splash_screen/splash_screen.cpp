@@ -2,6 +2,7 @@
 #include "splash_screen.hpp"
 #include "debug/debug.hpp"
 #include "helper.hpp"
+#include "button.hpp"
 
 void SplashScreen::load_background() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
@@ -30,9 +31,9 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     font_color.b = 128.0f;
     SplashScreen::load_background();
     selected_id = 0;
-    button_list.push_back(Button("Load", "None", temp_function, this->engine));
-    button_list.push_back(Button("New game", "None", temp_function, this->engine));
-    button_list.push_back(Button("Option", "None", temp_function, this->engine));
+    button_list.push_back(std::make_unique<Button>("Load", "None", temp_function, this->engine));
+    button_list.push_back(std::make_unique<Button>("New game", "None", temp_function, this->engine));
+    button_list.push_back(std::make_unique<Button>("Option", "None", temp_function, this->engine));
     TYRA_LOG("all assets loaded in memory");
 }
 
@@ -41,8 +42,8 @@ SplashScreen::~SplashScreen() {
     this->engine->renderer.getTextureRepository().freeBySprite(mn_background);
     this->engine->renderer.getTextureRepository().freeBySprite(font);
     for (int i = 0; i < 3; i++) {
-        if (button_list[i].get_img_path() != "None")
-            this->engine->renderer.getTextureRepository().freeBySprite(button_list[i].get_sprite());
+        if (button_list[i]->get_img_path() != "None")
+            this->engine->renderer.getTextureRepository().freeBySprite(button_list[i]->get_sprite());
     }
 }
 
@@ -63,35 +64,7 @@ void SplashScreen::update() {
                 current_state = main_menu;
             break;
         case main_menu: {
-            this->button_list[this->selected_id].set_is_selected(false);
-            int left_joy_v = pad.getLeftJoyPad().v;
-            bool analog_down = false;
-            bool analog_up = false;
-
-            if (left_joy_v > 190 && this->is_left_joy_centered) {
-                analog_down = true;
-                this->is_left_joy_centered = false;
-            }
-            else if (left_joy_v < 60 && this->is_left_joy_centered) {
-                analog_up = true;
-                this->is_left_joy_centered = false;
-            }
-            else if (left_joy_v >= 60 && left_joy_v <=  190)
-                this->is_left_joy_centered = true;
-
-            if (pad.getClicked().Cross)
-                this->button_list[this->selected_id].on_click();
-            if (pad.getClicked().DpadDown || analog_down) {
-                this->selected_id += 1;
-                if (this->selected_id > this->button_list.size() - 1)
-                    this->selected_id = 0;
-            }
-            if (pad.getClicked().DpadUp || analog_up) {
-                this->selected_id -= 1;
-                if (this->selected_id < 0)
-                    this->selected_id = this->button_list.size() - 1;
-            }
-            this->button_list[this->selected_id].set_is_selected(true);
+            loop_button_lst(this->engine, this->button_list, this->selected_id, this->is_left_joy_centered);
             break;
         }
         default:
@@ -117,9 +90,9 @@ void SplashScreen::draw_main_menu() {
              screenSettings.getHeight() / 2.0F - mn_background.size.y / 2.0F);
     this->engine->renderer.renderer2D.render(mn_background);
     // draw here all options possible 
-    this->button_list[0].draw_button(&font, (screenSettings.getWidth() - this->button_list[0].get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.3f), 1.0f);
-    this->button_list[1].draw_button(&font, (screenSettings.getWidth() - this->button_list[1].get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.0f), 1.0f);
-    this->button_list[2].draw_button(&font, (screenSettings.getWidth() - this->button_list[2].get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) + (mn_background.size.y * 0.3f), 1.0f);
+    this->button_list[0]->draw_button(&font, (screenSettings.getWidth() - this->button_list[0]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.3f), 1.0f);
+    this->button_list[1]->draw_button(&font, (screenSettings.getWidth() - this->button_list[1]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.0f), 1.0f);
+    this->button_list[2]->draw_button(&font, (screenSettings.getWidth() - this->button_list[2]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) + (mn_background.size.y * 0.3f), 1.0f);
 }
 
 void SplashScreen::draw() {

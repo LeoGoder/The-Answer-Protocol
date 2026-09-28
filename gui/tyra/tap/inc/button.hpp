@@ -10,7 +10,8 @@ class Button {
         std::string img_path;
         bool is_selected;
         std::function<void()> callback;
-        Tyra::Sprite sprite;
+        Tyra::Sprite background;
+        Tyra::Sprite arrow;
         Tyra::Engine *engine;
     public:
         Button(const std::string text, const std::string img_path, std::function<void()> callback, Tyra::Engine *engine);
@@ -21,13 +22,13 @@ class Button {
             return get_text_len(this->text, scale);
         }
         int get_sprite_width() {
-            return this->sprite.size.x;
+            return this->background.size.x;
         }
         int get_sprite_height() {
-            return this->sprite.size.y;
+            return this->background.size.y;
         }
         Tyra::Sprite get_sprite() {
-            return this->sprite;
+            return this->background;
         }
         std::string get_img_path() {
             return this->img_path;
@@ -36,3 +37,5 @@ class Button {
             this->is_selected = state;
         }
 };
+
+void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> &button_list, int &selected_id, bool &is_left_joy_centered);

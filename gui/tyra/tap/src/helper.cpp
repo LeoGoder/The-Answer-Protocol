@@ -1,3 +1,4 @@
+#include "button.hpp"
 #include "renderer/models/color.hpp"
 #include "helper.hpp"
 #include <tyra>
@@ -91,6 +92,3 @@ void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite 
     font->scale = default_scale;
 }
 
-void pad_button_input_manager(auto *pad) {
-
-}

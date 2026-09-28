@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <tyra>
 #include <string>
 #include "game_scene.hpp"
@@ -20,7 +21,7 @@ class SplashScreen : public GameScene {
         bool color_sens = false;
         bool is_left_joy_centered = false;
         State current_state = welcome;
-        std::vector<Button> button_list;
+        std::vector<std::unique_ptr<Button>> button_list;
         int selected_id;
     public:
         SplashScreen(Tyra::Engine* engine);
