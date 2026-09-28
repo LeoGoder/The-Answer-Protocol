@@ -26,6 +26,12 @@ class Button {
         int get_sprite_height() {
             return this->sprite.size.y;
         }
+        Tyra::Sprite get_sprite() {
+            return this->sprite;
+        }
+        std::string get_img_path() {
+            return this->img_path;
+        }
         void set_is_selected(bool state) {
             this->is_selected = state;
         }

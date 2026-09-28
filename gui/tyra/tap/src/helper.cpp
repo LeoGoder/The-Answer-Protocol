@@ -90,3 +90,7 @@ void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite 
     font->color = default_color;
     font->scale = default_scale;
 }
+
+void pad_button_input_manager(auto *pad) {
+
+}

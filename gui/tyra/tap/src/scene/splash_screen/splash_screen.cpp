@@ -32,7 +32,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     selected_id = 0;
     button_list.push_back(Button("Load", "None", temp_function, this->engine));
     button_list.push_back(Button("New game", "None", temp_function, this->engine));
-    button_list.push_back(Button("option", "None", temp_function, this->engine));
+    button_list.push_back(Button("Option", "None", temp_function, this->engine));
     TYRA_LOG("all assets loaded in memory");
 }
 
@@ -40,10 +40,10 @@ SplashScreen::~SplashScreen() {
     this->engine->renderer.getTextureRepository().freeBySprite(background);
     this->engine->renderer.getTextureRepository().freeBySprite(mn_background);
     this->engine->renderer.getTextureRepository().freeBySprite(font);
-    // selected_id = 0;
-    // for (int i = 0; i < 3; i++) {
-    //     button_list.push_back(Button("Load", "None", temp_function));
-    // }
+    for (int i = 0; i < 3; i++) {
+        if (button_list[i].get_img_path() != "None")
+            this->engine->renderer.getTextureRepository().freeBySprite(button_list[i].get_sprite());
+    }
 }
 
 void SplashScreen::update() {
