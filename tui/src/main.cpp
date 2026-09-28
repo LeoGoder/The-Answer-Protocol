@@ -16,6 +16,7 @@
 #include "ftxui/dom/elements.hpp"
 
 #include "../includes/connexion.hpp"
+#include "../includes/widget.hpp"
 
 using namespace ftxui;
 
@@ -130,9 +131,20 @@ int main() {
         std::string titre = " TAP Client TUI - " + infos.pseudo + " @ " +
                             infos.ip + ":" + std::to_string(port) + " ";
 
-        return vbox({
+        Element chat_window = vbox({
             window(text(titre), vbox(msg_elements) | yframe) | flex,
             hbox({text(" > "), champ->Render()}),
+        });
+
+        // Widget dynamique en haut à droite avec temp_image.png :
+        // La taille est proportionnelle au terminal (35% largeur, 38% hauteur).
+        // Lors d'un dézoom, le nombre de cellules allouées augmente et
+        // l'image est redimensionnée à plus haute résolution automatiquement !
+        Element widget = creerWidgetProportionnel(-0.02f, 0.03f, 0.35f, 0.38f);
+
+        return dbox({
+            chat_window,
+            widget,
         });
     });
 
