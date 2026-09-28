@@ -18,6 +18,7 @@ class SplashScreen : public GameScene {
         Tyra::Engine *engine;
         Tyra::Color font_color;
         bool color_sens = false;
+        bool is_left_joy_centered = false;
         State current_state = welcome;
         std::vector<Button> button_list;
         int selected_id;

@@ -26,4 +26,7 @@ class Button {
         int get_sprite_height() {
             return this->sprite.size.y;
         }
+        void set_is_selected(bool state) {
+            this->is_selected = state;
+        }
 };

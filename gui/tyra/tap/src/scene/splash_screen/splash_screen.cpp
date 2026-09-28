@@ -62,10 +62,38 @@ void SplashScreen::update() {
             if (pad.getClicked().Start)
                 current_state = main_menu;
             break;
-        case main_menu:
+        case main_menu: {
+            this->button_list[this->selected_id].set_is_selected(false);
+            int left_joy_v = pad.getLeftJoyPad().v;
+            bool analog_down = false;
+            bool analog_up = false;
+
+            if (left_joy_v > 190 && this->is_left_joy_centered) {
+                analog_down = true;
+                this->is_left_joy_centered = false;
+            }
+            else if (left_joy_v < 60 && this->is_left_joy_centered) {
+                analog_up = true;
+                this->is_left_joy_centered = false;
+            }
+            else if (left_joy_v >= 60 && left_joy_v <=  190)
+                this->is_left_joy_centered = true;
+
             if (pad.getClicked().Cross)
                 this->button_list[this->selected_id].on_click();
+            if (pad.getClicked().DpadDown || analog_down) {
+                this->selected_id += 1;
+                if (this->selected_id > this->button_list.size() - 1)
+                    this->selected_id = 0;
+            }
+            if (pad.getClicked().DpadUp || analog_up) {
+                this->selected_id -= 1;
+                if (this->selected_id < 0)
+                    this->selected_id = this->button_list.size() - 1;
+            }
+            this->button_list[this->selected_id].set_is_selected(true);
             break;
+        }
         default:
             break;
     }

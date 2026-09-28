@@ -1,5 +1,6 @@
 #include "button.hpp"
 #include "helper.hpp"
+#include "color.hpp"
 
 Button::Button(const std::string text, const std::string img_path, std::function<void()> callback, Tyra::Engine *engine) {
     this->text = text;
@@ -17,7 +18,10 @@ Button::~Button() {
 
 void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
     if (img_path == "None") {
-        draw_text(this->engine, this->text, font, x, y, scale);
+        if (is_selected == false)
+            draw_text(this->engine, this->text, font, x, y, scale);
+        else
+            draw_text_color(this->engine, this->text, font, x, y, Color::Yellow, 1.0f);
     }
     else {
         // TODO: replace it with futur function to draw_spritesheet
