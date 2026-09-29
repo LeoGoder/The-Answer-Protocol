@@ -13,9 +13,6 @@ class Button {
         Tyra::Sprite background;
         Tyra::Sprite arrow;
         Tyra::Engine *engine;
-        bool flip_arrow_animation = false;
-        float offset = 0.0f;
-        float speed = 1.5f;
     public:
         Button(const std::string text, const std::string img_path, std::function<void()> callback, Tyra::Engine *engine);
         ~Button();

@@ -25,16 +25,8 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
         if (is_selected == false)
             draw_text(this->engine, this->text, font, x, y, scale);
         else {
-            if (this->flip_arrow_animation == false)
-                this->offset += speed;
-            if (this->flip_arrow_animation == true)
-                this->offset -= speed;
             draw_text_color(this->engine, this->text, font, x, y, Color::Yellow, 1.0f);
-            draw_sprite(engine, this->arrow, x - 16 - 10 - this->offset, y, 16.0f, 16.0f);
-            if (this->offset > 30)
-                this->flip_arrow_animation = true;
-            if (this->offset <= 0)
-                this->flip_arrow_animation = false;
+            draw_sprite(engine, this->arrow, x - 16 - 10, y, 16.0f, 16.0f);
         }
     }
     else {
@@ -58,7 +50,7 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
     int left_joy_v = pad.getLeftJoyPad().v;
     bool analog_down = false;
     bool analog_up = false;
-
+    
     if (left_joy_v > 190 && is_left_joy_centered) {
         analog_down = true;
         is_left_joy_centered = false;
@@ -69,7 +61,7 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
     }
     else if (left_joy_v >= 60 && left_joy_v <=  190)
         is_left_joy_centered = true;
-
+    
     if (pad.getClicked().Cross)
         button_list[selected_id]->on_click();
     if (pad.getClicked().DpadDown || analog_down) {
