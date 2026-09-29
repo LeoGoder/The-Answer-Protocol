@@ -1,3 +1,4 @@
-.obj/widget.o: src/widget.cpp includes/widget.hpp includes/image.hpp
-includes/widget.hpp:
-includes/image.hpp:
+.obj/widget.o: src/widget.cpp src/../includes/widget.hpp \
+ src/../includes/image.hpp
+src/../includes/widget.hpp:
+src/../includes/image.hpp:

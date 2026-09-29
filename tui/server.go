@@ -35,7 +35,7 @@ func handleConnection(conn net.Conn) {
 		texteRecu := scanner.Text()
 		fmt.Println("Reçu:", texteRecu)
 
-		conn.Write([]byte("OK\n"))
+		conn.Write([]byte("KO\n"))
 	}
 
 	if err := scanner.Err(); err != nil {

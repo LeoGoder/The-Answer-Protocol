@@ -16,14 +16,15 @@
 #include "ftxui/dom/elements.hpp"
 
 #include "../includes/connexion.hpp"
-#include "../includes/widget.hpp"
+#include "../includes/image.hpp"
 
+using ftxui::borderRounded;
 using ftxui::CatchEvent;
 using ftxui::Component;
-using ftxui::dbox;
 using ftxui::Element;
 using ftxui::Elements;
 using ftxui::Event;
+using ftxui::filler;
 using ftxui::flex;
 using ftxui::focus;
 using ftxui::hbox;
@@ -114,6 +115,9 @@ int main() {
     }
 
     std::string cmd_connect = "CONNECT " + infos.pseudo + "\n";
+    std::cout << "[ENVOI SERVEUR] " << cmd_connect.substr(
+        0, cmd_connect.size() - 1)
+              << " (vers " << infos.ip << ":" << port << ")\n";
     send(sock, cmd_connect.c_str(), cmd_connect.size(), 0);
 
     auto screen = ScreenInteractive::Fullscreen();
@@ -133,19 +137,34 @@ int main() {
             msg_elements.back() = msg_elements.back() | focus;
         }
 
-        std::string titre = " TAP Client TUI - " + infos.pseudo + " @ " +
+        std::string title = " Terminal - " + infos.pseudo + " @ " +
                             infos.ip + ":" + std::to_string(port) + " ";
 
-        Element chat_window = vbox({
-            window(text(titre), vbox(msg_elements) | yframe) | flex,
-            hbox({text(" > "), champ->Render()}),
-        });
+        Element items_panel =
+            window(text(" Items "), filler()) | flex;
+        Element quests_panel =
+            window(text(" Quests "), filler()) | flex;
+        Element left_column =
+            vbox({items_panel, quests_panel}) | flex;
 
-        Element widget = creerWidgetProportionnel(-0.02f, 0.03f, 0.35f, 0.38f);
+        Element terminal_panel = vbox({
+            window(text(title),
+                   vbox(msg_elements) | yframe | flex) | flex,
+            borderRounded(hbox({text(" > "), champ->Render()})),
+        }) | flex;
 
-        return dbox({
-            chat_window,
-            widget,
+        Element map_panel =
+            window(text(" Map "),
+                   put_image("temp_image.png", 0, 0, false) | flex) | flex;
+        Element chat_panel =
+            window(text(" Chat "), filler()) | flex;
+        Element right_column =
+            vbox({map_panel, chat_panel}) | flex;
+
+        return hbox({
+            left_column,
+            terminal_panel | flex,
+            right_column,
         });
     });
 

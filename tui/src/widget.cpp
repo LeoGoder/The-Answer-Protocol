@@ -1,20 +1,21 @@
-#include "includes/widget.hpp"
+#include "../includes/widget.hpp"
 
 #include <algorithm>
 #include <memory>
-#include <utility>
 #include <string>
+#include <utility>
 
 #include <ftxui/dom/node.hpp>
 #include <ftxui/screen/box.hpp>
-#include "includes/image.hpp"
+
+#include "../includes/image.hpp"
 
 namespace {
 
 class PositionedWidgetNode : public ftxui::Node {
  public:
-  PositionedWidgetNode(ftxui::Element child, int x, int y,
-                       int width, int height)
+  PositionedWidgetNode(ftxui::Element child, int x, int y, int width,
+                       int height)
       : ftxui::Node({std::move(child)}),
         is_proportional_(false),
         x_(x),
@@ -22,8 +23,8 @@ class PositionedWidgetNode : public ftxui::Node {
         width_(width),
         height_(height) {}
 
-  PositionedWidgetNode(ftxui::Element child, float rx,
-                       float ry, float rw, float rh)
+  PositionedWidgetNode(ftxui::Element child, float rx, float ry, float rw,
+                       float rh)
       : ftxui::Node({std::move(child)}),
         is_proportional_(true),
         ratio_x_(rx),
@@ -58,15 +59,15 @@ class PositionedWidgetNode : public ftxui::Node {
       h = std::max(3, static_cast<int>(parent_h * ratio_h_));
 
       if (ratio_x_ < 0.0f) {
-        int marge_droite = static_cast<int>(parent_w * (-ratio_x_));
-        target_x = box.x_max + 1 - w - marge_droite;
+        int right_margin = static_cast<int>(parent_w * (-ratio_x_));
+        target_x = box.x_max + 1 - w - right_margin;
       } else {
         target_x = box.x_min + static_cast<int>(parent_w * ratio_x_);
       }
 
       if (ratio_y_ < 0.0f) {
-        int marge_bas = static_cast<int>(parent_h * (-ratio_y_));
-        target_y = box.y_max + 1 - h - marge_bas;
+        int bottom_margin = static_cast<int>(parent_h * (-ratio_y_));
+        target_y = box.y_max + 1 - h - bottom_margin;
       } else {
         target_y = box.y_min + static_cast<int>(parent_h * ratio_y_);
       }
@@ -74,11 +75,12 @@ class PositionedWidgetNode : public ftxui::Node {
       w = std::max(1, std::min(width_, parent_w));
       h = std::max(1, std::min(height_, parent_h));
 
-      target_x = (x_ >= 0) ? (box.x_min + x_) : (box.x_max + 1 + x_ - w + 1);
-      target_y = (y_ >= 0) ? (box.y_min + y_) : (box.y_max + 1 + y_ - h + 1);
+      target_x =
+          (x_ >= 0) ? (box.x_min + x_) : (box.x_max + 1 + x_ - w + 1);
+      target_y =
+          (y_ >= 0) ? (box.y_min + y_) : (box.y_max + 1 + y_ - h + 1);
     }
 
-    // Ajuster dans les limites strictes du conteneur parent
     target_x = std::max(box.x_min, std::min(target_x, box.x_max - w + 1));
     target_y = std::max(box.y_min, std::min(target_y, box.y_max - h + 1));
 
@@ -96,6 +98,11 @@ class PositionedWidgetNode : public ftxui::Node {
     children_[0]->Render(screen);
   }
 
+  void SetChild(ftxui::Element child) {
+    children_.clear();
+    children_.push_back(std::move(child));
+  }
+
  private:
   bool is_proportional_ = false;
   int x_ = 0;
@@ -108,55 +115,68 @@ class PositionedWidgetNode : public ftxui::Node {
   float ratio_h_ = 0.0f;
 };
 
+ftxui::Element buildInner(ftxui::Element content,
+                          const std::string& title) {
+  ftxui::Element inner = title.empty()
+      ? ftxui::borderRounded(content | ftxui::flex)
+      : ftxui::window(ftxui::text(title), content | ftxui::flex);
+  return inner | ftxui::clear_under;
+}
+
 }  // namespace
 
-ftxui::Element creerWidget(int x, int y, int largeur, int hauteur,
-                           ftxui::Element contenu,
-                           const std::string& titre) {
-  if (!contenu) {
-    contenu = put_image("temp_image.png", 0, 0, false);
+ftxui::Element createWidget(int x, int y, int width, int height,
+                            ftxui::Element content,
+                            const std::string& title) {
+  if (!content) {
+    content = put_image("temp_image.png", 0, 0, false);
   }
-
-  ftxui::Element inner = titre.empty()
-      ? ftxui::borderRounded(contenu | ftxui::flex)
-      : ftxui::window(ftxui::text(titre), contenu | ftxui::flex);
-
-  auto wgt = inner | ftxui::clear_under;
-  return std::make_shared<PositionedWidgetNode>(wgt, x, y, largeur, hauteur);
+  auto wgt = buildInner(content, title);
+  return std::make_shared<PositionedWidgetNode>(wgt, x, y, width, height);
 }
 
-ftxui::Element creerWidgetProportionnel(float ratio_x, float ratio_y,
-                                       float ratio_largeur,
-                                       float ratio_hauteur,
-                                       ftxui::Element contenu,
-                                       const std::string& titre) {
-  if (!contenu) {
-    contenu = put_image("temp_image.png", 0, 0, false);
+ftxui::Element createProportionalWidget(float ratio_x, float ratio_y,
+                                        float ratio_width,
+                                        float ratio_height,
+                                        ftxui::Element content,
+                                        const std::string& title) {
+  if (!content) {
+    content = put_image("temp_image.png", 0, 0, false);
   }
-
-  ftxui::Element inner = titre.empty()
-      ? ftxui::borderRounded(contenu | ftxui::flex)
-      : ftxui::window(ftxui::text(titre), contenu | ftxui::flex);
-
-  auto wgt = inner | ftxui::clear_under;
+  auto wgt = buildInner(content, title);
   return std::make_shared<PositionedWidgetNode>(wgt, ratio_x, ratio_y,
-                                                ratio_largeur, ratio_hauteur);
+                                                ratio_width, ratio_height);
 }
 
-ftxui::Element creerWidgetImage(const std::string& chemin_image,
-                                int x, int y, int largeur, int hauteur,
-                                const std::string& titre) {
-  ftxui::Element img = put_image(chemin_image, 0, 0, false);
-  return creerWidget(x, y, largeur, hauteur, img, titre);
+ftxui::Element createWidgetImage(const std::string& image_path, int x, int y,
+                                 int width, int height,
+                                 const std::string& title) {
+  ftxui::Element img = put_image(image_path, 0, 0, false);
+  return createWidget(x, y, width, height, img, title);
 }
 
-ftxui::Element creerWidgetImageProportionnel(const std::string& chemin_image,
-                                            float ratio_x, float ratio_y,
-                                            float ratio_largeur,
-                                            float ratio_hauteur,
-                                            const std::string& titre) {
-  ftxui::Element img = put_image(chemin_image, 0, 0, false);
-  return creerWidgetProportionnel(ratio_x, ratio_y, ratio_largeur,
-                                  ratio_hauteur,
-                                  img, titre);
+ftxui::Element createProportionalWidgetImage(const std::string& image_path,
+                                             float ratio_x, float ratio_y,
+                                             float ratio_width,
+                                             float ratio_height,
+                                             const std::string& title) {
+  ftxui::Element img = put_image(image_path, 0, 0, false);
+  return createProportionalWidget(ratio_x, ratio_y, ratio_width, ratio_height,
+                                  img, title);
+}
+
+void changeWidget(ftxui::Element widget, ftxui::Element new_content,
+                  const std::string& title) {
+  auto node = std::dynamic_pointer_cast<PositionedWidgetNode>(widget);
+  if (!node) return;
+  if (!new_content) {
+    new_content = put_image("temp_image.png", 0, 0, false);
+  }
+  node->SetChild(buildInner(new_content, title));
+}
+
+void changeProportionalWidget(ftxui::Element widget,
+                              ftxui::Element new_content,
+                              const std::string& title) {
+  changeWidget(widget, new_content, title);
 }

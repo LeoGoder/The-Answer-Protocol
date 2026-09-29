@@ -1,2 +1,2 @@
-.obj/connexion.o: src/connexion.cpp includes/connexion.hpp
-includes/connexion.hpp:
+.obj/connexion.o: src/connexion.cpp src/../includes/connexion.hpp
+src/../includes/connexion.hpp:

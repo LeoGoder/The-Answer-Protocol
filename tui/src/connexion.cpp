@@ -1,4 +1,4 @@
-#include "includes/connexion.hpp"
+#include "../includes/connexion.hpp"
 
 #include <string>
 
@@ -10,12 +10,13 @@ using ftxui::bold;
 using ftxui::border;
 using ftxui::Button;
 using ftxui::ButtonOption;
+using ftxui::CatchEvent;
 using ftxui::center;
 using ftxui::Color;
 using ftxui::color;
 using ftxui::Component;
-using ftxui::Container;
 using ftxui::emptyElement;
+using ftxui::Event;
 using ftxui::flex_shrink;
 using ftxui::hbox;
 using ftxui::Input;
@@ -47,11 +48,19 @@ bool ecranConnexion(InfosConnexion& infos) {
         on_connect,
         ButtonOption::Animated());
 
-    Component container = Container::Vertical({
+    Component container = ftxui::Container::Vertical({
         input_pseudo,
         input_ip,
         input_port,
         btn_connect,
+    });
+
+    container |= CatchEvent([&](Event event) {
+        if (event == Event::Return) {
+            on_connect();
+            return true;
+        }
+        return false;
     });
 
     Component renderer = Renderer(container, [&] {
