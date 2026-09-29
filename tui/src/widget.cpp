@@ -1,19 +1,20 @@
-#include "widget.hpp"
-#include "image.hpp"
+#include "includes/widget.hpp"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <string>
 
 #include <ftxui/dom/node.hpp>
 #include <ftxui/screen/box.hpp>
+#include "includes/image.hpp"
 
 namespace {
 
 class PositionedWidgetNode : public ftxui::Node {
  public:
-  // Mode absolu en cellules de terminal
-  PositionedWidgetNode(ftxui::Element child, int x, int y, int width, int height)
+  PositionedWidgetNode(ftxui::Element child, int x, int y,
+                       int width, int height)
       : ftxui::Node({std::move(child)}),
         is_proportional_(false),
         x_(x),
@@ -21,8 +22,8 @@ class PositionedWidgetNode : public ftxui::Node {
         width_(width),
         height_(height) {}
 
-  // Mode proportionnel (ratios relatifs à l'écran : ex 0.35f = 35%)
-  PositionedWidgetNode(ftxui::Element child, float rx, float ry, float rw, float rh)
+  PositionedWidgetNode(ftxui::Element child, float rx,
+                       float ry, float rw, float rh)
       : ftxui::Node({std::move(child)}),
         is_proportional_(true),
         ratio_x_(rx),
@@ -56,7 +57,6 @@ class PositionedWidgetNode : public ftxui::Node {
       w = std::max(4, static_cast<int>(parent_w * ratio_w_));
       h = std::max(3, static_cast<int>(parent_h * ratio_h_));
 
-      // Si ratio_x_ < 0 : marge par rapport au bord droit
       if (ratio_x_ < 0.0f) {
         int marge_droite = static_cast<int>(parent_w * (-ratio_x_));
         target_x = box.x_max + 1 - w - marge_droite;
@@ -64,7 +64,6 @@ class PositionedWidgetNode : public ftxui::Node {
         target_x = box.x_min + static_cast<int>(parent_w * ratio_x_);
       }
 
-      // Si ratio_y_ < 0 : marge par rapport au bord inférieur
       if (ratio_y_ < 0.0f) {
         int marge_bas = static_cast<int>(parent_h * (-ratio_y_));
         target_y = box.y_max + 1 - h - marge_bas;
@@ -114,8 +113,6 @@ class PositionedWidgetNode : public ftxui::Node {
 ftxui::Element creerWidget(int x, int y, int largeur, int hauteur,
                            ftxui::Element contenu,
                            const std::string& titre) {
-  // put_image avec 0, 0 et false (garder_ratio=false) permet à l'image
-  // de s'étendre et d'adapter sa taille et sa résolution à 100% du widget
   if (!contenu) {
     contenu = put_image("temp_image.png", 0, 0, false);
   }
@@ -129,7 +126,8 @@ ftxui::Element creerWidget(int x, int y, int largeur, int hauteur,
 }
 
 ftxui::Element creerWidgetProportionnel(float ratio_x, float ratio_y,
-                                       float ratio_largeur, float ratio_hauteur,
+                                       float ratio_largeur,
+                                       float ratio_hauteur,
                                        ftxui::Element contenu,
                                        const std::string& titre) {
   if (!contenu) {
@@ -154,9 +152,11 @@ ftxui::Element creerWidgetImage(const std::string& chemin_image,
 
 ftxui::Element creerWidgetImageProportionnel(const std::string& chemin_image,
                                             float ratio_x, float ratio_y,
-                                            float ratio_largeur, float ratio_hauteur,
+                                            float ratio_largeur,
+                                            float ratio_hauteur,
                                             const std::string& titre) {
   ftxui::Element img = put_image(chemin_image, 0, 0, false);
-  return creerWidgetProportionnel(ratio_x, ratio_y, ratio_largeur, ratio_hauteur,
+  return creerWidgetProportionnel(ratio_x, ratio_y, ratio_largeur,
+                                  ratio_hauteur,
                                   img, titre);
 }
