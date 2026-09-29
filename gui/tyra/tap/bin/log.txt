@@ -1,0 +1,3456 @@
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: background loaded
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: all assets loaded in memory
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: Button assets loaded in memory
+LOG: Button assets loaded in memory
+LOG: Button assets loaded in memory
+LOG: all assets loaded in memory
+LOG: DT: 915
+LOG: DT: 1228
+LOG: DT: 1540
+LOG: DT: 1853
+LOG: DT: 2165
+LOG: DT: 2478
+LOG: DT: 2790
+LOG: DT: 3103
+LOG: DT: 3415
+LOG: DT: 3728
+LOG: DT: 4040
+LOG: DT: 4353
+LOG: DT: 4665
+LOG: DT: 4978
+LOG: DT: 5290
+LOG: DT: 5603
+LOG: DT: 5915
+LOG: DT: 6228
+LOG: DT: 6540
+LOG: DT: 6853
+LOG: DT: 7165
+LOG: DT: 7478
+LOG: DT: 7790
+LOG: DT: 8103
+LOG: DT: 8415
+LOG: DT: 8728
+LOG: DT: 9040
+LOG: DT: 9353
+LOG: DT: 9665
+LOG: DT: 9978
+LOG: DT: 10290
+LOG: DT: 10603
+LOG: DT: 10915
+LOG: DT: 11228
+LOG: DT: 11540
+LOG: DT: 11853
+LOG: DT: 12165
+LOG: DT: 12478
+LOG: DT: 12790
+LOG: DT: 13103
+LOG: DT: 13415
+LOG: DT: 13728
+LOG: DT: 14040
+LOG: DT: 14353
+LOG: DT: 14665
+LOG: DT: 14978
+LOG: DT: 15290
+LOG: DT: 15603
+LOG: DT: 15915
+LOG: DT: 16228
+LOG: DT: 16540
+LOG: DT: 16853
+LOG: DT: 17165
+LOG: DT: 17478
+LOG: DT: 17790
+LOG: DT: 18103
+LOG: DT: 18415
+LOG: DT: 18728
+LOG: DT: 19040
+LOG: DT: 19353
+LOG: DT: 19665
+LOG: DT: 19978
+LOG: DT: 20290
+LOG: DT: 20603
+LOG: DT: 20915
+LOG: DT: 21228
+LOG: DT: 21540
+LOG: DT: 21853
+LOG: DT: 22165
+LOG: DT: 22478
+LOG: DT: 22790
+LOG: DT: 23103
+LOG: DT: 23415
+LOG: DT: 23728
+LOG: DT: 24041
+LOG: DT: 24353
+LOG: DT: 24666
+LOG: DT: 24978
+LOG: DT: 25291
+LOG: DT: 25603
+LOG: DT: 25916
+LOG: DT: 26228
+LOG: DT: 26541
+LOG: DT: 26853
+LOG: DT: 27166
+LOG: DT: 27478
+LOG: DT: 27791
+LOG: DT: 28103
+LOG: DT: 28416
+LOG: DT: 28728
+LOG: DT: 29041
+LOG: DT: 29353
+LOG: DT: 29666
+LOG: DT: 29978
+LOG: DT: 30291
+LOG: DT: 30603
+LOG: DT: 30916
+LOG: DT: 31228
+LOG: DT: 31541
+LOG: DT: 31853
+LOG: DT: 32166
+LOG: DT: 32478
+LOG: DT: 32791
+LOG: DT: 33103
+LOG: DT: 33416
+LOG: DT: 33728
+LOG: DT: 34041
+LOG: DT: 34353
+LOG: DT: 34666
+LOG: DT: 34978
+LOG: DT: 35291
+LOG: DT: 35603
+LOG: DT: 35916
+LOG: DT: 36228
+LOG: DT: 36541
+LOG: DT: 36853
+LOG: DT: 37166
+LOG: DT: 37478
+LOG: DT: 37791
+LOG: DT: 38103
+LOG: DT: 38416
+LOG: DT: 38728
+LOG: DT: 39041
+LOG: DT: 39353
+LOG: DT: 39666
+LOG: DT: 39978
+LOG: DT: 40291
+LOG: DT: 40603
+LOG: DT: 40916
+LOG: DT: 41228
+LOG: DT: 41541
+LOG: DT: 41853
+LOG: DT: 42166
+LOG: DT: 42478
+LOG: DT: 42791
+LOG: DT: 43103
+LOG: DT: 43416
+LOG: DT: 43728
+LOG: DT: 44041
+LOG: DT: 44353
+LOG: DT: 44666
+LOG: DT: 44978
+LOG: DT: 45291
+LOG: DT: 45603
+LOG: DT: 45916
+LOG: DT: 46228
+LOG: DT: 46541
+LOG: DT: 46853
+LOG: DT: 47166
+LOG: DT: 47478
+LOG: DT: 47791
+LOG: DT: 48103
+LOG: DT: 48416
+LOG: DT: 48728
+LOG: DT: 49041
+LOG: DT: 49354
+LOG: DT: 49666
+LOG: DT: 49979
+LOG: DT: 50291
+LOG: DT: 50604
+LOG: DT: 50916
+LOG: DT: 51229
+LOG: DT: 51541
+LOG: DT: 51854
+LOG: DT: 52166
+LOG: DT: 52479
+LOG: DT: 52791
+LOG: DT: 53104
+LOG: DT: 53416
+LOG: DT: 53729
+LOG: DT: 54041
+LOG: DT: 54354
+LOG: DT: 54666
+LOG: DT: 54979
+LOG: DT: 55291
+LOG: DT: 55604
+LOG: DT: 55916
+LOG: DT: 56229
+LOG: DT: 56541
+LOG: DT: 56854
+LOG: DT: 57166
+LOG: DT: 57479
+LOG: DT: 57791
+LOG: DT: 58104
+LOG: DT: 58416
+LOG: DT: 58729
+LOG: DT: 59041
+LOG: DT: 59354
+LOG: DT: 59666
+LOG: DT: 59979
+LOG: DT: 60291
+LOG: DT: 60604
+LOG: DT: 60916
+LOG: DT: 61229
+LOG: DT: 61541
+LOG: DT: 61854
+LOG: DT: 62166
+LOG: DT: 62479
+LOG: DT: 62791
+LOG: DT: 63104
+LOG: DT: 63416
+LOG: DT: 63729
+LOG: DT: 64041
+LOG: DT: 64354
+LOG: DT: 64666
+LOG: DT: 64979
+LOG: DT: 65291
+LOG: DT: 68
+LOG: DT: 380
+LOG: DT: 693
+LOG: DT: 1005
+LOG: DT: 1318
+LOG: DT: 1630
+LOG: DT: 1943
+LOG: DT: 2255
+LOG: DT: 2568
+LOG: DT: 2880
+LOG: DT: 3193
+LOG: DT: 3505
+LOG: DT: 3818
+LOG: DT: 4130
+LOG: DT: 4443
+LOG: DT: 4755
+LOG: DT: 5068
+LOG: DT: 5380
+LOG: DT: 5693
+LOG: DT: 6005
+LOG: DT: 6318
+LOG: DT: 6630
+LOG: DT: 6943
+LOG: DT: 7255
+LOG: DT: 7568
+LOG: DT: 7880
+LOG: DT: 8193
+LOG: DT: 8505
+LOG: DT: 8818
+LOG: DT: 9130
+LOG: DT: 9443
+LOG: DT: 9756
+LOG: DT: 10068
+LOG: DT: 10381
+LOG: DT: 10693
+LOG: DT: 11006
+LOG: DT: 11318
+LOG: DT: 11631
+LOG: DT: 11943
+LOG: DT: 12256
+LOG: DT: 12568
+LOG: DT: 12881
+LOG: DT: 13193
+LOG: DT: 13506
+LOG: DT: 13818
+LOG: DT: 14131
+LOG: DT: 14443
+LOG: DT: 14756
+LOG: DT: 15068
+LOG: DT: 15381
+LOG: DT: 15693
+LOG: DT: 16006
+LOG: DT: 16318
+LOG: DT: 16631
+LOG: DT: 16943
+LOG: DT: 17256
+LOG: DT: 17568
+LOG: DT: 17881
+LOG: DT: 18193
+LOG: DT: 18506
+LOG: DT: 18818
+LOG: DT: 19131
+LOG: DT: 19443
+LOG: DT: 19756
+LOG: DT: 20068
+LOG: DT: 20381
+LOG: DT: 20693
+LOG: DT: 21006
+LOG: DT: 21318
+LOG: DT: 21631
+LOG: DT: 21943
+LOG: DT: 22256
+LOG: DT: 22568
+LOG: DT: 22881
+LOG: DT: 23193
+LOG: DT: 23506
+LOG: DT: 23818
+LOG: DT: 24131
+LOG: DT: 24443
+LOG: DT: 24756
+LOG: DT: 25068
+LOG: DT: 25381
+LOG: DT: 25693
+LOG: DT: 26006
+LOG: DT: 26318
+LOG: DT: 26631
+LOG: DT: 26943
+LOG: DT: 27256
+LOG: DT: 27568
+LOG: DT: 27881
+LOG: DT: 28193
+LOG: DT: 28506
+LOG: DT: 28818
+LOG: DT: 29131
+LOG: DT: 29443
+LOG: DT: 29756
+LOG: DT: 30068
+LOG: DT: 30381
+LOG: DT: 30693
+LOG: DT: 31006
+LOG: DT: 31318
+LOG: DT: 31631
+LOG: DT: 31943
+LOG: DT: 32256
+LOG: DT: 32568
+LOG: DT: 32881
+LOG: DT: 33193
+LOG: DT: 33506
+LOG: DT: 33818
+LOG: DT: 34131
+LOG: DT: 34443
+LOG: DT: 34756
+LOG: DT: 35069
+LOG: DT: 35381
+LOG: DT: 35694
+LOG: DT: 36006
+LOG: DT: 36319
+LOG: DT: 36631
+LOG: DT: 36944
+LOG: DT: 37256
+LOG: DT: 37569
+LOG: DT: 37881
+LOG: DT: 38194
+LOG: DT: 38506
+LOG: DT: 38819
+LOG: DT: 39131
+LOG: DT: 39444
+LOG: DT: 39756
+LOG: DT: 40069
+LOG: DT: 40381
+LOG: DT: 40694
+LOG: DT: 41006
+LOG: DT: 41319
+LOG: DT: 41631
+LOG: DT: 41944
+LOG: DT: 42256
+LOG: DT: 42569
+LOG: DT: 42881
+LOG: DT: 43194
+LOG: DT: 43506
+LOG: DT: 43819
+LOG: DT: 44131
+LOG: DT: 44444
+LOG: DT: 44756
+LOG: DT: 45069
+LOG: DT: 45381
+LOG: DT: 45694
+LOG: DT: 46006
+LOG: DT: 46319
+LOG: DT: 46631
+LOG: DT: 46944
+LOG: DT: 47256
+LOG: DT: 47569
+LOG: DT: 47881
+LOG: DT: 48194
+LOG: DT: 48506
+LOG: DT: 48819
+LOG: DT: 49131
+LOG: DT: 49444
+LOG: DT: 49756
+LOG: DT: 50069
+LOG: DT: 50381
+LOG: DT: 50694
+LOG: DT: 51006
+LOG: DT: 51319
+LOG: DT: 51631
+LOG: DT: 51944
+LOG: DT: 52256
+LOG: DT: 52569
+LOG: DT: 52881
+LOG: DT: 53194
+LOG: DT: 53506
+LOG: DT: 53819
+LOG: DT: 54131
+LOG: DT: 54444
+LOG: DT: 54756
+LOG: DT: 55069
+LOG: DT: 55381
+LOG: DT: 55694
+LOG: DT: 56006
+LOG: DT: 56319
+LOG: DT: 56631
+LOG: DT: 56944
+LOG: DT: 57256
+LOG: DT: 57569
+LOG: DT: 57881
+LOG: DT: 58194
+LOG: DT: 58506
+LOG: DT: 58819
+LOG: DT: 59131
+LOG: DT: 59444
+LOG: DT: 59756
+LOG: DT: 60069
+LOG: DT: 60381
+LOG: DT: 60694
+LOG: DT: 61007
+LOG: DT: 61319
+LOG: DT: 61632
+LOG: DT: 61944
+LOG: DT: 62257
+LOG: DT: 62569
+LOG: DT: 62882
+LOG: DT: 63194
+LOG: DT: 63507
+LOG: DT: 63819
+LOG: DT: 64132
+LOG: DT: 64444
+LOG: DT: 64757
+LOG: DT: 65069
+LOG: DT: 65382
+LOG: DT: 158
+LOG: DT: 471
+LOG: DT: 783
+LOG: DT: 1096
+LOG: DT: 1408
+LOG: DT: 1721
+LOG: DT: 2033
+LOG: DT: 2346
+LOG: DT: 2658
+LOG: DT: 2971
+LOG: DT: 3283
+LOG: DT: 3596
+LOG: DT: 3908
+LOG: DT: 4221
+LOG: DT: 4533
+LOG: DT: 4846
+LOG: DT: 5158
+LOG: DT: 5471
+LOG: DT: 5783
+LOG: DT: 6096
+LOG: DT: 6408
+LOG: DT: 6721
+LOG: DT: 7033
+LOG: DT: 7346
+LOG: DT: 7658
+LOG: DT: 7971
+LOG: DT: 8283
+LOG: DT: 8596
+LOG: DT: 8908
+LOG: DT: 9221
+LOG: DT: 9533
+LOG: DT: 9846
+LOG: DT: 10158
+LOG: DT: 10471
+LOG: DT: 10783
+LOG: DT: 11096
+LOG: DT: 11408
+LOG: DT: 11721
+LOG: DT: 12033
+LOG: DT: 12346
+LOG: DT: 12658
+LOG: DT: 12971
+LOG: DT: 13283
+LOG: DT: 13596
+LOG: DT: 13908
+LOG: DT: 14221
+LOG: DT: 14533
+LOG: DT: 14846
+LOG: DT: 15158
+LOG: DT: 15471
+LOG: DT: 15783
+LOG: DT: 16096
+LOG: DT: 16408
+LOG: DT: 16721
+LOG: DT: 17033
+LOG: DT: 17346
+LOG: DT: 17658
+LOG: DT: 17971
+LOG: DT: 18283
+LOG: DT: 18596
+LOG: DT: 18908
+LOG: DT: 19221
+LOG: DT: 19533
+LOG: DT: 19846
+LOG: DT: 20158
+LOG: DT: 20471
+LOG: DT: 20784
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: Button assets loaded in memory
+LOG: Button assets loaded in memory
+LOG: Button assets loaded in memory
+LOG: all assets loaded in memory
+LOG: DT: 915
+LOG: DT: 1228
+LOG: DT: 1540
+LOG: DT: 1853
+LOG: DT: 2165
+LOG: DT: 2478
+LOG: DT: 2790
+LOG: DT: 3103
+LOG: DT: 3415
+LOG: DT: 3728
+LOG: DT: 4040
+LOG: DT: 4353
+LOG: DT: 4665
+LOG: DT: 4978
+LOG: DT: 5290
+LOG: DT: 5603
+LOG: DT: 5915
+LOG: DT: 6228
+LOG: DT: 6540
+LOG: DT: 6853
+LOG: DT: 7165
+LOG: DT: 7478
+LOG: DT: 7790
+LOG: DT: 8103
+LOG: DT: 8415
+LOG: DT: 8728
+LOG: DT: 9040
+LOG: DT: 9353
+LOG: DT: 9665
+LOG: DT: 9978
+LOG: DT: 10290
+LOG: DT: 10603
+LOG: DT: 10915
+LOG: DT: 11228
+LOG: DT: 11540
+LOG: DT: 11853
+LOG: DT: 12165
+LOG: DT: 12478
+LOG: DT: 12790
+LOG: DT: 13103
+LOG: DT: 13415
+LOG: DT: 13728
+LOG: DT: 14040
+LOG: DT: 14353
+LOG: DT: 14665
+LOG: DT: 14978
+LOG: DT: 15290
+LOG: DT: 15603
+LOG: DT: 15915
+LOG: DT: 16228
+LOG: DT: 16540
+LOG: DT: 16853
+LOG: DT: 17165
+LOG: DT: 17478
+LOG: DT: 17790
+LOG: DT: 18103
+LOG: DT: 18415
+LOG: DT: 18728
+LOG: DT: 19040
+LOG: DT: 19353
+LOG: DT: 19665
+LOG: DT: 19978
+LOG: DT: 20290
+LOG: DT: 20603
+LOG: DT: 20915
+LOG: DT: 21228
+LOG: DT: 21540
+LOG: DT: 21853
+LOG: DT: 22165
+LOG: DT: 22478
+LOG: DT: 22790
+LOG: DT: 23103
+LOG: DT: 23415
+LOG: DT: 23728
+LOG: DT: 24041
+LOG: DT: 24353
+LOG: DT: 24666
+LOG: DT: 24978
+LOG: DT: 25291
+LOG: DT: 25603
+LOG: DT: 25916
+LOG: DT: 26228
+LOG: DT: 26541
+LOG: DT: 26853
+LOG: DT: 27166
+LOG: DT: 27478
+LOG: DT: 27791
+LOG: DT: 28103
+LOG: DT: 28416
+LOG: DT: 28728
+LOG: DT: 29041
+LOG: DT: 29353
+LOG: DT: 29666
+LOG: DT: 29978
+LOG: DT: 30291
+LOG: DT: 30603
+LOG: DT: 30916
+LOG: DT: 31228
+LOG: DT: 31541
+LOG: DT: 31853
+LOG: DT: 32166
+LOG: DT: 32478
+LOG: DT: 32791
+LOG: DT: 33103
+LOG: DT: 33416
+LOG: DT: 33728
+LOG: DT: 34041
+LOG: DT: 34353
+LOG: DT: 34666
+LOG: DT: 34978
+LOG: DT: 35291
+LOG: DT: 35603
+LOG: DT: 35916
+LOG: DT: 36228
+LOG: DT: 36541
+LOG: DT: 36853
+LOG: DT: 37166
+LOG: DT: 37478
+LOG: DT: 37791
+LOG: DT: 38103
+LOG: DT: 38416
+LOG: DT: 38728
+LOG: DT: 39041
+LOG: DT: 39353
+LOG: DT: 39666
+LOG: DT: 39978
+LOG: DT: 40291
+LOG: DT: 40603
+LOG: DT: 40916
+LOG: DT: 41228
+LOG: DT: 41541
+LOG: DT: 41853
+LOG: DT: 42166
+LOG: DT: 42478
+LOG: DT: 42791
+LOG: DT: 43103
+LOG: DT: 43416
+LOG: DT: 43728
+LOG: DT: 44041
+LOG: DT: 44353
+LOG: DT: 44666
+LOG: DT: 44978
+LOG: DT: 45291
+LOG: DT: 45603
+LOG: DT: 45916
+LOG: DT: 46228
+LOG: DT: 46541
+LOG: DT: 46853
+LOG: DT: 47166
+LOG: DT: 47478
+LOG: DT: 47791
+LOG: DT: 48103
+LOG: DT: 48416
+LOG: DT: 48728
+LOG: DT: 49041
+LOG: DT: 49354
+LOG: DT: 49666
+LOG: DT: 49979
+LOG: DT: 50291
+LOG: DT: 50604
+LOG: DT: 50916
+LOG: DT: 51229
+LOG: DT: 51541
+LOG: DT: 51854
+LOG: DT: 52166
+LOG: DT: 52479
+LOG: DT: 52791
+LOG: DT: 53104
+LOG: DT: 53416
+LOG: DT: 53729
+LOG: DT: 54041
+LOG: DT: 54354
+LOG: DT: 54666
+LOG: DT: 54979
+LOG: DT: 55291
+LOG: DT: 55604
+LOG: DT: 55916
+LOG: DT: 56229
+LOG: DT: 56541
+LOG: DT: 56854
+LOG: DT: 57166
+LOG: DT: 57479
+LOG: DT: 57791
+LOG: DT: 58104
+LOG: DT: 58416
+LOG: DT: 58729
+LOG: DT: 59041
+LOG: DT: 59354
+LOG: DT: 59666
+LOG: DT: 59979
+LOG: DT: 60291
+LOG: DT: 60604
+LOG: DT: 60916
+LOG: DT: 61229
+LOG: DT: 61541
+LOG: DT: 61854
+LOG: DT: 62166
+LOG: DT: 62479
+LOG: DT: 62791
+LOG: DT: 63104
+LOG: DT: 63416
+LOG: DT: 63729
+LOG: DT: 64041
+LOG: DT: 64354
+LOG: DT: 64666
+LOG: DT: 64979
+LOG: DT: 65291
+LOG: DT: 68
+LOG: DT: 380
+LOG: DT: 693
+LOG: DT: 1005
+LOG: DT: 1318
+LOG: DT: 1630
+LOG: DT: 1943
+LOG: DT: 2255
+LOG: DT: 2568
+LOG: DT: 2880
+LOG: DT: 3193
+LOG: DT: 3505
+LOG: DT: 3818
+LOG: DT: 4130
+LOG: DT: 4443
+LOG: DT: 4755
+LOG: DT: 5068
+LOG: DT: 5380
+LOG: DT: 5693
+LOG: DT: 6005
+LOG: DT: 6318
+LOG: DT: 6630
+LOG: DT: 6943
+LOG: DT: 7255
+LOG: DT: 7568
+LOG: DT: 7880
+LOG: DT: 8193
+LOG: DT: 8505
+LOG: DT: 8818
+LOG: DT: 9130
+LOG: DT: 9443
+LOG: DT: 9756
+LOG: DT: 10068
+LOG: DT: 10381
+LOG: DT: 10693
+LOG: DT: 11006
+LOG: DT: 11318
+LOG: DT: 11631
+LOG: DT: 11943
+LOG: DT: 12256
+LOG: DT: 12568
+LOG: DT: 12881
+LOG: DT: 13193
+LOG: DT: 13506
+LOG: DT: 13818
+LOG: DT: 14131
+LOG: DT: 14443
+LOG: DT: 14756
+LOG: DT: 15068
+LOG: DT: 15381
+LOG: DT: 15693
+LOG: DT: 16006
+LOG: DT: 16318
+LOG: DT: 16631
+LOG: DT: 16943
+LOG: DT: 17256
+LOG: DT: 17568
+LOG: DT: 17881
+LOG: DT: 18193
+LOG: DT: 18506
+LOG: DT: 18818
+LOG: DT: 19131
+LOG: DT: 19443
+LOG: DT: 19756
+LOG: DT: 20068
+LOG: DT: 20381
+LOG: DT: 20693
+LOG: DT: 21006
+LOG: DT: 21318
+LOG: DT: 21631
+LOG: DT: 21943
+LOG: DT: 22256
+LOG: DT: 22568
+LOG: DT: 22881
+LOG: DT: 23193
+LOG: DT: 23506
+LOG: DT: 23818
+LOG: DT: 24131
+LOG: DT: 24443
+LOG: DT: 24756
+LOG: DT: 25068
+LOG: DT: 25381
+LOG: DT: 25693
+LOG: DT: 26006
+LOG: DT: 26318
+LOG: DT: 26631
+LOG: DT: 26943
+LOG: DT: 27256
+LOG: DT: 27568
+LOG: DT: 27881
+LOG: DT: 28193
+LOG: DT: 28506
+LOG: DT: 28818
+LOG: DT: 29131
+LOG: DT: 29443
+LOG: DT: 29756
+LOG: DT: 30068
+LOG: DT: 30381
+LOG: DT: 30693
+LOG: DT: 31006
+LOG: DT: 31318
+LOG: DT: 31631
+LOG: DT: 31943
+LOG: DT: 32256
+LOG: DT: 32568
+LOG: DT: 32881
+LOG: DT: 33193
+LOG: DT: 33506
+LOG: DT: 33818
+LOG: DT: 34131
+LOG: DT: 34443
+LOG: DT: 34756
+LOG: DT: 35069
+LOG: DT: 35381
+LOG: DT: 35694
+LOG: DT: 36006
+LOG: DT: 36319
+LOG: DT: 36631
+LOG: DT: 36944
+LOG: DT: 37256
+LOG: DT: 37569
+LOG: DT: 37881
+LOG: DT: 38194
+LOG: DT: 38506
+LOG: DT: 38819
+LOG: DT: 39131
+LOG: DT: 39444
+LOG: DT: 39756
+LOG: DT: 40069
+LOG: DT: 40381
+LOG: DT: 40694
+LOG: DT: 41006
+LOG: DT: 41319
+LOG: DT: 41631
+LOG: DT: 41944
+LOG: DT: 42256
+LOG: DT: 42569
+LOG: DT: 42881
+LOG: DT: 43194
+LOG: DT: 43506
+LOG: DT: 43819
+LOG: DT: 44131
+LOG: DT: 44444
+LOG: DT: 44756
+LOG: DT: 45069
+LOG: DT: 45381
+LOG: DT: 45694
+LOG: DT: 46006
+LOG: DT: 46319
+LOG: DT: 46631
+LOG: DT: 46944
+LOG: DT: 47256
+LOG: DT: 47569
+LOG: DT: 47881
+LOG: DT: 48194
+LOG: DT: 48506
+LOG: DT: 48819
+LOG: DT: 49131
+LOG: DT: 49444
+LOG: DT: 49756
+LOG: DT: 50069
+LOG: DT: 50381
+LOG: DT: 50694
+LOG: DT: 51006
+LOG: DT: 51319
+LOG: DT: 51631
+LOG: DT: 51944
+LOG: DT: 52256
+LOG: DT: 52569
+LOG: DT: 52881
+LOG: DT: 53194
+LOG: DT: 53506
+LOG: DT: 53819
+LOG: DT: 54131
+LOG: DT: 54444
+LOG: DT: 54756
+LOG: DT: 55069
+LOG: DT: 55381
+LOG: DT: 55694
+LOG: DT: 56006
+LOG: DT: 56319
+LOG: DT: 56631
+LOG: DT: 56944
+LOG: DT: 57256
+LOG: DT: 57569
+LOG: DT: 57881
+LOG: DT: 58194
+LOG: DT: 58506
+LOG: DT: 58819
+LOG: DT: 59131
+LOG: DT: 59444
+LOG: DT: 59756
+LOG: DT: 60069
+LOG: DT: 60381
+LOG: DT: 60694
+LOG: DT: 61007
+LOG: DT: 61319
+LOG: DT: 61632
+LOG: DT: 61944
+LOG: DT: 62257
+LOG: DT: 62569
+LOG: DT: 62882
+LOG: DT: 63194
+LOG: DT: 63507
+LOG: DT: 63819
+LOG: DT: 64132
+LOG: DT: 64444
+LOG: DT: 64757
+LOG: DT: 65069
+LOG: DT: 65382
+LOG: DT: 158
+LOG: DT: 471
+LOG: DT: 783
+LOG: DT: 1096
+LOG: DT: 1408
+LOG: DT: 1721
+LOG: DT: 2033
+LOG: DT: 2346
+LOG: DT: 2658
+LOG: DT: 2971
+LOG: DT: 3283
+LOG: DT: 3596
+LOG: DT: 3908
+LOG: DT: 4221
+LOG: DT: 4533
+LOG: DT: 4846
+LOG: DT: 5158
+LOG: DT: 5471
+LOG: DT: 5783
+LOG: DT: 6096
+LOG: DT: 6408
+LOG: DT: 6721
+LOG: DT: 7033
+LOG: DT: 7346
+LOG: DT: 7658
+LOG: DT: 7971
+LOG: DT: 8283
+LOG: DT: 8596
+LOG: DT: 8908
+LOG: DT: 9221
+LOG: DT: 9533
+LOG: DT: 9846
+LOG: DT: 10158
+LOG: DT: 10471
+LOG: DT: 10783
+LOG: DT: 11096
+LOG: DT: 11408
+LOG: DT: 11721
+LOG: DT: 12033
+LOG: DT: 12346
+LOG: DT: 12658
+LOG: DT: 12971
+LOG: DT: 13283
+LOG: DT: 13596
+LOG: DT: 13908
+LOG: DT: 14221
+LOG: DT: 14533
+LOG: DT: 14846
+LOG: DT: 15158
+LOG: DT: 15471
+LOG: DT: 15783
+LOG: DT: 16096
+LOG: DT: 16408
+LOG: DT: 16721
+LOG: DT: 17033
+LOG: DT: 17346
+LOG: DT: 17658
+LOG: DT: 17971
+LOG: DT: 18283
+LOG: DT: 18596
+LOG: DT: 18908
+LOG: DT: 19221
+LOG: DT: 19533
+LOG: DT: 19846
+LOG: DT: 20158
+LOG: DT: 20471
+LOG: DT: 20784
+LOG: DT: 21096
+LOG: DT: 21409
+LOG: DT: 21721
+LOG: DT: 22034
+LOG: DT: 22346
+LOG: DT: 22659
+LOG: DT: 22971
+LOG: DT: 23284
+LOG: DT: 23596
+LOG: DT: 23909
+LOG: DT: 24221
+LOG: DT: 24534
+LOG: DT: 24846
+LOG: DT: 25159
+LOG: DT: 25471
+LOG: DT: 25784
+LOG: DT: 26096
+LOG: DT: 26409
+LOG: DT: 26721
+LOG: DT: 27034
+LOG: DT: 27346
+LOG: DT: 27659
+LOG: DT: 27971
+LOG: DT: 28284
+LOG: DT: 28596
+LOG: DT: 28909
+LOG: DT: 29221
+LOG: DT: 29534
+LOG: DT: 29846
+LOG: DT: 30159
+LOG: DT: 30471
+LOG: DT: 30784
+LOG: DT: 31096
+LOG: DT: 31409
+LOG: DT: 31721
+LOG: DT: 32034
+LOG: DT: 32346
+LOG: DT: 32659
+LOG: DT: 32971
+LOG: DT: 33284
+LOG: DT: 33596
+LOG: DT: 33909
+LOG: DT: 34221
+LOG: DT: 34534
+LOG: DT: 34846
+LOG: DT: 35159
+LOG: DT: 35471
+LOG: DT: 35784
+LOG: DT: 36096
+LOG: DT: 36409
+LOG: DT: 36721
+LOG: DT: 37034
+LOG: DT: 37346
+LOG: DT: 37659
+LOG: DT: 37971
+LOG: DT: 38284
+LOG: DT: 38596
+LOG: DT: 38909
+LOG: DT: 39221
+LOG: DT: 39534
+LOG: DT: 39846
+LOG: DT: 40159
+LOG: DT: 40471
+LOG: DT: 40784
+LOG: DT: 41096
+LOG: DT: 41409
+LOG: DT: 41721
+LOG: DT: 42034
+LOG: DT: 42346
+LOG: DT: 42659
+LOG: DT: 42971
+LOG: DT: 43284
+LOG: DT: 43596
+LOG: DT: 43909
+LOG: DT: 44221
+LOG: DT: 44534
+LOG: DT: 44846
+LOG: DT: 45159
+LOG: DT: 45471
+LOG: DT: 45784
+LOG: DT: 46096
+LOG: DT: 46409
+LOG: DT: 46722
+LOG: DT: 47034
+LOG: DT: 47347
+LOG: DT: 47659
+LOG: DT: 47972
+LOG: DT: 48284
+LOG: DT: 48597
+LOG: DT: 48909
+LOG: DT: 49222
+LOG: DT: 49534
+LOG: DT: 49847
+LOG: DT: 50159
+LOG: DT: 50472
+LOG: DT: 50784
+LOG: DT: 51097
+LOG: DT: 51409
+LOG: DT: 51722
+LOG: DT: 52034
+LOG: DT: 52347
+LOG: DT: 52659
+LOG: DT: 52972
+LOG: DT: 53284
+LOG: DT: 53597
+LOG: DT: 53909
+LOG: DT: 54222
+LOG: DT: 54534
+LOG: DT: 54847
+LOG: DT: 55159
+LOG: DT: 55472
+LOG: DT: 55784
+LOG: DT: 56097
+LOG: DT: 56409
+LOG: DT: 56722
+LOG: DT: 57034
+LOG: DT: 57347
+LOG: DT: 57659
+LOG: DT: 57972
+LOG: DT: 58284
+LOG: DT: 58597
+LOG: DT: 58909
+LOG: DT: 59222
+LOG: DT: 59534
+LOG: DT: 59847
+LOG: DT: 60159
+LOG: DT: 60472
+LOG: DT: 60784
+LOG: DT: 61097
+LOG: DT: 61409
+LOG: DT: 61722
+LOG: DT: 62034
+LOG: DT: 62347
+LOG: DT: 62659
+LOG: DT: 62972
+LOG: DT: 63284
+LOG: DT: 63597
+LOG: DT: 63909
+LOG: DT: 64222
+LOG: DT: 64534
+LOG: DT: 64847
+LOG: DT: 65159
+LOG: DT: 65472
+LOG: DT: 248
+LOG: DT: 561
+LOG: DT: 873
+LOG: DT: 1186
+LOG: DT: 1498
+LOG: DT: 1811
+LOG: DT: 2123
+LOG: DT: 2436
+LOG: DT: 2748
+LOG: DT: 3061
+LOG: DT: 3373
+LOG: DT: 3686
+LOG: DT: 3998
+LOG: DT: 4311
+LOG: DT: 4623
+LOG: DT: 4936
+LOG: DT: 5248
+LOG: DT: 5561
+LOG: DT: 5873
+LOG: DT: 6186
+LOG: DT: 6499
+LOG: DT: 6811
+LOG: DT: 7124
+LOG: DT: 7436
+LOG: DT: 7749
+LOG: DT: 8061
+LOG: DT: 8374
+LOG: DT: 8686
+LOG: DT: 8999
+LOG: DT: 9311
+LOG: DT: 9624
+LOG: DT: 9936
+LOG: DT: 10249
+LOG: DT: 10561
+LOG: DT: 10874
+LOG: DT: 11186
+LOG: DT: 11499
+LOG: DT: 11811
+LOG: DT: 12124
+LOG: DT: 12436
+LOG: DT: 12749
+LOG: IRX: Loading audsrv...
+LOG: IRX: Audsrv loaded!
+LOG: Path3 initialized
+LOG: Framebuffers, zBuffer set and allocated!
+LOG: Drawing environment initialized!
+LOG: Renderer core initialized!
+LOG: Renderer texture initialized!
+LOG: Clut set!
+LOG: Frustum planes initialized!
+LOG: RendererCore3D initialized!
+LOG: Creating audio semaphore
+LOG: AudioSong semaphore created
+LOG: Audio initialized!
+LOG: Initializing pad
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Enabling dual shock functions.
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad has pressure sensitive buttons? 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: # of actuators: 2
+LOG: padSetActAlign: 1
+LOG: Pad state changed
+LOG: Pad is ready!
+LOG: Pad initialized!
+LOG: background created!
+LOG: Button assets loaded in memory
+LOG: Button assets loaded in memory
+LOG: Button assets loaded in memory
+LOG: all assets loaded in memory
+LOG: DT: 915
+LOG: DT: 1228
+LOG: DT: 1540
+LOG: DT: 1853
+LOG: DT: 2165
+LOG: DT: 2478
+LOG: DT: 2790
+LOG: DT: 3103
+LOG: DT: 3415
+LOG: DT: 3728
+LOG: DT: 4040
+LOG: DT: 4353
+LOG: DT: 4665
+LOG: DT: 4978
+LOG: DT: 5290
+LOG: DT: 5603
+LOG: DT: 5915
+LOG: DT: 6228
+LOG: DT: 6540
+LOG: DT: 6853
+LOG: DT: 7165
+LOG: DT: 7478
+LOG: DT: 7790
+LOG: DT: 8103
+LOG: DT: 8415
+LOG: DT: 8728
+LOG: DT: 9040
+LOG: DT: 9353
+LOG: DT: 9665
+LOG: DT: 9978
+LOG: DT: 10290
+LOG: DT: 10603
+LOG: DT: 10915
+LOG: DT: 11228
+LOG: DT: 11540
+LOG: DT: 11853
+LOG: DT: 12165
+LOG: DT: 12478
+LOG: DT: 12790
+LOG: DT: 13103
+LOG: DT: 13415
+LOG: DT: 13728
+LOG: DT: 14040
+LOG: DT: 14353
+LOG: DT: 14665
+LOG: DT: 14978
+LOG: DT: 15290
+LOG: DT: 15603
+LOG: DT: 15915
+LOG: DT: 16228
+LOG: DT: 16540
+LOG: DT: 16853
+LOG: DT: 17165
+LOG: DT: 17478
+LOG: DT: 17790
+LOG: DT: 18103
+LOG: DT: 18415
+LOG: DT: 18728
+LOG: DT: 19040
+LOG: DT: 19353
+LOG: DT: 19665
+LOG: DT: 19978
+LOG: DT: 20290
+LOG: DT: 20603
+LOG: DT: 20915
+LOG: DT: 21228
+LOG: DT: 21540
+LOG: DT: 21853
+LOG: DT: 22165
+LOG: DT: 22478
+LOG: DT: 22790
+LOG: DT: 23103
+LOG: DT: 23415
+LOG: DT: 23728
+LOG: DT: 24041
+LOG: DT: 24353
+LOG: DT: 24666
+LOG: DT: 24978
+LOG: DT: 25291
+LOG: DT: 25603
+LOG: DT: 25916
+LOG: DT: 26228
+LOG: DT: 26541
+LOG: DT: 26853
+LOG: DT: 27166
+LOG: DT: 27478
+LOG: DT: 27791
+LOG: DT: 28103
+LOG: DT: 28416
+LOG: DT: 28728
+LOG: DT: 29041
+LOG: DT: 29353
+LOG: DT: 29666
+LOG: DT: 29978
+LOG: DT: 30291
+LOG: DT: 30603
+LOG: DT: 30916
+LOG: DT: 31228
+LOG: DT: 31541
+LOG: DT: 31853
+LOG: DT: 32166
+LOG: DT: 32478
+LOG: DT: 32791
+LOG: DT: 33103
+LOG: DT: 33416
+LOG: DT: 33728
+LOG: DT: 34041
+LOG: DT: 34353
+LOG: DT: 34666
+LOG: DT: 34978
+LOG: DT: 35291
+LOG: DT: 35603
+LOG: DT: 35916
+LOG: DT: 36228
+LOG: DT: 36541
+LOG: DT: 36853
+LOG: DT: 37166
+LOG: DT: 37478
+LOG: DT: 37791
+LOG: DT: 38103
+LOG: DT: 38416
+LOG: DT: 38728
+LOG: DT: 39041
+LOG: DT: 39353
+LOG: DT: 39666
+LOG: DT: 39978
+LOG: DT: 40291
+LOG: DT: 40603
+LOG: DT: 40916
+LOG: DT: 41228
+LOG: DT: 41541
+LOG: DT: 41853
+LOG: DT: 42166
+LOG: DT: 42478
+LOG: DT: 42791
+LOG: DT: 43103
+LOG: DT: 43416
+LOG: DT: 43728
+LOG: DT: 44041
+LOG: DT: 44353
+LOG: DT: 44666
+LOG: DT: 44978
+LOG: DT: 45291
+LOG: DT: 45603
+LOG: DT: 45916
+LOG: DT: 46228
+LOG: DT: 46541
+LOG: DT: 46853
+LOG: DT: 47166
+LOG: DT: 47478
+LOG: DT: 47791
+LOG: DT: 48103
+LOG: DT: 48416
+LOG: DT: 48728
+LOG: DT: 49041
+LOG: DT: 49354
+LOG: DT: 49666
+LOG: DT: 49979
+LOG: DT: 50291
+LOG: DT: 50604
+LOG: DT: 50916
+LOG: DT: 51229
+LOG: DT: 51541
+LOG: DT: 51854
+LOG: DT: 52166
+LOG: DT: 52479
+LOG: DT: 52791
+LOG: DT: 53104
+LOG: DT: 53416
+LOG: DT: 53729
+LOG: DT: 54041
+LOG: DT: 54354
+LOG: DT: 54666
+LOG: DT: 54979
+LOG: DT: 55291
+LOG: DT: 55604
+LOG: DT: 55916
+LOG: DT: 56229
+LOG: DT: 56541
+LOG: DT: 56854
+LOG: DT: 57166
+LOG: DT: 57479
+LOG: DT: 57791
+LOG: DT: 58104
+LOG: DT: 58416
+LOG: DT: 58729
+LOG: DT: 59041
+LOG: DT: 59354
+LOG: DT: 59666
+LOG: DT: 59979
+LOG: DT: 60291
+LOG: DT: 60604
+LOG: DT: 60916
+LOG: DT: 61229
+LOG: DT: 61541
+LOG: DT: 61854
+LOG: DT: 62166
+LOG: DT: 62479
+LOG: DT: 62791
+LOG: DT: 63104
+LOG: DT: 63416
+LOG: DT: 63729
+LOG: DT: 64041
+LOG: DT: 64354
+LOG: DT: 64666
+LOG: DT: 64979
+LOG: DT: 65291
+LOG: DT: 68
+LOG: DT: 380
+LOG: DT: 693
+LOG: DT: 1005
+LOG: DT: 1318
+LOG: DT: 1630
+LOG: DT: 1943
+LOG: DT: 2255
+LOG: DT: 2568
+LOG: DT: 2880
+LOG: DT: 3193
+LOG: DT: 3505
+LOG: DT: 3818
+LOG: DT: 4130
+LOG: DT: 4443
+LOG: DT: 4755
+LOG: DT: 5068
+LOG: DT: 5380
+LOG: DT: 5693
+LOG: DT: 6005
+LOG: DT: 6318
+LOG: DT: 6630
+LOG: DT: 6943
+LOG: DT: 7255
+LOG: DT: 7568
+LOG: DT: 7880
+LOG: DT: 8193
+LOG: DT: 8505
+LOG: DT: 8818
+LOG: DT: 9130
+LOG: DT: 9443
+LOG: DT: 9756
+LOG: DT: 10068
+LOG: DT: 10381
+LOG: DT: 10693
+LOG: DT: 11006
+LOG: DT: 11318
+LOG: DT: 11631
+LOG: DT: 11943
+LOG: DT: 12256
+LOG: DT: 12568
+LOG: DT: 12881
+LOG: DT: 13193
+LOG: DT: 13506
+LOG: DT: 13818
+LOG: DT: 14131
+LOG: DT: 14443
+LOG: DT: 14756
+LOG: DT: 15068
+LOG: DT: 15381
+LOG: DT: 15693
+LOG: DT: 16006
+LOG: DT: 16318
+LOG: DT: 16631
+LOG: DT: 16943
+LOG: DT: 17256
+LOG: DT: 17568
+LOG: DT: 17881
+LOG: DT: 18193
+LOG: DT: 18506
+LOG: DT: 18818
+LOG: DT: 19131
+LOG: DT: 19443
+LOG: DT: 19756
+LOG: DT: 20068
+LOG: DT: 20381
+LOG: DT: 20693
+LOG: DT: 21006
+LOG: DT: 21318
+LOG: DT: 21631
+LOG: DT: 21943
+LOG: DT: 22256
+LOG: DT: 22568
+LOG: DT: 22881
+LOG: DT: 23193
+LOG: DT: 23506
+LOG: DT: 23818
+LOG: DT: 24131
+LOG: DT: 24443
+LOG: DT: 24756
+LOG: DT: 25068
+LOG: DT: 25381
+LOG: DT: 25693
+LOG: DT: 26006
+LOG: DT: 26318
+LOG: DT: 26631
+LOG: DT: 26943
+LOG: DT: 27256
+LOG: DT: 27568
+LOG: DT: 27881
+LOG: DT: 28193
+LOG: DT: 28506
+LOG: DT: 28818
+LOG: DT: 29131
+LOG: DT: 29443
+LOG: DT: 29756
+LOG: DT: 30068
+LOG: DT: 30381
+LOG: DT: 30693
+LOG: DT: 31006
+LOG: DT: 31318
+LOG: DT: 31631
+LOG: DT: 31943
+LOG: DT: 32256
+LOG: DT: 32568
+LOG: DT: 32881
+LOG: DT: 33193
+LOG: DT: 33506
+LOG: DT: 33818
+LOG: DT: 34131
+LOG: DT: 34443
+LOG: DT: 34756
+LOG: DT: 35069
+LOG: DT: 35381
+LOG: DT: 35694
+LOG: DT: 36006
+LOG: DT: 36319
+LOG: DT: 36631
+LOG: DT: 36944
+LOG: DT: 37256
+LOG: DT: 37569
+LOG: DT: 37881
+LOG: DT: 38194
+LOG: DT: 38506
+LOG: DT: 38819
+LOG: DT: 39131
+LOG: DT: 39444
+LOG: DT: 39756
+LOG: DT: 40069
+LOG: DT: 40381
+LOG: DT: 40694
+LOG: DT: 41006
+LOG: DT: 41319
+LOG: DT: 41631
+LOG: DT: 41944
+LOG: DT: 42256
+LOG: DT: 42569
+LOG: DT: 42881
+LOG: DT: 43194
+LOG: DT: 43506
+LOG: DT: 43819
+LOG: DT: 44131
+LOG: DT: 44444
+LOG: DT: 44756
+LOG: DT: 45069
+LOG: DT: 45381
+LOG: DT: 45694
+LOG: DT: 46006
+LOG: DT: 46319
+LOG: DT: 46631
+LOG: DT: 46944
+LOG: DT: 47256
+LOG: DT: 47569
+LOG: DT: 47881
+LOG: DT: 48194
+LOG: DT: 48506
+LOG: DT: 48819
+LOG: DT: 49131
+LOG: DT: 49444
+LOG: DT: 49756
+LOG: DT: 50069
+LOG: DT: 50381
+LOG: DT: 50694
+LOG: DT: 51006
+LOG: DT: 51319
+LOG: DT: 51631
+LOG: DT: 51944
+LOG: DT: 52256
+LOG: DT: 52569
+LOG: DT: 52881
+LOG: DT: 53194
+LOG: DT: 53506
+LOG: DT: 53819
+LOG: DT: 54131
+LOG: DT: 54444
+LOG: DT: 54756
+LOG: DT: 55069
+LOG: DT: 55381
+LOG: DT: 55694
+LOG: DT: 56006
+LOG: DT: 56319
+LOG: DT: 56631
+LOG: DT: 56944
+LOG: DT: 57256
+LOG: DT: 57569
+LOG: DT: 57881
+LOG: DT: 58194
+LOG: DT: 58506
+LOG: DT: 58819
+LOG: DT: 59131
+LOG: DT: 59444
+LOG: DT: 59756
+LOG: DT: 60069
+LOG: DT: 60381
+LOG: DT: 60694
+LOG: DT: 61007
+LOG: DT: 61319
+LOG: DT: 61632
+LOG: DT: 61944
+LOG: DT: 62257
+LOG: DT: 62569
+LOG: DT: 62882
+LOG: DT: 63194
+LOG: DT: 63507
+LOG: DT: 63819
+LOG: DT: 64132
+LOG: DT: 64444
+LOG: DT: 64757
+LOG: DT: 65069
+LOG: DT: 65382
+LOG: DT: 158
+LOG: DT: 471
+LOG: DT: 783
+LOG: DT: 1096
+LOG: DT: 1408
+LOG: DT: 1721
+LOG: DT: 2033
+LOG: DT: 2346
+LOG: DT: 2658
+LOG: DT: 2971
+LOG: DT: 3283
+LOG: DT: 3596
+LOG: DT: 3908
+LOG: DT: 4221
+LOG: DT: 4533
+LOG: DT: 4846
+LOG: DT: 5158
+LOG: DT: 5471
+LOG: DT: 5783
+LOG: DT: 6096
+LOG: DT: 6408
+LOG: DT: 6721
+LOG: DT: 7033
+LOG: DT: 7346
+LOG: DT: 7658
+LOG: DT: 7971
+LOG: DT: 8283
+LOG: DT: 8596
+LOG: DT: 8908
+LOG: DT: 9221
+LOG: DT: 9533
+LOG: DT: 9846
+LOG: DT: 10158
+LOG: DT: 10471
+LOG: DT: 10783
+LOG: DT: 11096
+LOG: DT: 11408
+LOG: DT: 11721
+LOG: DT: 12033
+LOG: DT: 12346
+LOG: DT: 12658
+LOG: DT: 12971
+LOG: DT: 13283
+LOG: DT: 13596
+LOG: DT: 13908
+LOG: DT: 14221
+LOG: DT: 14533
+LOG: DT: 14846
+LOG: DT: 15158
+LOG: DT: 15471
+LOG: DT: 15783
+LOG: DT: 16096
+LOG: DT: 16408
+LOG: DT: 16721
+LOG: DT: 17033
+LOG: DT: 17346
+LOG: DT: 17658
+LOG: DT: 17971
+LOG: DT: 18283
+LOG: DT: 18596
+LOG: DT: 18908
+LOG: DT: 19221
+LOG: DT: 19533
+LOG: DT: 19846
+LOG: DT: 20158
+LOG: DT: 20471
+LOG: DT: 20784
+LOG: DT: 21096
+LOG: DT: 21409
+LOG: DT: 21721
+LOG: DT: 22034
+LOG: DT: 22346
+LOG: DT: 22659
+LOG: DT: 22971
+LOG: DT: 23284
+LOG: DT: 23596
+LOG: DT: 23909
+LOG: DT: 24221
+LOG: DT: 24534
+LOG: DT: 24846
+LOG: DT: 25159
+LOG: DT: 25471
+LOG: DT: 25784
+LOG: DT: 26096
+LOG: DT: 26409
+LOG: DT: 26721
+LOG: DT: 27034
+LOG: DT: 27346
+LOG: DT: 27659
+LOG: DT: 27971
+LOG: DT: 28284
+LOG: DT: 28596
+LOG: DT: 28909
+LOG: DT: 29221
+LOG: DT: 29534
+LOG: DT: 29846
+LOG: DT: 30159
+LOG: DT: 30471
+LOG: DT: 30784
+LOG: DT: 31096
+LOG: DT: 31409
+LOG: DT: 31721
+LOG: DT: 32034
+LOG: DT: 32346
+LOG: DT: 32659
+LOG: DT: 32971
+LOG: DT: 33284
+LOG: DT: 33596
+LOG: DT: 33909
+LOG: DT: 34221
+LOG: DT: 34534
+LOG: DT: 34846
+LOG: DT: 35159
+LOG: DT: 35471
+LOG: DT: 35784
+LOG: DT: 36096
+LOG: DT: 36409
+LOG: DT: 36721
+LOG: DT: 37034
+LOG: DT: 37346
+LOG: DT: 37659
+LOG: DT: 37971
+LOG: DT: 38284
+LOG: DT: 38596
+LOG: DT: 38909
+LOG: DT: 39221
+LOG: DT: 39534
+LOG: DT: 39846
+LOG: DT: 40159
+LOG: DT: 40471
+LOG: DT: 40784
+LOG: DT: 41096
+LOG: DT: 41409
+LOG: DT: 41721
+LOG: DT: 42034
+LOG: DT: 42346
+LOG: DT: 42659
+LOG: DT: 42971
+LOG: DT: 43284
+LOG: DT: 43596
+LOG: DT: 43909
+LOG: DT: 44221
+LOG: DT: 44534
+LOG: DT: 44846
+LOG: DT: 45159
+LOG: DT: 45471
+LOG: DT: 45784
+LOG: DT: 46096
+LOG: DT: 46409
+LOG: DT: 46722
+LOG: DT: 47034
+LOG: DT: 47347
+LOG: DT: 47659
+LOG: DT: 47972
+LOG: DT: 48284
+LOG: DT: 48597
+LOG: DT: 48909
+LOG: DT: 49222
+LOG: DT: 49534
+LOG: DT: 49847
+LOG: DT: 50159
+LOG: DT: 50472
+LOG: DT: 50784
+LOG: DT: 51097
+LOG: DT: 51409
+LOG: DT: 51722
+LOG: DT: 52034
+LOG: DT: 52347
+LOG: DT: 52659
+LOG: DT: 52972
+LOG: DT: 53284
+LOG: DT: 53597
+LOG: DT: 53909
+LOG: DT: 54222
+LOG: DT: 54534
+LOG: DT: 54847
+LOG: DT: 55159
+LOG: DT: 55472
+LOG: DT: 55784
+LOG: DT: 56097
+LOG: DT: 56409
+LOG: DT: 56722
+LOG: DT: 57034
+LOG: DT: 57347
+LOG: DT: 57659
+LOG: DT: 57972
+LOG: DT: 58284
+LOG: DT: 58597
+LOG: DT: 58909
+LOG: DT: 59222
+LOG: DT: 59534
+LOG: DT: 59847
+LOG: DT: 60159
+LOG: DT: 60472
+LOG: DT: 60784
+LOG: DT: 61097
+LOG: DT: 61409
+LOG: DT: 61722
+LOG: DT: 62034
+LOG: DT: 62347
+LOG: DT: 62659
+LOG: DT: 62972
+LOG: DT: 63284
+LOG: DT: 63597
+LOG: DT: 63909
+LOG: DT: 64222
+LOG: DT: 64534
+LOG: DT: 64847
+LOG: DT: 65159
+LOG: DT: 65472
+LOG: DT: 248
+LOG: DT: 561
+LOG: DT: 873
+LOG: DT: 1186
+LOG: DT: 1498
+LOG: DT: 1811
+LOG: DT: 2123
+LOG: DT: 2436
+LOG: DT: 2748
+LOG: DT: 3061
+LOG: DT: 3373
+LOG: DT: 3686
+LOG: DT: 3998
+LOG: DT: 4311
+LOG: DT: 4623
+LOG: DT: 4936
+LOG: DT: 5248
+LOG: DT: 5561
+LOG: DT: 5873
+LOG: DT: 6186
+LOG: DT: 6499
+LOG: DT: 6811
+LOG: DT: 7124
+LOG: DT: 7436
+LOG: DT: 7749
+LOG: DT: 8061
+LOG: DT: 8374
+LOG: DT: 8686
+LOG: DT: 8999
+LOG: DT: 9311
+LOG: DT: 9624
+LOG: DT: 9936
+LOG: DT: 10249
+LOG: DT: 10561
+LOG: DT: 10874
+LOG: DT: 11186
+LOG: DT: 11499
+LOG: DT: 11811
+LOG: DT: 12124
+LOG: DT: 12436
+LOG: DT: 12749
+LOG: DT: 13061
+LOG: DT: 13374
+LOG: DT: 13686
+LOG: DT: 13999
+LOG: DT: 14311
+LOG: DT: 14624
+LOG: DT: 14936
+LOG: DT: 15249
+LOG: DT: 15561
+LOG: DT: 15874
+LOG: DT: 16186
+LOG: DT: 16499
+LOG: DT: 16811
+LOG: DT: 17124
+LOG: DT: 17436
+LOG: DT: 17749
+LOG: DT: 18061
+LOG: DT: 18374
+LOG: DT: 18686
+LOG: DT: 18999
+LOG: DT: 19311
+LOG: DT: 19624
+LOG: DT: 19936
+LOG: DT: 20249
+LOG: DT: 20561
+LOG: DT: 20874
+LOG: DT: 21186
+LOG: DT: 21499
+LOG: DT: 21811
+LOG: DT: 22124
+LOG: DT: 22436
+LOG: DT: 22749
+LOG: DT: 23061
+LOG: DT: 23374
+LOG: DT: 23686
+LOG: DT: 23999
+LOG: DT: 24311
+LOG: DT: 24624
+LOG: DT: 24936
+LOG: DT: 25249
+LOG: DT: 25561
+LOG: DT: 25874
+LOG: DT: 26186
+LOG: DT: 26499
+LOG: DT: 26811
+LOG: DT: 27124
+LOG: DT: 27436
+LOG: DT: 27749
+LOG: DT: 28061
+LOG: DT: 28374
+LOG: DT: 28686
+LOG: DT: 28999
+LOG: DT: 29311
+LOG: DT: 29624
+LOG: DT: 29936
+LOG: DT: 30249
+LOG: DT: 30561
+LOG: DT: 30874
+LOG: DT: 31186
+LOG: DT: 31499
+LOG: DT: 31811
+LOG: DT: 32124
+LOG: DT: 32437
+LOG: DT: 32749
+LOG: DT: 33062
+LOG: DT: 33374
+LOG: DT: 33687
+LOG: DT: 33999
+LOG: DT: 34312
+LOG: DT: 34624
+LOG: DT: 34937
+LOG: DT: 35249
+LOG: DT: 35562
+LOG: DT: 35874
+LOG: DT: 36187
+LOG: DT: 36499
+LOG: DT: 36812
+LOG: DT: 37124
+LOG: DT: 37437
+LOG: DT: 37749
+LOG: DT: 38062
+LOG: DT: 38374
+LOG: DT: 38687
+LOG: DT: 38999
+LOG: DT: 39312
+LOG: DT: 39624
+LOG: DT: 39937
+LOG: DT: 40249
+LOG: DT: 40562
+LOG: DT: 40874
+LOG: DT: 41187
+LOG: DT: 41499
+LOG: DT: 41812
+LOG: DT: 42124
+LOG: DT: 42437
+LOG: DT: 42749
+LOG: DT: 43062
+LOG: DT: 43374
+LOG: DT: 43687
+LOG: DT: 43999
+LOG: DT: 44312
+LOG: DT: 44624
+LOG: DT: 44937
+LOG: DT: 45249
+LOG: DT: 45562
+LOG: DT: 45874
+LOG: DT: 46187
+LOG: DT: 46499
+LOG: DT: 46812
+LOG: DT: 47124
+LOG: DT: 47437
+LOG: DT: 47749
+LOG: DT: 48062
+LOG: DT: 48374
+LOG: DT: 48687
+LOG: DT: 48999
+LOG: DT: 49312
+LOG: DT: 49624
+LOG: DT: 49937
+LOG: DT: 50249
+LOG: DT: 50562
+LOG: DT: 50874
+LOG: DT: 51187
+LOG: DT: 51499
+LOG: DT: 51812
+LOG: DT: 52124
+LOG: DT: 52437
+LOG: DT: 52749
+LOG: DT: 53062
+LOG: DT: 53374
+LOG: DT: 53687
+LOG: DT: 53999
+LOG: DT: 54312
+LOG: DT: 54624
+LOG: DT: 54937
+LOG: DT: 55249
+LOG: DT: 55562
+LOG: DT: 55874
+LOG: DT: 56187
+LOG: DT: 56499
+LOG: DT: 56812
+LOG: DT: 57124
+LOG: DT: 57437
+LOG: DT: 57750
+LOG: DT: 58062
+LOG: DT: 58375
+LOG: DT: 58687
+LOG: DT: 59000
+LOG: DT: 59312
+LOG: DT: 59625
+LOG: DT: 59937
+LOG: DT: 60250
+LOG: DT: 60562
+LOG: DT: 60875
+LOG: DT: 61187
+LOG: DT: 61500
+LOG: DT: 61812
+LOG: DT: 62125
+LOG: DT: 62437
+LOG: DT: 62750
+LOG: DT: 63062
+LOG: DT: 63375
+LOG: DT: 63687
+LOG: DT: 64000
+LOG: DT: 64312
+LOG: DT: 64625
+LOG: DT: 64937
+LOG: DT: 65250
+LOG: DT: 26
+LOG: DT: 339
+LOG: DT: 651
+LOG: DT: 964
+LOG: DT: 1276
+LOG: DT: 1589
+LOG: DT: 1901
+LOG: DT: 2214
+LOG: DT: 2526
+LOG: DT: 2839
+LOG: DT: 3151
+LOG: DT: 3464
+LOG: DT: 3776
+LOG: DT: 4089
+LOG: DT: 4401
+LOG: DT: 4714
+LOG: DT: 5026
+LOG: DT: 5339
+LOG: DT: 5651
+LOG: DT: 5964
+LOG: DT: 6276
+LOG: DT: 6589
+LOG: DT: 6901
+LOG: DT: 7214
+LOG: DT: 7526
+LOG: DT: 7839
+LOG: DT: 8151
+LOG: DT: 8464
+LOG: DT: 8776
+LOG: DT: 9089
+LOG: DT: 9401
+LOG: DT: 9714
+LOG: DT: 10026
+LOG: DT: 10339
+LOG: DT: 10651
+LOG: DT: 10964
+LOG: DT: 11276
+LOG: DT: 11589
+LOG: DT: 11901
+LOG: DT: 12214
+LOG: DT: 12526
+LOG: DT: 12839
+LOG: DT: 13151
+LOG: DT: 13464
+LOG: DT: 13776
+LOG: DT: 14089
+LOG: DT: 14401
+LOG: DT: 14714
+LOG: DT: 15026
+LOG: DT: 15339
+LOG: DT: 15651
+LOG: DT: 15964
+LOG: DT: 16276
+LOG: DT: 16589
+LOG: DT: 16901
+LOG: DT: 17214
+LOG: DT: 17526
+LOG: DT: 17839
+LOG: DT: 18152
+LOG: DT: 18464
+LOG: DT: 18777
+LOG: DT: 19089
+LOG: DT: 19402
+LOG: DT: 19714
+LOG: DT: 20027
+LOG: DT: 20339
+LOG: DT: 20652
+LOG: DT: 20964
+LOG: DT: 21277
+LOG: DT: 21589
+LOG: DT: 21902
+LOG: DT: 22214
+LOG: DT: 22527
+LOG: DT: 22839
+LOG: DT: 23152
+LOG: DT: 23464
+LOG: DT: 23777
+LOG: DT: 24089
+LOG: DT: 24402
+LOG: DT: 24714
+LOG: DT: 25027
+LOG: DT: 25339
+LOG: DT: 25652
+LOG: DT: 25964
+LOG: DT: 26277
+LOG: DT: 26589
+LOG: DT: 26902
+LOG: DT: 27214
+LOG: DT: 27527
+LOG: DT: 27839
+LOG: DT: 28152
+LOG: DT: 28464
+LOG: DT: 28777
+LOG: DT: 29089
+LOG: DT: 29402
+LOG: DT: 29714
+LOG: DT: 30027
+LOG: DT: 30339
+LOG: DT: 30652
+LOG: DT: 30964
+LOG: DT: 31277
+LOG: DT: 31589
+LOG: DT: 31902
+LOG: DT: 32214
+LOG: DT: 32527
+LOG: DT: 32839
+LOG: DT: 33152
+LOG: DT: 33464
+LOG: DT: 33777
+LOG: DT: 34089
+LOG: DT: 34402
+LOG: DT: 34714
+LOG: DT: 35027
+LOG: DT: 35339
+LOG: DT: 35652
+LOG: DT: 35964
+LOG: DT: 36277
+LOG: DT: 36589
+LOG: DT: 36902
+LOG: DT: 37214
+LOG: DT: 37527
+LOG: DT: 37839
+LOG: DT: 38152
+LOG: DT: 38464
+LOG: DT: 38777
+LOG: DT: 39089
+LOG: DT: 39402
+LOG: DT: 39714
+LOG: DT: 40027
+LOG: DT: 40339
+LOG: DT: 40652
+LOG: DT: 40964
+LOG: DT: 41277
+LOG: DT: 41589
+LOG: DT: 41902
+LOG: DT: 42214
+LOG: DT: 42527
+LOG: DT: 42839
+LOG: DT: 43152
+LOG: DT: 43465
+LOG: DT: 43777
+LOG: DT: 44090
+LOG: DT: 44402
+LOG: DT: 44715
+LOG: DT: 45027
+LOG: DT: 45340
+LOG: DT: 45652
+LOG: DT: 45965
+LOG: DT: 46277
+LOG: DT: 46590
+LOG: DT: 46902
+LOG: DT: 47215
+LOG: DT: 47527
+LOG: DT: 47840
+LOG: DT: 48152
+LOG: DT: 48465
+LOG: DT: 48777
+LOG: DT: 49090
+LOG: DT: 49402
+LOG: DT: 49715
+LOG: DT: 50027
+LOG: DT: 50340
+LOG: DT: 50652
+LOG: DT: 50965
+LOG: DT: 51277
+LOG: DT: 51590
+LOG: DT: 51902
+LOG: DT: 52215
+LOG: DT: 52527
+LOG: DT: 52840
+LOG: DT: 53152
+LOG: DT: 53465
+LOG: DT: 53777
+LOG: DT: 54090
+LOG: DT: 54402
+LOG: DT: 54715
+LOG: DT: 55027
+LOG: DT: 55340
+LOG: DT: 55652
+LOG: DT: 55965
+LOG: DT: 56277
+LOG: DT: 56590
+LOG: DT: 56902
+LOG: DT: 57215
+LOG: DT: 57527
+LOG: DT: 57840
+LOG: DT: 58152
+LOG: DT: 58465
+LOG: DT: 58777
+LOG: DT: 59090
+LOG: DT: 59402
+LOG: DT: 59715
+LOG: DT: 60027
+LOG: DT: 60340
+LOG: DT: 60652
+LOG: DT: 60965
+LOG: DT: 61277
+LOG: DT: 61590
+LOG: DT: 61902
+LOG: DT: 62215
+LOG: DT: 62527
+LOG: DT: 62840
+LOG: DT: 63152
+LOG: DT: 63465
+LOG: DT: 63777
+LOG: DT: 64090
+LOG: DT: 64402
+LOG: DT: 64715
+LOG: DT: 65027
+LOG: DT: 65340
+LOG: DT: 116
+LOG: DT: 429
+LOG: DT: 741
+LOG: DT: 1054
+LOG: DT: 1366
+LOG: DT: 1679
+LOG: DT: 1991
+LOG: DT: 2304
+LOG: DT: 2616
+LOG: DT: 2929
+LOG: DT: 3241
+LOG: DT: 3554
+LOG: DT: 3867
+LOG: DT: 4179
+LOG: DT: 4492
+LOG: DT: 4804
+LOG: DT: 5117
+LOG: DT: 5429
+LOG: DT: 5742
+LOG: DT: 6054
+LOG: DT: 6367
+LOG: DT: 6679
+LOG: DT: 6992
+LOG: DT: 7304
+LOG: DT: 7617
+LOG: DT: 7929
+LOG: DT: 8242
+LOG: DT: 8554
+LOG: DT: 8867
+LOG: DT: 9179
+LOG: DT: 9492
+LOG: DT: 9804
+LOG: DT: 10117
+LOG: DT: 10429
+LOG: DT: 10742
+LOG: DT: 11054
+LOG: DT: 11367
+LOG: DT: 11679
+LOG: DT: 11992
+LOG: DT: 12304
+LOG: DT: 12617
+LOG: DT: 12929
+LOG: DT: 13242
+LOG: DT: 13554
+LOG: DT: 13867
+LOG: DT: 14179
+LOG: DT: 14492
+LOG: DT: 14804
+LOG: DT: 15117
+LOG: DT: 15429
+LOG: DT: 15742
+LOG: DT: 16054
+LOG: DT: 16367
+LOG: DT: 16679
+LOG: DT: 16992
+LOG: DT: 17304
+LOG: DT: 17617
+LOG: DT: 17929
+LOG: DT: 18242
+LOG: DT: 18554
+LOG: DT: 18867
+LOG: DT: 19179
+LOG: DT: 19492
+LOG: DT: 19804
+LOG: DT: 20117
+LOG: DT: 20429
+LOG: DT: 20742
+LOG: DT: 21054
+LOG: DT: 21367
+LOG: DT: 21679
+LOG: DT: 21992
+LOG: DT: 22304
+LOG: DT: 22617
+LOG: DT: 22929
+LOG: DT: 23242
+LOG: DT: 23554
+LOG: DT: 23867
+LOG: DT: 24179
+LOG: DT: 24492
+LOG: DT: 24804
+LOG: DT: 25117
+LOG: DT: 25429
+LOG: DT: 25742
+LOG: DT: 26054
+LOG: DT: 26367
+LOG: DT: 26679
+LOG: DT: 26992
+LOG: DT: 27304
+LOG: DT: 27617
+LOG: DT: 27929
+LOG: DT: 28242
+LOG: DT: 28554
+LOG: DT: 28867
+LOG: DT: 29180
+LOG: DT: 29492
+LOG: DT: 29805
+LOG: DT: 30117
+LOG: DT: 30430
+LOG: DT: 30742
+LOG: DT: 31055
+LOG: DT: 31367
+LOG: DT: 31680
+LOG: DT: 31992
+LOG: DT: 32305
+LOG: DT: 32617
+LOG: DT: 32930
+LOG: DT: 33242
+LOG: DT: 33555
+LOG: DT: 33867
+LOG: DT: 34180
+LOG: DT: 34492
+LOG: DT: 34805
+LOG: DT: 35117
+LOG: DT: 35430
+LOG: DT: 35742
+LOG: DT: 36055
+LOG: DT: 36367
+LOG: DT: 36680
+LOG: DT: 36992
+LOG: DT: 37305
+LOG: DT: 37617
+LOG: DT: 37930
+LOG: DT: 38242
+LOG: DT: 38555
+LOG: DT: 38867
+LOG: DT: 39180
+LOG: DT: 39492
+LOG: DT: 39805
+LOG: DT: 40117
+LOG: DT: 40430
+LOG: DT: 40742
+LOG: DT: 41055
+LOG: DT: 41367
+LOG: DT: 41680
+LOG: DT: 41992
+LOG: DT: 42305
+LOG: DT: 42617
+LOG: DT: 42930
+LOG: DT: 43242
+LOG: DT: 43555
+LOG: DT: 43867
+LOG: DT: 44180
+LOG: DT: 44492
+LOG: DT: 44805
+LOG: DT: 45117
+LOG: DT: 45430
+LOG: DT: 45742
+LOG: DT: 46055
+LOG: DT: 46367
+LOG: DT: 46680
+LOG: DT: 46992
+LOG: DT: 47305
+LOG: DT: 47617
+LOG: DT: 47930
+LOG: DT: 48242
+LOG: DT: 48555
+LOG: DT: 48867
+LOG: DT: 49180
+LOG: DT: 49492
+LOG: DT: 49805
+LOG: DT: 50117
+LOG: DT: 50430
+LOG: DT: 50742
+LOG: DT: 51055
+LOG: DT: 51367
+LOG: DT: 51680
+LOG: DT: 51992
+LOG: DT: 52305
+LOG: DT: 52617
+LOG: DT: 52930
+LOG: DT: 53242
+LOG: DT: 53555
+LOG: DT: 53867
+LOG: DT: 54180
+LOG: DT: 54492
+LOG: DT: 54805
+LOG: DT: 55118
+LOG: DT: 55430
+LOG: DT: 55743
+LOG: DT: 56055
+LOG: DT: 56368
+LOG: DT: 56680
+LOG: DT: 56993
+LOG: DT: 57305
+LOG: DT: 57618
+LOG: DT: 57930
+LOG: DT: 58243
+LOG: DT: 58555
+LOG: DT: 58868
+LOG: DT: 59180
+LOG: DT: 59493
+LOG: DT: 59805
+LOG: DT: 60118
+LOG: DT: 60430
+LOG: DT: 60743
+LOG: DT: 61055
+LOG: DT: 61368
+LOG: DT: 61680
+LOG: DT: 61993
+LOG: DT: 62305
+LOG: DT: 62618
+LOG: DT: 62930
+LOG: DT: 63243
+LOG: DT: 63555
+LOG: DT: 63868
+LOG: DT: 64180
+LOG: DT: 64493
+LOG: DT: 64805
+LOG: DT: 65118
+LOG: DT: 65430
+LOG: DT: 207
+LOG: DT: 519
+LOG: DT: 832
+LOG: DT: 1144
+LOG: DT: 1457
+LOG: DT: 1769
+LOG: DT: 2082
+LOG: DT: 2394
+LOG: DT: 2707
+LOG: DT: 3019
+LOG: DT: 3332
+LOG: DT: 3644
+LOG: DT: 3957
+LOG: DT: 4269
+LOG: DT: 4582
+LOG: DT: 4894
+LOG: DT: 5207
+LOG: DT: 5519
+LOG: DT: 5832
+LOG: DT: 6144
+LOG: DT: 6457
+LOG: DT: 6769
+LOG: DT: 7082
+LOG: DT: 7394
+LOG: DT: 7707
+LOG: DT: 8019
+LOG: DT: 8332
+LOG: DT: 8644
+LOG: DT: 8957
+LOG: DT: 9269
+LOG: DT: 9582
+LOG: DT: 9894
+LOG: DT: 10207
+LOG: DT: 10519
+LOG: DT: 10832
+LOG: DT: 11144
+LOG: DT: 11457
+LOG: DT: 11769
+LOG: DT: 12082
+LOG: DT: 12394
+LOG: DT: 12707
+LOG: DT: 13019
+LOG: DT: 13332
+LOG: DT: 13644
+LOG: DT: 13957
+LOG: DT: 14269
+LOG: DT: 14582
+LOG: DT: 14895
+LOG: DT: 15207
+LOG: DT: 15520
+LOG: DT: 15832
+LOG: DT: 16145
+LOG: DT: 16457
+LOG: DT: 16770
+LOG: DT: 17082
+LOG: DT: 17395
+LOG: DT: 17707
+LOG: DT: 18020
+LOG: DT: 18332
+LOG: DT: 18645
+LOG: DT: 18957
+LOG: DT: 19270
+LOG: DT: 19582
+LOG: DT: 19895
+LOG: DT: 20207
+LOG: DT: 20520
+LOG: DT: 20832
+LOG: DT: 21145
+LOG: DT: 21457
+LOG: DT: 21770
+LOG: DT: 22082
+LOG: DT: 22395
+LOG: DT: 22707
+LOG: DT: 23020
+LOG: DT: 23332
+LOG: DT: 23645
+LOG: DT: 23957
+LOG: DT: 24270
+LOG: DT: 24582
+LOG: DT: 24895
+LOG: DT: 25207
+LOG: DT: 25520
+LOG: DT: 25832
+LOG: DT: 26145
+LOG: DT: 26457
+LOG: DT: 26770
+LOG: DT: 27082
+LOG: DT: 27395
+LOG: DT: 27707
+LOG: DT: 28020
+LOG: DT: 28332
+LOG: DT: 28645
+LOG: DT: 28957
+LOG: DT: 29270
+LOG: DT: 29582
+LOG: DT: 29895
+LOG: DT: 30207
+LOG: DT: 30520
+LOG: DT: 30832
+LOG: DT: 31145
+LOG: DT: 31457
+LOG: DT: 31770
+LOG: DT: 32082
+LOG: DT: 32395
+LOG: DT: 32707
+LOG: DT: 33020
+LOG: DT: 33332
+LOG: DT: 33645
+LOG: DT: 33957
+LOG: DT: 34270
+LOG: DT: 34582
+LOG: DT: 34895
+LOG: DT: 35207
+LOG: DT: 35520
+LOG: DT: 35832
+LOG: DT: 36145
+LOG: DT: 36457
+LOG: DT: 36770
+LOG: DT: 37082
+LOG: DT: 37395
+LOG: DT: 37707
+LOG: DT: 38020
+LOG: DT: 38332
+LOG: DT: 38645
+LOG: DT: 38957
+LOG: DT: 39270
+LOG: DT: 39582
+LOG: DT: 39895
+LOG: DT: 40207
+LOG: DT: 40520
+LOG: DT: 40833
+LOG: DT: 41145
+LOG: DT: 41458
+LOG: DT: 41770
+LOG: DT: 42083
+LOG: DT: 42395
+LOG: DT: 42708
+LOG: DT: 43020
+LOG: DT: 43333
+LOG: DT: 43645
+LOG: DT: 43958
+LOG: DT: 44270
+LOG: DT: 44583
+LOG: DT: 44895
+LOG: DT: 45208
+LOG: DT: 45520
+LOG: DT: 45833
+LOG: DT: 46145
+LOG: DT: 46458
+LOG: DT: 46770
+LOG: DT: 47083
+LOG: DT: 47395
+LOG: DT: 47708
+LOG: DT: 48020
+LOG: DT: 48333
+LOG: DT: 48645
+LOG: DT: 48958
+LOG: DT: 49270
+LOG: DT: 49583
+LOG: DT: 49895
+LOG: DT: 50208
+LOG: DT: 50520
+LOG: DT: 50833
+LOG: DT: 51145
+LOG: DT: 51458
+LOG: DT: 51770
+LOG: DT: 52083
+LOG: DT: 52395
+LOG: DT: 52708
+LOG: DT: 53020
+LOG: DT: 53333
+LOG: DT: 53645
+LOG: DT: 53958
+LOG: DT: 54270
+LOG: DT: 54583
+LOG: DT: 54895
+LOG: DT: 55208
+LOG: DT: 55520
+LOG: DT: 55833
+LOG: DT: 56145
+LOG: DT: 56458
+LOG: DT: 56770
+LOG: DT: 57083
+LOG: DT: 57395
+LOG: DT: 57708
+LOG: DT: 58020
+LOG: DT: 58333
+LOG: DT: 58645
+LOG: DT: 58958
+LOG: DT: 59270
+LOG: DT: 59583
+LOG: DT: 59895
+LOG: DT: 60208
+LOG: DT: 60520
+LOG: DT: 60833
+LOG: DT: 61145
+LOG: DT: 61458
+LOG: DT: 61770
+LOG: DT: 62083
+LOG: DT: 62395
+LOG: DT: 62708
+LOG: DT: 63020
+LOG: DT: 63333
+LOG: DT: 63645
+LOG: DT: 63958
+LOG: DT: 64270
+LOG: DT: 64583
+LOG: DT: 64895
+LOG: DT: 65208
+LOG: DT: 65520
+LOG: DT: 297
+LOG: DT: 609
+LOG: DT: 922
+LOG: DT: 1235
+LOG: DT: 1547
+LOG: DT: 1860
+LOG: DT: 2172
+LOG: DT: 2485
+LOG: DT: 2797
+LOG: DT: 3110
+LOG: DT: 3422
+LOG: DT: 3735
+LOG: DT: 4047
+LOG: DT: 4360
+LOG: DT: 4672
+LOG: DT: 4985
+LOG: DT: 5297
+LOG: DT: 5610
+LOG: DT: 5922
+LOG: DT: 6235
+LOG: DT: 6547
+LOG: DT: 6860
+LOG: DT: 7172
+LOG: DT: 7485
+LOG: DT: 7797
+LOG: DT: 8110
+LOG: DT: 8422
+LOG: DT: 8735
+LOG: DT: 9047
+LOG: DT: 9360
+LOG: DT: 9672
+LOG: DT: 9985
+LOG: DT: 10297
+LOG: DT: 10610
+LOG: DT: 10922
+LOG: DT: 11235
+LOG: DT: 11547
+LOG: DT: 11860
+LOG: DT: 12172
+LOG: DT: 12485
+LOG: DT: 12797
+LOG: DT: 13110
+LOG: DT: 13422
+LOG: DT: 13735
+LOG: DT: 14047
+LOG: DT: 14360
+LOG: DT: 14672
+LOG: DT: 14985
+LOG: DT: 15297
+LOG: DT: 15610
+LOG: DT: 15922
+LOG: DT: 16235
+LOG: DT: 16547
+LOG: DT: 16860
+LOG: DT: 17172
+LOG: DT: 17485
+LOG: DT: 17797
+LOG: DT: 18110
+LOG: DT: 18422
+LOG: DT: 18735
+LOG: DT: 19047
+LOG: DT: 19360
+LOG: DT: 19672
+LOG: DT: 19985
+LOG: DT: 20297

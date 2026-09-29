@@ -1,7 +1,9 @@
 #include <tyra>
 #include "tap.hpp"
+#include "debug/debug.hpp"
 #include "game_state.hpp"
 #include "splash_screen.hpp"
+#include "time/timer.hpp"
 
 namespace Tyra {
 
@@ -45,6 +47,8 @@ void Tap::loop() {
         game_scene->draw();
     }
     renderer.endFrame();
+    game_state.dt = game_state.timer.getTimeDelta();
+    TYRA_LOG("DT: ", game_state.dt);
 }
 
 void Tap::loadSprite() {

@@ -1,4 +1,6 @@
-#include "button.hpp"
+#include "engine.hpp"
+#include "math/vec2.hpp"
+#include "renderer/core/2d/sprite/sprite.hpp"
 #include "renderer/models/color.hpp"
 #include "helper.hpp"
 #include <tyra>
@@ -92,3 +94,14 @@ void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite 
     font->scale = default_scale;
 }
 
+void draw_sprite(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height) {
+    sprite.mode = Tyra::SpriteMode::MODE_STRETCH;
+    sprite.size = Tyra::Vec2(width, height);
+    sprite.position.x = x;
+    sprite.position.y = y;
+    engine->renderer.renderer2D.render(sprite);
+}
+
+void draw_sprite_sheet() {
+
+}

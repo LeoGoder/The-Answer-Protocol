@@ -26,11 +26,7 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
             draw_text(this->engine, this->text, font, x, y, scale);
         else {
             draw_text_color(this->engine, this->text, font, x, y, Color::Yellow, 1.0f);
-            arrow.mode = Tyra::SpriteMode::MODE_STRETCH;
-            arrow.size = Tyra::Vec2(16.0f, 16.0f);
-            arrow.position.x = x - 10;
-            arrow.position.y = y;
-            this->engine->renderer.renderer2D.render(arrow);
+            draw_sprite(engine, this->arrow, x - 16 - 10, y, 16.0f, 16.0f);
         }
     }
     else {

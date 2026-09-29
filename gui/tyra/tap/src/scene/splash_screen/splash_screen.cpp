@@ -83,11 +83,7 @@ void SplashScreen::draw_main_menu() {
     const std::string load = "Load";
     const std::string new_game = "New game";
     const std::string option = "Options";
-    mn_background.mode = Tyra::SpriteMode::MODE_STRETCH;
-    mn_background.size = Tyra::Vec2(256.0f, 256.0f);
-    mn_background.position =
-        Tyra::Vec2(screenSettings.getWidth() / 2.0F - mn_background.size.x / 2.0F,
-             screenSettings.getHeight() / 2.0F - mn_background.size.y / 2.0F);
+    draw_sprite(this->engine, this->mn_background, screenSettings.getWidth() / 2.0F - mn_background.size.x / 2.0F, screenSettings.getHeight() / 2.0F - mn_background.size.y / 2.0F, 256.0f, 256.0f);
     this->engine->renderer.renderer2D.render(mn_background);
     // draw here all options possible 
     this->button_list[0]->draw_button(&font, (screenSettings.getWidth() - this->button_list[0]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.3f), 1.0f);
