@@ -25,8 +25,16 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
         if (is_selected == false)
             draw_text(this->engine, this->text, font, x, y, scale);
         else {
+            if (this->flip_arrow_animation == false)
+                this->offset += speed;
+            if (this->flip_arrow_animation == true)
+                this->offset -= speed;
             draw_text_color(this->engine, this->text, font, x, y, Color::Yellow, 1.0f);
-            draw_sprite(engine, this->arrow, x - 16 - 10, y, 16.0f, 16.0f);
+            draw_sprite(engine, this->arrow, x - 16 - 10 - this->offset, y, 16.0f, 16.0f);
+            if (this->offset > 30)
+                this->flip_arrow_animation = true;
+            if (this->offset <= 0)
+                this->flip_arrow_animation = false;
         }
     }
     else {
