@@ -18,7 +18,8 @@ class GameState {
         GameScene *game_scene = nullptr;
     public:
         Tyra::Timer timer;
-        u32 dt;
+        u32 last_time;
+        float dt;
         Tyra::PipelineTextureMappingType texture_filter = Tyra::TyraNearest;
         GameState();
         ~GameState();

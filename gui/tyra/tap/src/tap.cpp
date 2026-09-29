@@ -1,4 +1,5 @@
 #include <tyra>
+#include <unistd.h>
 #include "tap.hpp"
 #include "debug/debug.hpp"
 #include "game_state.hpp"
@@ -15,6 +16,7 @@ Tap::~Tap() {
 
 void Tap::init() {
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
+    game_state.last_time = game_state.timer.getTimeDelta();
     engine->renderer.core.renderer2D.setTextureMappingType(game_state.texture_filter);
 }
 
@@ -47,7 +49,10 @@ void Tap::loop() {
         game_scene->draw();
     }
     renderer.endFrame();
-    game_state.dt = game_state.timer.getTimeDelta();
+    u32 current_time = game_state.timer.getTimeDelta();
+    u16 temp_dt = static_cast<u16>(current_time - game_state.last_time);
+    game_state.last_time = current_time;
+    game_state.dt = static_cast<float>(temp_dt) / 15625.0f;
     TYRA_LOG("DT: ", game_state.dt);
 }
 
