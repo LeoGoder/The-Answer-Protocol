@@ -11,3 +11,4 @@ void draw_text(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font,
 void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font, float x, float y, Tyra::Color color, float scale);
 int get_text_len(const std::string text, float scale);
 void draw_sprite(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height);
+void draw_sprite_sheet(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height, int frame, int columns);

@@ -53,7 +53,7 @@ void Tap::loop() {
     u16 temp_dt = static_cast<u16>(current_time - game_state.last_time);
     game_state.last_time = current_time;
     game_state.dt = static_cast<float>(temp_dt) / 15625.0f;
-    TYRA_LOG("DT: ", game_state.dt);
+    // TYRA_LOG("DT: ", game_state.dt);
 }
 
 void Tap::loadSprite() {

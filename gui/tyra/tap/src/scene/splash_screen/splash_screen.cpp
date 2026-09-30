@@ -15,9 +15,13 @@ void SplashScreen::load_background() {
     TYRA_LOG("background created!");
 }
 
-// temp function
-void temp_function() {
-    TYRA_LOG("salam");
+void change_to_sub_menu(int selected_id, State &current_state) {
+    if (selected_id == 0)
+        current_state = load_game;
+    else if (selected_id == 1)
+        current_state = new_game;
+    // else if (selected_id == 2)
+    //     current_state = new_game;
 }
 
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
@@ -31,9 +35,9 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     font_color.b = 128.0f;
     SplashScreen::load_background();
     selected_id = 0;
-    button_list.push_back(std::make_unique<Button>("Load", "None", temp_function, this->engine));
-    button_list.push_back(std::make_unique<Button>("New game", "None", temp_function, this->engine));
-    button_list.push_back(std::make_unique<Button>("Option", "None", temp_function, this->engine));
+    button_list.push_back(std::make_unique<Button>("Load", "None", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
+    button_list.push_back(std::make_unique<Button>("New game", "None", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
+    button_list.push_back(std::make_unique<Button>("Option", "None", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     TYRA_LOG("all assets loaded in memory");
 }
 
@@ -48,10 +52,11 @@ SplashScreen::~SplashScreen() {
 }
 
 void SplashScreen::update() {
+    const float joy_center_value = 128.0f;
     float speed = 3.0f;
     if (font_color.b <= 0)
         color_sens = true;
-    if (font_color.b >= 128.0f)
+    if (font_color.b >= joy_center_value)
         color_sens = false;
     if (color_sens == false)
         font_color.b -= speed;
@@ -67,6 +72,14 @@ void SplashScreen::update() {
             loop_button_lst(this->engine, this->button_list, this->selected_id, this->is_left_joy_centered);
             break;
         }
+        case new_game:
+            if (pad.getClicked().Circle)
+                current_state = main_menu;
+            break;
+        case load_game:
+            if (pad.getClicked().Circle)
+                current_state = main_menu;
+            break;
         default:
             break;
     }
@@ -85,7 +98,7 @@ void SplashScreen::draw_main_menu() {
     const std::string option = "Options";
     draw_sprite(this->engine, this->mn_background, screenSettings.getWidth() / 2.0F - mn_background.size.x / 2.0F, screenSettings.getHeight() / 2.0F - mn_background.size.y / 2.0F, 256.0f, 256.0f);
     this->engine->renderer.renderer2D.render(mn_background);
-    // draw here all options possible 
+    // draw here all options possible
     this->button_list[0]->draw_button(&font, (screenSettings.getWidth() - this->button_list[0]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.3f), 1.0f);
     this->button_list[1]->draw_button(&font, (screenSettings.getWidth() - this->button_list[1]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) - (mn_background.size.y * 0.0f), 1.0f);
     this->button_list[2]->draw_button(&font, (screenSettings.getWidth() - this->button_list[2]->get_size_text(1.0f)) / 2.0f, (screenSettings.getHeight() / 2) + (mn_background.size.y * 0.3f), 1.0f);
@@ -100,6 +113,11 @@ void SplashScreen::draw() {
         case main_menu:
             SplashScreen::draw_main_menu();
             break;
+        case new_game:
+            SplashScreen::draw_new_game();
+            break;
+        case load_game:
+            SplashScreen::draw_load_game();
         default:
             break;
     }

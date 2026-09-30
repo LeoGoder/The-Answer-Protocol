@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "math/vec2.hpp"
 #include "renderer/core/2d/sprite/sprite.hpp"
+#include "renderer/core/2d/sprite/sprite_mode.hpp"
 #include "renderer/models/color.hpp"
 #include "helper.hpp"
 #include <tyra>
@@ -102,6 +103,15 @@ void draw_sprite(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, f
     engine->renderer.renderer2D.render(sprite);
 }
 
-void draw_sprite_sheet() {
-
+void draw_sprite_sheet(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height, int frame, int columns) {
+    int col = frame % columns;
+    int row = frame / columns;
+    sprite.mode = Tyra::MODE_REPEAT;
+    sprite.size.set(width, height);
+    sprite.offset.set(
+            static_cast<float>(col) * width,
+            static_cast<float>(row) * height
+    );
+    sprite.position.set(x, y);
+    engine->renderer.renderer2D.render(sprite);
 }
