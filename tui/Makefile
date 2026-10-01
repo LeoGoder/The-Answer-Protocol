@@ -12,7 +12,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -pthread -MMD -MP \
 LDFLAGS = -L$(FTXUI_BUILD)
 LDLIBS = -lftxui-component -lftxui-dom -lftxui-screen
 
-SRC = src/main.cpp src/connexion.cpp src/image.cpp src/widget.cpp
+SRC = src/main.cpp src/connexion.cpp src/image.cpp src/widget.cpp src/parssing.cpp
 OBJ = $(SRC:src/%.cpp=.obj/%.o)
 
 all: $(TARGET)

@@ -17,6 +17,7 @@
 
 #include "../includes/connexion.hpp"
 #include "../includes/image.hpp"
+#include "../includes/parssing.hpp"
 
 using ftxui::borderRounded;
 using ftxui::CatchEvent;
@@ -35,10 +36,13 @@ using ftxui::text;
 using ftxui::vbox;
 using ftxui::window;
 using ftxui::yframe;
+using ftxui::color;
+using ftxui::Color;
 
 static std::vector<std::string> messages;
 static std::mutex messages_mutex;
 static std::atomic<bool> interface_active{true};
+static std::atomic<bool> attente_look{false};
 
 static void ajouterMessage(const std::string& msg) {
     std::lock_guard<std::mutex> lock(messages_mutex);
@@ -60,6 +64,23 @@ static void ecouterServeur(int socket_fd, ScreenInteractive& screen) {
             std::string ligne = reste.substr(0, pos);
             reste.erase(0, pos + 1);
             if (!ligne.empty() && ligne.back() == '\r') ligne.pop_back();
+
+            // Si on attend une réponse LOOK, tenter de la parser
+            if (attente_look.load() && ligne.substr(0, 3) == "OK ") {
+                RoomInfo room;
+                if (parseLookResponse(ligne, room)) {
+                    auto formatted = formatRoomInfo(room);
+                    for (const auto& line : formatted) {
+                        ajouterMessage(line);
+                    }
+                    attente_look = false;
+                    continue;
+                }
+            }
+            if (attente_look.load() && ligne.substr(0, 3) == "ERR") {
+                attente_look = false;
+            }
+
             ajouterMessage("Serveur: " + ligne);
         }
         screen.PostEvent(Event::Custom);
@@ -129,8 +150,19 @@ int main() {
         Elements msg_elements;
         {
             std::lock_guard<std::mutex> lock(messages_mutex);
+            std::string user_prefix = infos.pseudo + ": ";
             for (const auto& msg : messages) {
-                msg_elements.push_back(text(msg));
+                if (msg.substr(0, 9) == "Serveur: ") {
+                    msg_elements.push_back(
+                        hbox({text("Serveur: ") | color(Color::Cyan),
+                              text(msg.substr(9))}));
+                } else if (msg.substr(0, user_prefix.size()) == user_prefix) {
+                    msg_elements.push_back(
+                        hbox({text(user_prefix) | color(Color::Yellow),
+                              text(msg.substr(user_prefix.size()))}));
+                } else {
+                    msg_elements.push_back(text(msg));
+                }
             }
         }
         if (!msg_elements.empty()) {
@@ -176,7 +208,13 @@ int main() {
             return true;
         }
         if (!saisie.empty()) {
-            ajouterMessage("Moi: " + saisie);
+            // Détecter si c'est une commande LOOK
+            std::string cmd_upper = saisie;
+            for (auto& c : cmd_upper) c = static_cast<char>(std::toupper(c));
+            if (cmd_upper == "LOOK") {
+                attente_look = true;
+            }
+            ajouterMessage(infos.pseudo + ": " + saisie);
             std::string ligne = saisie + "\n";
             send(sock, ligne.c_str(), ligne.size(), 0);
             saisie.clear();
