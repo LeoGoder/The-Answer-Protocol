@@ -8,6 +8,7 @@ Button::Button(const std::string text, const std::string img_path, std::function
     this->img_path = img_path;
     this->engine = engine;
     this->callback = callback;
+    this->is_selected = false;
 
     load_image(&arrow, engine, "arrow.png");
     if (img_path != "None")
@@ -76,8 +77,10 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
     else if (left_joy_v >= 60 && left_joy_v <=  190)
         is_left_joy_centered = true;
 
-    if (pad.getClicked().Cross)
+    if (pad.getClicked().Cross) {
         button_list[selected_id]->on_click();
+        selected_id = 0;
+    }
     if (pad.getClicked().DpadDown || analog_down) {
         selected_id += 1;
         if (selected_id > button_list.size() - 1)

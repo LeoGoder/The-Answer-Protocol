@@ -82,8 +82,11 @@ void SplashScreen::update() {
             break;
         }
         case new_game:
-            if (pad.getClicked().Circle)
+            if (pad.getClicked().Circle) {
                 current_state = main_menu;
+                this->btn_save[this->selected_id]->set_is_selected(false);
+                this->selected_id = 0;
+            }
             loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered);
             break;
         case load_game:
