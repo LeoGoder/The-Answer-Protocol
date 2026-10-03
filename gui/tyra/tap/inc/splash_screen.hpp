@@ -24,6 +24,7 @@ class SplashScreen : public GameScene {
         bool is_left_joy_centered = false;
         State current_state = welcome;
         std::vector<std::unique_ptr<Button>> button_list;
+        std::vector<std::unique_ptr<Button>> btn_save;
         int selected_id;
     public:
         SplashScreen(Tyra::Engine* engine);

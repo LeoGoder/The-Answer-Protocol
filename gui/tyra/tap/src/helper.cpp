@@ -12,11 +12,13 @@ void load_image(Tyra::Sprite *sprite, Tyra::Engine* engine, std::string img_path
     auto &textureRepository = renderer.getTextureRepository();
     auto filepath = Tyra::FileUtils::fromCwd(img_path);
     auto *texture = textureRepository.add(filepath);
+
     texture->addLink(sprite->id);
 }
 
 int get_text_len(const std::string text, float scale) {
     int text_len = text.length() * (CHAR_WIDTH * scale);
+
     return text_len;
 }
 
@@ -40,11 +42,11 @@ void draw_text(Tyra::Engine *engine, const std::string text, Tyra::Sprite *font,
             temp_y += scaled_height;
             continue;
         }
+
         int ascii_value = static_cast<int>(c);
         int index = ascii_value - FIRST_CHAR;
         int col = index % CHAR_PER_ROW;
         int row = index / CHAR_PER_ROW;
-
         float offset_x = static_cast<float>(col * CHAR_WIDTH);
         float offset_y = static_cast<float>(row * CHAR_HEIGHT);
 
@@ -78,11 +80,11 @@ void draw_text_color(Tyra::Engine *engine, const std::string text, Tyra::Sprite 
             temp_y += scaled_height;
             continue;
         }
+
         int ascii_value = static_cast<int>(c);
         int index = ascii_value - FIRST_CHAR;
         int col = index % CHAR_PER_ROW;
         int row = index / CHAR_PER_ROW;
-
         float offset_x = static_cast<float>(col * CHAR_WIDTH);
         float offset_y = static_cast<float>(row * CHAR_HEIGHT);
 
@@ -100,12 +102,14 @@ void draw_sprite(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, f
     sprite.size = Tyra::Vec2(width, height);
     sprite.position.x = x;
     sprite.position.y = y;
+
     engine->renderer.renderer2D.render(sprite);
 }
 
 void draw_sprite_sheet(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height, int frame, int columns) {
     int col = frame % columns;
     int row = frame / columns;
+
     sprite.mode = Tyra::MODE_REPEAT;
     sprite.size.set(width, height);
     sprite.offset.set(

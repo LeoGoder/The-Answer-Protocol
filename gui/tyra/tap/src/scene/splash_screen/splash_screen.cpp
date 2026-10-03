@@ -3,6 +3,7 @@
 #include "debug/debug.hpp"
 #include "helper.hpp"
 #include "button.hpp"
+#include "save_load.hpp"
 
 void SplashScreen::load_background() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
@@ -24,6 +25,10 @@ void change_to_sub_menu(int selected_id, State &current_state) {
     //     current_state = new_game;
 }
 
+void temp_func() {
+    TYRA_LOG("salam 2 le retour");
+}
+
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
     this->engine = engine;
     // load_image(&background, engine, "oui.png");
@@ -38,6 +43,10 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     button_list.push_back(std::make_unique<Button>("Load", "None", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     button_list.push_back(std::make_unique<Button>("New game", "None", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     button_list.push_back(std::make_unique<Button>("Option", "None", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
+    for (int i = 1; i <= 4; i++) {
+        if (is_slot_used(i) == false)
+            btn_save.push_back(std::make_unique<Button>("Empty", "button_save_select.png", [this]() {temp_func();}, this->engine));
+    }
     TYRA_LOG("all assets loaded in memory");
 }
 
@@ -75,6 +84,7 @@ void SplashScreen::update() {
         case new_game:
             if (pad.getClicked().Circle)
                 current_state = main_menu;
+            loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered);
             break;
         case load_game:
             if (pad.getClicked().Circle)
@@ -93,9 +103,6 @@ void SplashScreen::draw_welcome_screen() {
 
 void SplashScreen::draw_main_menu() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
-    const std::string load = "Load";
-    const std::string new_game = "New game";
-    const std::string option = "Options";
     draw_sprite(this->engine, this->mn_background, screenSettings.getWidth() / 2.0F - mn_background.size.x / 2.0F, screenSettings.getHeight() / 2.0F - mn_background.size.y / 2.0F, 256.0f, 256.0f);
     this->engine->renderer.renderer2D.render(mn_background);
     // draw here all options possible

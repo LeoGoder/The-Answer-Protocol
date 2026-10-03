@@ -1,10 +1,20 @@
 #include <tyra>
 #include <unistd.h>
+#include <libmc.h>
+#include <loadfile.h>
 #include "tap.hpp"
 #include "debug/debug.hpp"
 #include "game_state.hpp"
 #include "splash_screen.hpp"
 #include "time/timer.hpp"
+
+// IRX modules
+extern "C" {
+extern unsigned char mcman_irx[];
+extern unsigned int size_mcman_irx;
+extern unsigned char mcserv_irx[];
+extern unsigned int size_mcserv_irx;
+}
 
 namespace Tyra {
 
@@ -15,6 +25,15 @@ Tap::~Tap() {
 }
 
 void Tap::init() {
+    int ret = 0;
+    int mod_res = 0;
+
+    ret = SifExecModuleBuffer(mcman_irx, size_mcman_irx, 0, nullptr, &mod_res);
+    TYRA_LOG("MCMAN: ret=", ret, ", mod_res=", mod_res);
+    ret = SifExecModuleBuffer(mcserv_irx, size_mcserv_irx, 0, nullptr, &mod_res);
+    TYRA_LOG("MCSERV: ret=", ret, ", mod_res=", mod_res);
+    int res = mcInit(MC_TYPE_MC);
+    TYRA_LOG("mcInit: res=", res);
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
     game_state.last_time = game_state.timer.getTimeDelta();
     engine->renderer.core.renderer2D.setTextureMappingType(game_state.texture_filter);
@@ -49,8 +68,10 @@ void Tap::loop() {
         game_scene->draw();
     }
     renderer.endFrame();
+
     u32 current_time = game_state.timer.getTimeDelta();
     u16 temp_dt = static_cast<u16>(current_time - game_state.last_time);
+
     game_state.last_time = current_time;
     game_state.dt = static_cast<float>(temp_dt) / 15625.0f;
     // TYRA_LOG("DT: ", game_state.dt);
