@@ -11,6 +11,7 @@
 #pragma once
 
 #include <sstream>
+#include <graph.h>
 #include <string>
 
 namespace Tyra {
@@ -19,7 +20,7 @@ class RendererSettings {
  public:
   RendererSettings()
       : width(512.0F),
-        height(448.0F),
+        height(graph_get_region() == GRAPH_MODE_PAL ? 576.0F : 448.0F),
         interlacedHeightF(height / 2),
         near(0.1F),
         far(51200.0F),

@@ -77,13 +77,13 @@ void RendererCoreGS::allocateBuffers() {
 
   // Interlacing tests
   // graph_set_mode(GRAPH_MODE_INTERLACED, GRAPH_MODE_NTSC, GRAPH_MODE_FRAME,
-  //                GRAPH_ENABLE);
+                 // GRAPH_ENABLE);
   // graph_set_screen(0, 0, static_cast<int>(settings->getWidth()),
-  //                  static_cast<int>(settings->getHeight()));
+                   // static_cast<int>(settings->getHeight()));
   // graph_set_bgcolor(0, 0, 0);
   // graph_set_framebuffer_filtered(frameBuffers[1].address,
   // frameBuffers[1].width,
-  //                                frameBuffers[1].psm, 0, 0);
+                                 // frameBuffers[1].psm, 0, 0);
   // graph_enable_output();
 
   TYRA_LOG("Framebuffers, zBuffer set and allocated!");
