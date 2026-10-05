@@ -1,13 +1,15 @@
 #include "../includes/parssing.hpp"
-#include "../includes/json.hpp"
 
 #include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "../lib/json.hpp"
 
 using json = nlohmann::json;
 
 bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
-    // La réponse du serveur commence par "OK " suivi du JSON
-    // Ex: OK {"room":{"id":"room.start","name":"Start Room",...},"players":[...],...}
     const std::string prefix = "OK ";
     if (raw_response.substr(0, prefix.size()) != prefix) {
         return false;
@@ -18,14 +20,14 @@ bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
     try {
         json j = json::parse(json_str);
 
-        // Parse room
         if (j.contains("room") && j["room"].is_object()) {
             const auto& room = j["room"];
             if (room.contains("id") && room["id"].is_string())
                 out.id = room["id"].get<std::string>();
             if (room.contains("name") && room["name"].is_string())
                 out.name = room["name"].get<std::string>();
-            if (room.contains("description") && room["description"].is_string())
+            if (room.contains(
+                    "description") && room["description"].is_string())
                 out.description = room["description"].get<std::string>();
             if (room.contains("exits") && room["exits"].is_object()) {
                 for (auto& [dir, target] : room["exits"].items()) {
@@ -35,7 +37,6 @@ bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
             }
         }
 
-        // Parse players
         if (j.contains("players") && j["players"].is_array()) {
             for (const auto& p : j["players"]) {
                 if (p.is_string())
@@ -43,7 +44,6 @@ bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
             }
         }
 
-        // Parse items
         if (j.contains("items") && j["items"].is_array()) {
             for (const auto& it : j["items"]) {
                 if (it.is_string())
@@ -51,7 +51,6 @@ bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
             }
         }
 
-        // Parse npcs
         if (j.contains("npcs") && j["npcs"].is_array()) {
             for (const auto& npc : j["npcs"]) {
                 if (npc.is_string())
@@ -71,7 +70,6 @@ static std::string joinList(const std::vector<std::string>& v) {
     std::string result;
     for (size_t i = 0; i < v.size(); ++i) {
         if (i > 0) result += ", ";
-        // Capitalize first letter for display
         std::string word = v[i];
         if (!word.empty())
             word[0] = static_cast<char>(std::toupper(word[0]));
@@ -80,14 +78,11 @@ static std::string joinList(const std::vector<std::string>& v) {
     return result;
 }
 
-// Extrait un nom lisible depuis un room_id (ex: "room.start" -> "Start")
 static std::string roomIdToName(const std::string& room_id) {
     std::string name = room_id;
-    // Retirer le préfixe "room." s'il existe
     size_t dot = name.find('.');
     if (dot != std::string::npos)
         name = name.substr(dot + 1);
-    // Capitalize
     if (!name.empty())
         name[0] = static_cast<char>(std::toupper(name[0]));
     return name;

@@ -3,12 +3,17 @@
 #include <unistd.h>
 
 #include <atomic>
+#include <cctype>
 #include <csignal>
 #include <cstring>
+#include <filesystem>  // NOLINT(build/c++17)
 #include <iostream>
+#include <memory>
 #include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include "ftxui/component/component.hpp"
@@ -67,12 +72,19 @@ static ftxui::Element shrinkable(ftxui::Element child) {
 
 static ftxui::Element wrapLine(const std::string& pseudo,
                                const std::string& contenu,
-                               ftxui::Color pseudo_color) {
+                               ftxui::Color pseudo_color,
+                               const std::string& channel = "") {
     if (pseudo.empty()) {
         return shrinkable(paragraph(contenu));
     }
+    std::string prefix;
+    if (!channel.empty()) {
+        prefix = pseudo + " (" + channel + "): ";
+    } else {
+        prefix = pseudo + ": ";
+    }
     return shrinkable(hbox({
-        text(pseudo + ": ") | color(pseudo_color),
+        text(prefix) | color(pseudo_color),
         shrinkable(paragraph(contenu)) | flex,
     }));
 }
@@ -80,6 +92,7 @@ static ftxui::Element wrapLine(const std::string& pseudo,
 struct ChatMessage {
     std::string pseudo;
     std::string contenu;
+    std::string channel;
     bool is_local;
 };
 
@@ -89,23 +102,156 @@ static std::vector<ChatMessage> chat_messages;
 static std::mutex chat_mutex;
 static std::atomic<bool> interface_active{true};
 static std::atomic<bool> attente_look{false};
-static std::atomic<bool> attente_chat_ok{false};
-static std::string user_pseudo;
-static std::string last_chat_msg;
+struct PendingChat {
+    std::string pseudo;
+    std::string contenu;
+    std::string channel;
+    std::string raw_command;
+};
+
+static std::queue<PendingChat> pending_chats;
+static std::mutex pending_chat_mutex;
 static std::mutex last_chat_mutex;
+static std::string* user_pseudo = new std::string();
+static std::string* last_chat_msg = new std::string();
+static std::string* last_chat_channel = new std::string();
+static std::string* current_map_image = new std::string(
+    "assets/maps/default.png");
+static std::mutex map_image_mutex;
+
+static std::string roomToMapPath(const std::string& room_id,
+                                 const std::string& room_name) {
+    std::vector<std::string> candidates;
+
+    if (!room_name.empty()) {
+        std::string clean = room_name;
+        for (char& c : clean) {
+            if (c == ' ' || c == '-' || c == '.') c = '_';
+            else c = static_cast<char>(std::tolower(c));
+        }
+
+        const std::string suffix = "_room";
+        if (clean.size() > suffix.size() &&
+            clean.substr(clean.size() - suffix.size()) == suffix) {
+            std::string prefix = clean.substr(0, clean.size() - suffix.size());
+            candidates.push_back("assets/maps/room_" + prefix + ".png");
+        } else if (clean.rfind("room_", 0) == 0) {
+            candidates.push_back("assets/maps/" + clean + ".png");
+        } else {
+            candidates.push_back("assets/maps/room_" + clean + ".png");
+            candidates.push_back("assets/maps/" + clean + ".png");
+        }
+    }
+
+    if (!room_id.empty()) {
+        std::string id_clean = room_id;
+        for (char& c : id_clean) {
+            if (c == '.' || c == ' ' || c == '-') c = '_';
+            else c = static_cast<char>(std::tolower(c));
+        }
+        candidates.push_back("assets/maps/" + id_clean + ".png");
+    }
+
+    for (const auto& path : candidates) {
+        if (std::filesystem::exists(path)) {
+            return path;
+        }
+    }
+
+    if (!candidates.empty()) {
+        return candidates[0];
+    }
+
+    return "assets/maps/default.png";
+}
 
 static void ajouterMessage(const std::string& pseudo,
                            const std::string& contenu,
                            bool is_local) {
     std::lock_guard<std::mutex> lock(messages_mutex);
-    messages.push_back({pseudo, contenu, is_local});
+    messages.push_back({pseudo, contenu, "", is_local});
 }
 
 static void ajouterChatMessage(const std::string& pseudo,
                                const std::string& contenu,
+                               const std::string& channel,
                                bool is_local) {
     std::lock_guard<std::mutex> lock(chat_mutex);
-    chat_messages.push_back({pseudo, contenu, is_local});
+    chat_messages.push_back({pseudo, contenu, channel, is_local});
+}
+
+struct ParsedChat {
+    bool is_chat = false;
+    std::string channel;
+    std::string message;
+    std::string command_to_send;
+};
+
+static ParsedChat parseChatCommand(const std::string& input) {
+    ParsedChat result;
+    size_t i = 0;
+    while (i < input.size() &&
+           std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    if (i >= input.size()) return result;
+
+    size_t cmd_start = i;
+    while (i < input.size() &&
+           !std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    std::string cmd = input.substr(cmd_start, i - cmd_start);
+    for (char& c : cmd) c = static_cast<char>(std::toupper(c));
+    if (cmd != "CHAT") return result;
+
+    while (i < input.size() &&
+           std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    if (i >= input.size()) return result;
+
+    size_t scope_start = i;
+    while (i < input.size() &&
+           !std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    std::string scope = input.substr(scope_start, i - scope_start);
+    for (char& c : scope) c = static_cast<char>(std::toupper(c));
+
+    std::string channel;
+    std::string wire_scope;
+    if (scope == "ROOM") {
+        channel = "ROOM";
+        wire_scope = "ROOM";
+    } else if (scope == "GLOBAL") {
+        channel = "GLOBAL";
+        wire_scope = "GLOBAL";
+    } else if (scope == "PARTY" || scope == "GROUP") {
+        channel = "PARTY";
+        wire_scope = "GROUP";
+    } else {
+        return result;
+    }
+
+    while (i < input.size() &&
+           std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    if (i >= input.size()) return result;
+
+    std::string msg = input.substr(i);
+    while (!msg.empty() &&
+           std::isspace(static_cast<unsigned char>(msg.back()))) {
+        msg.pop_back();
+    }
+    if (msg.empty()) return result;
+
+    result.is_chat = true;
+    result.channel = channel;
+    result.message = msg;
+    result.command_to_send = "CHAT " + wire_scope + " " + msg;
+    return result;
 }
 
 static void ecouterServeur(int socket_fd, ScreenInteractive& screen) {
@@ -124,13 +270,17 @@ static void ecouterServeur(int socket_fd, ScreenInteractive& screen) {
             reste.erase(0, pos + 1);
             if (!ligne.empty() && ligne.back() == '\r') ligne.pop_back();
 
-            // Si on attend une réponse LOOK, tenter de la parser
-            if (attente_look.load() && ligne.substr(0, 3) == "OK ") {
+            if ((attente_look.load() || ligne.rfind(
+                    "OK {", 0) == 0) && ligne.substr(0, 3) == "OK ") {
                 RoomInfo room;
                 if (parseLookResponse(ligne, room)) {
                     auto formatted = formatRoomInfo(room);
                     for (const auto& line : formatted) {
                         ajouterMessage("", line, false);
+                    }
+                    if (!room.name.empty() || !room.id.empty()) {
+                        std::lock_guard<std::mutex> lock(map_image_mutex);
+                        *current_map_image = roomToMapPath(room.id, room.name);
                     }
                     attente_look = false;
                     continue;
@@ -139,32 +289,79 @@ static void ecouterServeur(int socket_fd, ScreenInteractive& screen) {
             if (attente_look.load() && ligne.substr(0, 3) == "ERR") {
                 attente_look = false;
             }
-            // Supprimer le OK du serveur après une commande CHAT
-            if (attente_chat_ok.load() && ligne == "OK") {
-                attente_chat_ok = false;
-                continue;
-            }
-            // Intercepter les messages EVT ROOM CHAT pseudo message
-            const std::string evt_prefix = "EVT ROOM CHAT ";
-            if (ligne.size() > evt_prefix.size() &&
-                ligne.substr(0, evt_prefix.size()) == evt_prefix) {
-                std::string rest = ligne.substr(evt_prefix.size());
-                // Le premier mot est le pseudo, le reste est le message
-                size_t space = rest.find(' ');
-                if (space != std::string::npos) {
-                    std::string pseudo = rest.substr(0, space);
-                    std::string msg = rest.substr(space + 1);
-                    // Si c'est notre propre message renvoyé par le serveur, on l'ignore
+            if (ligne == "OK") {
+                bool was_pending_chat = false;
+                PendingChat pending;
+                {
+                    std::lock_guard<std::mutex> lock(pending_chat_mutex);
+                    if (!pending_chats.empty()) {
+                        pending = pending_chats.front();
+                        pending_chats.pop();
+                        was_pending_chat = true;
+                    }
+                }
+                if (was_pending_chat) {
+                    ajouterChatMessage(pending.pseudo, pending.contenu,
+                                       pending.channel, true);
                     {
                         std::lock_guard<std::mutex> lock(last_chat_mutex);
-                        if (pseudo == user_pseudo && msg == last_chat_msg) {
-                            last_chat_msg.clear();
+                        *last_chat_msg = pending.contenu;
+                        *last_chat_channel = pending.channel;
+                    }
+                    continue;
+                }
+            }
+            if (ligne.rfind("ERR", 0) == 0) {
+                bool was_pending_chat = false;
+                PendingChat pending;
+                {
+                    std::lock_guard<std::mutex> lock(pending_chat_mutex);
+                    if (!pending_chats.empty()) {
+                        pending = pending_chats.front();
+                        pending_chats.pop();
+                        was_pending_chat = true;
+                    }
+                }
+                if (was_pending_chat) {
+                    ajouterMessage(pending.pseudo, pending.raw_command, true);
+                }
+            }
+            std::string channel;
+            std::string evt_rest;
+            if (ligne.substr(0, 4) == "EVT ") {
+                std::string after_evt = ligne.substr(4);
+                if (after_evt.substr(0, 10) == "ROOM CHAT ") {
+                    channel = "ROOM";
+                    evt_rest = after_evt.substr(10);
+                } else if (after_evt.substr(0, 12) == "GLOBAL CHAT ") {
+                    channel = "GLOBAL";
+                    evt_rest = after_evt.substr(12);
+                } else if (after_evt.substr(0, 11) == "PARTY CHAT ") {
+                    channel = "PARTY";
+                    evt_rest = after_evt.substr(11);
+                } else if (after_evt.substr(0, 11) == "GROUP CHAT ") {
+                    channel = "PARTY";
+                    evt_rest = after_evt.substr(11);
+                }
+            }
+            if (!channel.empty()) {
+                size_t space = evt_rest.find(' ');
+                if (space != std::string::npos) {
+                    std::string pseudo = evt_rest.substr(0, space);
+                    std::string msg = evt_rest.substr(space + 1);
+                    {
+                        std::lock_guard<std::mutex> lock(last_chat_mutex);
+                        if (pseudo == *user_pseudo && msg == *last_chat_msg &&
+                            (last_chat_channel->empty() ||
+                             channel == *last_chat_channel)) {
+                            (*last_chat_msg).clear();
+                            (*last_chat_channel).clear();
                             continue;
                         }
                     }
-                    ajouterChatMessage(pseudo, msg, false);
+                    ajouterChatMessage(pseudo, msg, channel, false);
                 } else {
-                    ajouterChatMessage(rest, "", false);
+                    ajouterChatMessage(evt_rest, "", channel, false);
                 }
                 continue;
             }
@@ -184,51 +381,95 @@ int main() {
     std::signal(SIGPIPE, SIG_IGN);
 
     InfosConnexion infos;
-    if (!ecranConnexion(infos)) {
-        std::cout << "Connexion annulée.\n";
-        return 0;
-    }
+    std::string erreur_serveur;
+    int sock = -1;
 
-    int port = -1;
-    try {
-        port = std::stoi(infos.port);
-    } catch (...) {
-    }
-    if (port <= 0 || port > 65535) {
-        std::cerr << "Erreur : port invalide (" << infos.port << ").\n";
-        return 1;
-    }
+    while (true) {
+        if (!ecranConnexion(infos, erreur_serveur)) {
+            std::cout << "Connexion annulée.\n";
+            return 0;
+        }
 
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        std::cerr << "Erreur : Impossible de créer le socket.\n";
-        return 1;
-    }
+        int port = -1;
+        try {
+            port = std::stoi(infos.port);
+        } catch (...) {
+        }
+        if (port <= 0 || port > 65535) {
+            erreur_serveur = "Port invalide (" + infos.port + ").";
+            continue;
+        }
 
-    sockaddr_in serv_addr;
-    std::memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port   = htons(static_cast<uint16_t>(port));
-    if (inet_pton(AF_INET, infos.ip.c_str(), &serv_addr.sin_addr) <= 0) {
-        std::cerr << "Erreur : adresse IP invalide (" << infos.ip << ").\n";
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+        if (sock < 0) {
+            std::cerr << "Erreur : Impossible de créer le socket.\n";
+            return 1;
+        }
+
+        sockaddr_in serv_addr;
+        std::memset(&serv_addr, 0, sizeof(serv_addr));
+        serv_addr.sin_family = AF_INET;
+        serv_addr.sin_port   = htons(static_cast<uint16_t>(port));
+        if (inet_pton(AF_INET, infos.ip.c_str(), &serv_addr.sin_addr) <= 0) {
+            erreur_serveur = "Adresse IP invalide (" + infos.ip + ").";
+            close(sock);
+            sock = -1;
+            continue;
+        }
+
+        if (connect(sock, reinterpret_cast<sockaddr*>(&serv_addr),
+                    sizeof(serv_addr)) < 0) {
+            erreur_serveur = "Connexion au serveur échouée.";
+            close(sock);
+            sock = -1;
+            continue;
+        }
+
+        std::string cmd_connect = "CONNECT " + infos.pseudo + "\n";
+        send(sock, cmd_connect.c_str(), cmd_connect.size(), 0);
+
+        std::string reste;
+        char buf[1024];
+        int lignes_lues = 0;
+        bool connexion_ok = false;
+
+        while (lignes_lues < 2) {
+            ssize_t n = recv(sock, buf, sizeof(buf), 0);
+            if (n <= 0) {
+                erreur_serveur = "Le serveur a fermé la connexion.";
+                break;
+            }
+            reste.append(buf, static_cast<size_t>(n));
+
+            size_t pos;
+            while ((pos = reste.find(
+                    '\n')) != std::string::npos && lignes_lues < 2) {
+                std::string ligne = reste.substr(0, pos);
+                reste.erase(0, pos + 1);
+                if (!ligne.empty() && ligne.back() == '\r') ligne.pop_back();
+
+                lignes_lues++;
+                if (lignes_lues == 1) {
+                    continue;
+                }
+                if (ligne.substr(0, 2) == "OK") {
+                    connexion_ok = true;
+                } else {
+                    erreur_serveur = ligne;
+                }
+            }
+        }
+
+        if (connexion_ok) {
+            break;
+        }
+
         close(sock);
-        return 1;
+        sock = -1;
     }
 
-    std::cout << "Connexion à " << infos.ip << ":" << port << "...\n";
-    if (connect(sock, reinterpret_cast<sockaddr*>(&serv_addr),
-                sizeof(serv_addr)) < 0) {
-        std::cerr << "Erreur : Connexion au serveur échouée.\n";
-        close(sock);
-        return 1;
-    }
-
-    std::string cmd_connect = "CONNECT " + infos.pseudo + "\n";
-    std::cout << "[ENVOI SERVEUR] " << cmd_connect.substr(
-        0, cmd_connect.size() - 1)
-              << " (vers " << infos.ip << ":" << port << ")\n";
-    send(sock, cmd_connect.c_str(), cmd_connect.size(), 0);
-    user_pseudo = infos.pseudo;
+    int port = std::stoi(infos.port);
+    *user_pseudo = infos.pseudo;
 
     auto screen = ScreenInteractive::Fullscreen();
 
@@ -241,11 +482,14 @@ int main() {
             std::lock_guard<std::mutex> lock(messages_mutex);
             for (const auto& msg : messages) {
                 if (msg.pseudo.empty()) {
-                    msg_elements.push_back(wrapLine("", msg.contenu, Color::White));
+                    msg_elements.push_back(wrapLine("", msg.contenu,
+                        Color::White));
                 } else if (msg.is_local) {
-                    msg_elements.push_back(wrapLine(msg.pseudo, msg.contenu, Color::Cyan));
+                    msg_elements.push_back(wrapLine(msg.pseudo, msg.contenu,
+                        Color::Cyan));
                 } else {
-                    msg_elements.push_back(wrapLine(msg.pseudo, msg.contenu, Color::Yellow));
+                    msg_elements.push_back(wrapLine(msg.pseudo, msg.contenu,
+                        Color::Yellow));
                 }
             }
         }
@@ -266,21 +510,28 @@ int main() {
         Element terminal_panel = vbox({
             window(text(title),
                    vbox(msg_elements) | yframe | flex) | flex,
-            borderRounded(hbox({text(" > "), shrinkable(champ->Render()) | flex})),
+            borderRounded(hbox({text(" > "),
+                shrinkable(champ->Render()) | flex})),
         }) | flex;
 
+        std::string map_path;
+        {
+            std::lock_guard<std::mutex> lock(map_image_mutex);
+            map_path = *current_map_image;
+        }
         Element map_panel =
             window(text(" Map "),
-                   put_image("temp_image.png", 0, 0, false) | flex) | flex;
-        // Construire les éléments du chat
+                   put_image(map_path, 0, 0, false) | flex) | flex;
         Elements chat_elements;
         {
             std::lock_guard<std::mutex> lock(chat_mutex);
             for (const auto& msg : chat_messages) {
                 if (msg.is_local) {
-                    chat_elements.push_back(wrapLine(msg.pseudo, msg.contenu, Color::Cyan));
+                    chat_elements.push_back(wrapLine(msg.pseudo, msg.contenu,
+                        Color::Cyan, msg.channel));
                 } else {
-                    chat_elements.push_back(wrapLine(msg.pseudo, msg.contenu, Color::Yellow));
+                    chat_elements.push_back(wrapLine(msg.pseudo, msg.contenu,
+                        Color::Yellow, msg.channel));
                 }
             }
         }
@@ -309,39 +560,29 @@ int main() {
             return true;
         }
         if (!saisie.empty()) {
-            // Détecter si c'est une commande LOOK
             std::string cmd_upper = saisie;
             for (auto& c : cmd_upper) c = static_cast<char>(std::toupper(c));
+            if (cmd_upper == "QUIT") {
+                screen.Exit();
+                return true;
+            }
             if (cmd_upper == "LOOK") {
                 attente_look = true;
             }
-            // Détecter si c'est une commande CHAT (ex: "chat room bonjour")
-            bool is_chat = false;
-            if (cmd_upper.substr(0, 4) == "CHAT") {
-                // Extraire le message après "chat room " ou "chat "
-                std::string chat_msg;
-                if (cmd_upper.size() > 10 && cmd_upper.substr(0, 10) == "CHAT ROOM ") {
-                    chat_msg = saisie.substr(10);
-                } else if (saisie.size() > 5) {
-                    chat_msg = saisie.substr(5);
+            ParsedChat chat = parseChatCommand(saisie);
+            if (chat.is_chat) {
+                {
+                    std::lock_guard<std::mutex> lock(pending_chat_mutex);
+                    pending_chats.push({infos.pseudo, chat.message,
+                                        chat.channel, saisie});
                 }
-                if (!chat_msg.empty()) {
-                    ajouterChatMessage(infos.pseudo, chat_msg, true);
-                    // Stocker pour filtrer l'écho du serveur
-                    {
-                        std::lock_guard<std::mutex> lock(last_chat_mutex);
-                        last_chat_msg = chat_msg;
-                    }
-                    attente_chat_ok = true;
-                    is_chat = true;
-                }
-            }
-            // Ne pas afficher les commandes CHAT dans le terminal
-            if (!is_chat) {
+                std::string ligne = chat.command_to_send + "\n";
+                send(sock, ligne.c_str(), ligne.size(), 0);
+            } else {
                 ajouterMessage(infos.pseudo, saisie, true);
+                std::string ligne = saisie + "\n";
+                send(sock, ligne.c_str(), ligne.size(), 0);
             }
-            std::string ligne = saisie + "\n";
-            send(sock, ligne.c_str(), ligne.size(), 0);
             saisie.clear();
         }
         return true;

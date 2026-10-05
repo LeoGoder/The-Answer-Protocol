@@ -31,26 +31,24 @@ $(FTXUI_LIB):
 		-DFTXUI_BUILD_EXAMPLES=OFF -DFTXUI_BUILD_DOCS=OFF -DFTXUI_BUILD_TESTS=OFF
 	cmake --build $(FTXUI_BUILD) -j4
 
-run-server:
-	go run server.go
-
 run-client: all
 	./$(TARGET)
 
 clean:
 	rm -rf .obj $(TARGET)
 
-# Supprime aussi FTXUI (il sera re-téléchargé au prochain make)
-distclean: clean
+fclean: clean
 	rm -rf $(FTXUI_DIR)
 
-run: all run-server run-client
+run: all run-client
 
 re: clean run-client
 
 lint:
-	cpplint --filter=-legal/copyright --recursive src
+	cpplint --filter=-legal/copyright --recursive src includes
+
 
 -include $(OBJ:.o=.d)
 
-.PHONY: all clean distclean run lint run-server run-client re
+
+.PHONY: all clean fclean run lint run-client re

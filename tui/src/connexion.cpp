@@ -26,14 +26,14 @@ using ftxui::separator;
 using ftxui::text;
 using ftxui::vbox;
 
-bool ecranConnexion(InfosConnexion& infos) {
+bool ecranConnexion(InfosConnexion& infos, const std::string& erreur_initiale) {
     Component input_pseudo = Input(&infos.pseudo, "Ex: Alice");
     Component input_ip     = Input(&infos.ip, "Ex: 127.0.0.1");
     Component input_port   = Input(&infos.port, "Ex: 4242");
 
     auto screen = ScreenInteractive::TerminalOutput();
     bool valide = false;
-    std::string erreur;
+    std::string erreur = erreur_initiale;
 
     auto on_connect = [&] {
         if (infos.pseudo.empty()) {
