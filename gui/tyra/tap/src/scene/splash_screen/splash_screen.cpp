@@ -36,18 +36,26 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     load_image(&mn_background, engine, "main_menu.png");
     load_image(&arrow, engine, "arrow.png");
     load_image(&btn_background, engine, "button_save_select.png");
+    load_image(&keyboard, engine, "keyboard.png");
     font_color.a = 128.0f;
     font_color.r = 128.0f;
     font_color.g = 128.0f;
     font_color.b = 128.0f;
     SplashScreen::load_background();
     selected_id = 0;
+    // main menu button
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Load", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "New game", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Option", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
+    // new game button
     for (int i = 1; i <= 4; i++) {
         if (is_slot_used(i) == false)
             btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {temp_func();}, this->engine));
+    }
+    // player creation keyboard
+    for (int i = 65; i <= 90; i++) {
+        std::string str(1, static_cast<char>(i));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this]() {temp_func();}, this->engine));
     }
     TYRA_LOG("SPLASH_SCREEN: all assets loaded in memory");
 }
@@ -58,10 +66,7 @@ SplashScreen::~SplashScreen() {
     this->engine->renderer.getTextureRepository().freeBySprite(font);
     this->engine->renderer.getTextureRepository().freeBySprite(arrow);
     this->engine->renderer.getTextureRepository().freeBySprite(btn_background);
-    // for (int i = 0; i < 3; i++) {
-        // if (button_list[i]->get_img_path() != "None")
-            // this->engine->renderer.getTextureRepository().freeBySprite(*button_list[i]->get_sprite());
-    // }
+    this->engine->renderer.getTextureRepository().freeBySprite(keyboard);
 }
 
 void SplashScreen::update() {
@@ -94,6 +99,8 @@ void SplashScreen::update() {
                 this->selected_id = 0;
             }
             loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered);
+            break;
+        case create:
             break;
         case load_game:
             if (pad.getClicked().Circle)

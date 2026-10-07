@@ -9,7 +9,8 @@ enum State {
     welcome = 0,
     main_menu = 1,
     new_game = 2,
-    load_game = 3,
+    create = 3,
+    load_game = 4,
 };
 
 class SplashScreen : public GameScene {
@@ -20,6 +21,7 @@ class SplashScreen : public GameScene {
         Tyra::Sprite font;
         Tyra::Sprite arrow;
         Tyra::Sprite btn_background;
+        Tyra::Sprite keyboard;
         Tyra::Engine *engine;
         Tyra::Color font_color;
         bool color_sens = false;
@@ -27,6 +29,7 @@ class SplashScreen : public GameScene {
         State current_state = welcome;
         std::vector<std::unique_ptr<Button>> button_list;
         std::vector<std::unique_ptr<Button>> btn_save;
+        std::vector<std::unique_ptr<Button>> btn_keyboard;
         int selected_id;
     public:
         SplashScreen(Tyra::Engine* engine);
@@ -37,5 +40,6 @@ class SplashScreen : public GameScene {
         void draw_welcome_screen();
         void draw_main_menu();
         void draw_new_game();
+        void draw_create_player();
         void draw_load_game();
 };
