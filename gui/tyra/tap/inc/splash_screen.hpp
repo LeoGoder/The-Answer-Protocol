@@ -18,6 +18,8 @@ class SplashScreen : public GameScene {
         Tyra::Sprite background;
         Tyra::Sprite mn_background;
         Tyra::Sprite font;
+        Tyra::Sprite arrow;
+        Tyra::Sprite btn_background;
         Tyra::Engine *engine;
         Tyra::Color font_color;
         bool color_sens = false;

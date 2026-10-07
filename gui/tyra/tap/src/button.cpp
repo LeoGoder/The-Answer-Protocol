@@ -1,29 +1,28 @@
 #include "button.hpp"
-#include "debug/debug.hpp"
 #include "helper.hpp"
 #include "color.hpp"
+#include "renderer/core/2d/sprite/sprite.hpp"
 
-Button::Button(const std::string text, const std::string img_path, std::function<void()> callback, Tyra::Engine *engine) {
-    this->text = text;
-    this->img_path = img_path;
+Button::Button(Tyra::Sprite *arrow, Tyra::Sprite *background, const std::string text, std::function<void()> callback, Tyra::Engine *engine) {
     this->engine = engine;
     this->callback = callback;
     this->is_selected = false;
+    this->arrow = arrow;
+    this->background = background;
+    this->text = text;
 
-    load_image(&arrow, engine, "arrow.png");
-    if (img_path != "None")
-        load_image(&background, engine, img_path);
-    TYRA_LOG("Button assets loaded in memory");
+    // load_image(arrow, engine, "arrow.png");
+    // if (img_path != "None")
+    //     load_image(background, engine, img_path);
+    // TYRA_LOG("Button assets loaded in memory");
 }
 
 Button::~Button() {
-    if (img_path != "None")
-        this->engine->renderer.getTextureRepository().freeBySprite(background);
-    this->engine->renderer.getTextureRepository().freeBySprite(arrow);
+
 }
 
 void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
-    if (img_path == "None") {
+    if (this->background == nullptr) {
         if (is_selected == false)
             draw_text(this->engine, this->text, font, x, y, scale);
         else {
@@ -32,7 +31,7 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
             if (this->flip_arrow_animation == true)
                 this->offset -= speed;
             draw_text_color(this->engine, this->text, font, x, y, Color::Yellow, 1.0f);
-            draw_sprite(engine, this->arrow, x - 16 - 10 - this->offset, y, 16.0f, 16.0f);
+            draw_sprite(engine, *this->arrow, x - 16 - 10 - this->offset, y, 16.0f, 16.0f);
             if (this->offset > 30)
                 this->flip_arrow_animation = true;
             if (this->offset <= 0)
@@ -42,12 +41,12 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
     else {
         // TODO: replace it with futur function to draw_spritesheet
         if (this->is_selected == false)
-            draw_sprite_sheet(this->engine, this->background, x, y, 256, 128, 0, 2);
+            draw_sprite_sheet(this->engine, *this->background, x, y, 256, 128, 0, 2);
         else
-            draw_sprite_sheet(this->engine, this->background, x, y, 256, 128, 1, 2);
+            draw_sprite_sheet(this->engine, *this->background, x, y, 256, 128, 1, 2);
 
-        float temp_x = x + (this->background.size.x / 2) - (static_cast<float>(get_text_len(this->text, 1.0f)) / 2);
-        float temp_y = y + (this->background.size.y / 2);
+        float temp_x = x + (this->background->size.x / 2) - (static_cast<float>(get_text_len(this->text, 1.0f)) / 2);
+        float temp_y = y + (this->background->size.y / 2);
 
         draw_text(this->engine, this->text, font, temp_x, temp_y, scale);
     }
