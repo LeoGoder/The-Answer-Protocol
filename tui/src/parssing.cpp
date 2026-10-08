@@ -110,3 +110,162 @@ std::vector<std::string> formatRoomInfo(const RoomInfo& info) {
     lines.push_back("NPCs: " + joinList(info.npcs));
     return lines;
 }
+
+bool parseQuestResponse(const std::string& raw_response, QuestInfo& out) {
+    const std::string prefix = "OK ";
+    if (raw_response.substr(0, prefix.size()) != prefix) {
+        return false;
+    }
+
+    std::string json_str = raw_response.substr(prefix.size());
+
+    try {
+        json j = json::parse(json_str);
+
+        if (!j.is_object()) return false;
+        if (!j.contains("quest_id")) return false;
+
+        if (j.contains("quest_id") && j["quest_id"].is_string())
+            out.quest_id = j["quest_id"].get<std::string>();
+        if (j.contains("description") && j["description"].is_string())
+            out.description = j["description"].get<std::string>();
+        if (j.contains("reward") && j["reward"].is_string())
+            out.reward = j["reward"].get<std::string>();
+        if (j.contains("status") && j["status"].is_string())
+            out.status = j["status"].get<std::string>();
+        if (j.contains("progress") && j["progress"].is_string())
+            out.progress = j["progress"].get<std::string>();
+
+        return true;
+    } catch (const json::exception& e) {
+        std::cerr << "JSON parse error (quest): " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool parseQuestsResponse(const std::string& raw_response,
+                         std::vector<QuestInfo>& out) {
+    const std::string prefix = "OK ";
+    if (raw_response.substr(0, prefix.size()) != prefix) {
+        return false;
+    }
+
+    std::string json_str = raw_response.substr(prefix.size());
+
+    try {
+        json j = json::parse(json_str);
+
+        if (!j.is_array()) return false;
+
+        for (const auto& item : j) {
+            QuestInfo q;
+            if (item.contains("quest_id") && item["quest_id"].is_string())
+                q.quest_id = item["quest_id"].get<std::string>();
+            if (item.contains("description") && item["description"].is_string())
+                q.description = item["description"].get<std::string>();
+            if (item.contains("reward") && item["reward"].is_string())
+                q.reward = item["reward"].get<std::string>();
+            if (item.contains("status") && item["status"].is_string())
+                q.status = item["status"].get<std::string>();
+            if (item.contains("progress") && item["progress"].is_string())
+                q.progress = item["progress"].get<std::string>();
+            out.push_back(q);
+        }
+
+        return true;
+    } catch (const json::exception& e) {
+        std::cerr << "JSON parse error (quests): " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool parseInventoryResponse(const std::string& raw_response,
+                            std::vector<std::string>& out) {
+    const std::string prefix = "OK ";
+    if (raw_response.substr(0, prefix.size()) != prefix) {
+        return false;
+    }
+
+    std::string json_str = raw_response.substr(prefix.size());
+
+    try {
+        json j = json::parse(json_str);
+
+        if (!j.is_array()) return false;
+
+        for (const auto& item : j) {
+            if (item.is_string()) {
+                out.push_back(item.get<std::string>());
+            }
+        }
+
+        return true;
+    } catch (const json::exception& e) {
+        std::cerr << "JSON parse error (inventory): " << e.what() << std::endl;
+        return false;
+    }
+}
+
+static void formatJsonValue(const json& j, const std::string& prefix,
+                            std::vector<std::string>& lines) {
+    if (j.is_object()) {
+        for (auto& [key, val] : j.items()) {
+            std::string label = key;
+            if (!label.empty())
+                label[0] = static_cast<char>(std::toupper(label[0]));
+            if (val.is_object() || val.is_array()) {
+                formatJsonValue(val, prefix + label + ".", lines);
+            } else if (val.is_string()) {
+                lines.push_back(prefix + label + ": " +
+                                val.get<std::string>());
+            } else {
+                lines.push_back(prefix + label + ": " + val.dump());
+            }
+        }
+    } else if (j.is_array()) {
+        for (size_t i = 0; i < j.size(); ++i) {
+            if (j[i].is_string()) {
+                lines.push_back(prefix + j[i].get<std::string>());
+            } else if (j[i].is_object() || j[i].is_array()) {
+                formatJsonValue(j[i], prefix, lines);
+            } else {
+                lines.push_back(prefix + j[i].dump());
+            }
+        }
+    } else if (j.is_string()) {
+        lines.push_back(prefix + j.get<std::string>());
+    } else {
+        lines.push_back(prefix + j.dump());
+    }
+}
+
+bool parseGenericOkJson(const std::string& raw_response,
+                        std::vector<std::string>& out_lines) {
+    const std::string prefix = "OK ";
+    if (raw_response.substr(0, prefix.size()) != prefix) {
+        return false;
+    }
+
+    std::string json_str = raw_response.substr(prefix.size());
+
+    try {
+        json j = json::parse(json_str);
+        formatJsonValue(j, "", out_lines);
+        return true;
+    } catch (const json::exception&) {
+        return false;
+    }
+}
+
+std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
+    std::vector<std::string> lines;
+    lines.push_back("Quest: " + info.quest_id);
+    lines.push_back("Description: " + info.description);
+    if (!info.progress.empty())
+        lines.push_back("Progress: " + info.progress);
+    if (!info.reward.empty())
+        lines.push_back("Reward: " + info.reward);
+    if (!info.status.empty())
+        lines.push_back("Status: " + info.status);
+    return lines;
+}

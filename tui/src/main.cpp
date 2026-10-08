@@ -101,7 +101,19 @@ static std::mutex messages_mutex;
 static std::vector<ChatMessage> chat_messages;
 static std::mutex chat_mutex;
 static std::atomic<bool> interface_active{true};
-static std::atomic<bool> attente_look{false};
+
+enum PendingCommand {
+    CMD_NONE,
+    CMD_LOOK,
+    CMD_QUEST,
+    CMD_QUESTS,
+    CMD_INVENTORY,
+    CMD_TAKE,
+    CMD_DROP,
+    CMD_OTHER_JSON
+};
+static std::atomic<int> pending_command{CMD_NONE};
+
 struct PendingChat {
     std::string pseudo;
     std::string contenu;
@@ -118,6 +130,10 @@ static std::string* last_chat_channel = new std::string();
 static std::string* current_map_image = new std::string(
     "assets/maps/default.png");
 static std::mutex map_image_mutex;
+
+static std::vector<QuestInfo> active_quests;
+static std::vector<std::string> player_inventory;
+static std::mutex quests_mutex;
 
 static std::string roomToMapPath(const std::string& room_id,
                                  const std::string& room_name) {
@@ -270,25 +286,101 @@ static void ecouterServeur(int socket_fd, ScreenInteractive& screen) {
             reste.erase(0, pos + 1);
             if (!ligne.empty() && ligne.back() == '\r') ligne.pop_back();
 
-            if ((attente_look.load() || ligne.rfind(
-                    "OK {", 0) == 0) && ligne.substr(0, 3) == "OK ") {
-                RoomInfo room;
-                if (parseLookResponse(ligne, room)) {
-                    auto formatted = formatRoomInfo(room);
-                    for (const auto& line : formatted) {
-                        ajouterMessage("", line, false);
+            int cmd = pending_command.load();
+
+            // Handle OK responses with JSON payload based on pending command
+            if (ligne.substr(0, 3) == "OK " && ligne.size() > 3) {
+                if (cmd == CMD_LOOK) {
+                    RoomInfo room;
+                    if (parseLookResponse(ligne, room)) {
+                        auto formatted = formatRoomInfo(room);
+                        for (const auto& line : formatted) {
+                            ajouterMessage("", line, false);
+                        }
+                        if (!room.name.empty() || !room.id.empty()) {
+                            std::lock_guard<std::mutex> lock(map_image_mutex);
+                            *current_map_image = roomToMapPath(
+                                room.id, room.name);
+                        }
+                        pending_command = CMD_NONE;
+                        continue;
                     }
-                    if (!room.name.empty() || !room.id.empty()) {
-                        std::lock_guard<std::mutex> lock(map_image_mutex);
-                        *current_map_image = roomToMapPath(room.id, room.name);
+                } else if (cmd == CMD_QUEST) {
+                    QuestInfo quest;
+                    if (parseQuestResponse(ligne, quest)) {
+                        auto formatted = formatQuestInfo(quest);
+                        for (const auto& line : formatted) {
+                            ajouterMessage("", line, false);
+                        }
+                        {
+                            std::lock_guard<std::mutex> lock(quests_mutex);
+                            bool found = false;
+                            for (auto& q : active_quests) {
+                                if (q.quest_id == quest.quest_id) {
+                                    q = quest;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                active_quests.push_back(quest);
+                            }
+                        }
+                        pending_command = CMD_NONE;
+                        continue;
                     }
-                    attente_look = false;
-                    continue;
+                } else if (cmd == CMD_QUESTS) {
+                    std::vector<QuestInfo> quests;
+                    if (parseQuestsResponse(ligne, quests)) {
+                        {
+                            std::lock_guard<std::mutex> lock(quests_mutex);
+                            active_quests = quests;
+                        }
+                        if (quests.empty()) {
+                            ajouterMessage("", "No active quests.", false);
+                        } else {
+                            for (const auto& q : quests) {
+                                auto formatted = formatQuestInfo(q);
+                                for (const auto& line : formatted) {
+                                    ajouterMessage("", line, false);
+                                }
+                                ajouterMessage("", "---", false);
+                            }
+                        }
+                        pending_command = CMD_NONE;
+                        continue;
+                    }
+                } else if ((cmd == CMD_TAKE || cmd == CMD_DROP) &&
+                           ligne.rfind("OK [", 0) == 0) {
+                    std::vector<std::string> inventory;
+                    if (parseInventoryResponse(ligne, inventory)) {
+                        {
+                            std::lock_guard<std::mutex> lock(quests_mutex);
+                            player_inventory = inventory;
+                        }
+                        pending_command = CMD_NONE;
+                        continue;
+                    }
+                }
+
+                // For other commands with JSON, format generically
+                if (cmd != CMD_NONE) {
+                    std::vector<std::string> lines;
+                    if (parseGenericOkJson(ligne, lines)) {
+                        for (const auto& line : lines) {
+                            ajouterMessage("", line, false);
+                        }
+                        pending_command = CMD_NONE;
+                        continue;
+                    }
                 }
             }
-            if (attente_look.load() && ligne.substr(0, 3) == "ERR") {
-                attente_look = false;
+
+            // Handle ERR when waiting for a command response
+            if (cmd != CMD_NONE && ligne.rfind("ERR", 0) == 0) {
+                pending_command = CMD_NONE;
             }
+
             if (ligne == "OK") {
                 bool was_pending_chat = false;
                 PendingChat pending;
@@ -309,6 +401,10 @@ static void ecouterServeur(int socket_fd, ScreenInteractive& screen) {
                         *last_chat_channel = pending.channel;
                     }
                     continue;
+                }
+                // Simple OK for non-chat command
+                if (cmd != CMD_NONE) {
+                    pending_command = CMD_NONE;
                 }
             }
             if (ligne.rfind("ERR", 0) == 0) {
@@ -500,10 +596,49 @@ int main() {
         std::string title = " Terminal - " + infos.pseudo + " @ " +
                             infos.ip + ":" + std::to_string(port) + " ";
 
+        Elements item_elements;
+        {
+            std::lock_guard<std::mutex> lock(quests_mutex);
+            if (player_inventory.empty()) {
+                item_elements.push_back(
+                    shrinkable(paragraph("  No items")) |
+                        color(Color::GrayDark));
+            } else {
+                for (const auto& item : player_inventory) {
+                    item_elements.push_back(
+                        shrinkable(paragraph("  - " + item)) |
+                            color(Color::White));
+                }
+            }
+        }
         Element items_panel =
-            window(text(" Items "), filler()) | flex;
+            window(text(" Items "),
+                   vbox(item_elements) | yframe | flex) | flex;
+
+        Elements quest_elements;
+        {
+            std::lock_guard<std::mutex> lock(quests_mutex);
+            if (active_quests.empty()) {
+                quest_elements.push_back(
+                    shrinkable(paragraph("  No active quests")) |
+                        color(Color::GrayDark));
+            } else {
+                for (const auto& q : active_quests) {
+                    quest_elements.push_back(
+                        shrinkable(paragraph("  " + q.description)) |
+                            color(Color::Yellow));
+                    std::string progress_str = "    (" + q.progress + ")";
+                    if (!q.status.empty())
+                        progress_str += " [" + q.status + "]";
+                    quest_elements.push_back(
+                        shrinkable(paragraph(progress_str)) |
+                            color(Color::GrayLight));
+                }
+            }
+        }
         Element quests_panel =
-            window(text(" Quests "), filler()) | flex;
+            window(text(" Quests "),
+                   vbox(quest_elements) | yframe | flex) | flex;
         Element left_column =
             vbox({items_panel, quests_panel}) | flex;
 
@@ -567,7 +702,19 @@ int main() {
                 return true;
             }
             if (cmd_upper == "LOOK") {
-                attente_look = true;
+                pending_command = CMD_LOOK;
+            } else if (cmd_upper.rfind("QUEST ", 0) == 0) {
+                pending_command = CMD_QUEST;
+            } else if (cmd_upper == "QUESTS") {
+                pending_command = CMD_QUESTS;
+            } else if (cmd_upper.rfind("TAKE ", 0) == 0) {
+                pending_command = CMD_TAKE;
+            } else if (cmd_upper.rfind("DROP ", 0) == 0) {
+                pending_command = CMD_DROP;
+            } else if (cmd_upper == "INVENTORY" ||
+                       cmd_upper == "STATUS" ||
+                       cmd_upper.rfind("TALK ", 0) == 0) {
+                pending_command = CMD_OTHER_JSON;
             }
             ParsedChat chat = parseChatCommand(saisie);
             if (chat.is_chat) {
