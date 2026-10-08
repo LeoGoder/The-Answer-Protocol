@@ -9,7 +9,18 @@ void SplashScreen::draw_new_game() {
 }
 
 void SplashScreen::draw_create_player() {
-    
+    float pos_x = 20;
+    float pos_y = engine->renderer.core.getSettings().getHeight() / 2;
+    float default_pos_y = pos_y;
+    float offset = 40;
+    for (int i = 0; i < this->btn_keyboard.size(); i++) {
+        this->btn_keyboard[i]->draw_button(&this->font, pos_x, pos_y, 2.0f);
+        pos_y += offset;
+        if (pos_y >= (default_pos_y + (offset * 3))) {
+            pos_y = engine->renderer.core.getSettings().getHeight() / 2;
+            pos_x += offset;
+        }
+    }
 }
 
 void put_letter_name_in_player_name() {

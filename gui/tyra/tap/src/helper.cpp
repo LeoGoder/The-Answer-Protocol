@@ -106,12 +106,13 @@ void draw_sprite(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, f
     engine->renderer.renderer2D.render(sprite);
 }
 
-void draw_sprite_sheet(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height, int frame, int columns) {
+void draw_sprite_sheet(Tyra::Engine *engine, Tyra::Sprite &sprite, float x, float y, float width, float height, int frame, int columns, float scale) {
     int col = frame % columns;
     int row = frame / columns;
 
     sprite.mode = Tyra::MODE_REPEAT;
     sprite.size.set(width, height);
+    sprite.scale = scale;
     sprite.offset.set(
             static_cast<float>(col) * width,
             static_cast<float>(row) * height

@@ -1,4 +1,5 @@
 #include "button.hpp"
+#include "debug/debug.hpp"
 #include "helper.hpp"
 #include "color.hpp"
 #include "renderer/core/2d/sprite/sprite.hpp"
@@ -10,11 +11,6 @@ Button::Button(Tyra::Sprite *arrow, Tyra::Sprite *background, const std::string 
     this->arrow = arrow;
     this->background = background;
     this->text = text;
-
-    // load_image(arrow, engine, "arrow.png");
-    // if (img_path != "None")
-    //     load_image(background, engine, img_path);
-    // TYRA_LOG("Button assets loaded in memory");
 }
 
 Button::~Button() {
@@ -39,14 +35,16 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
         }
     }
     else {
-        // TODO: replace it with futur function to draw_spritesheet
+        auto* texture = this->engine->renderer.core.texture.repository.getBySpriteId(this->background->id);
+        float btn_w = (static_cast<float>(texture->getWidth()) / 2);
+        float btn_h = static_cast<float>(texture->getHeight());
         if (this->is_selected == false)
-            draw_sprite_sheet(this->engine, *this->background, x, y, 256, 128, 0, 2);
+            draw_sprite_sheet(this->engine, *this->background, x, y, btn_w, btn_h, 0, 2, scale);
         else
-            draw_sprite_sheet(this->engine, *this->background, x, y, 256, 128, 1, 2);
+            draw_sprite_sheet(this->engine, *this->background, x, y, btn_w, btn_h, 1, 2, scale);
 
-        float temp_x = x + (this->background->size.x / 2) - (static_cast<float>(get_text_len(this->text, 1.0f)) / 2);
-        float temp_y = y + (this->background->size.y / 2);
+        float temp_x = x + (((btn_w * scale) / 2.0f) - (static_cast<float>(get_text_len(this->text, scale)) / 2.0f));
+        float temp_y = y + ((btn_h * scale) / 2.0f) - (static_cast<float>(CHAR_HEIGHT * scale) / 2.0f);
 
         draw_text(this->engine, this->text, font, temp_x, temp_y, scale);
     }
@@ -58,11 +56,14 @@ void Button::on_click() {
     }
 }
 
-void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> &button_list, int &selected_id, bool &is_left_joy_centered) {
+void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> &button_list, int &selected_id, bool &is_left_joy_centered, int col_number, int line_number) {
     auto &pad = engine->pad;
     int left_joy_v = pad.getLeftJoyPad().v;
+    int left_joy_h = pad.getLeftJoyPad().h;
     bool analog_down = false;
     bool analog_up = false;
+    bool analog_left = false;
+    bool analog_right = false;
 
     button_list[selected_id]->set_is_selected(false);
     if (left_joy_v > 190 && is_left_joy_centered) {
@@ -73,7 +74,15 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
         analog_up = true;
         is_left_joy_centered = false;
     }
-    else if (left_joy_v >= 60 && left_joy_v <=  190)
+    if (left_joy_h > 190 && is_left_joy_centered) {
+        analog_right = true;
+        is_left_joy_centered = false;
+    }
+    else if (left_joy_h < 60 && is_left_joy_centered) {
+        analog_left = true;
+        is_left_joy_centered = false;
+    }
+    else if ((left_joy_v >= 60 && left_joy_v <=  190) && (left_joy_h >= 60 && left_joy_h <=  190))
         is_left_joy_centered = true;
 
     if (pad.getClicked().Cross) {
@@ -89,6 +98,18 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
         selected_id -= 1;
         if (selected_id < 0)
             selected_id = button_list.size() - 1;
+    }
+    if (pad.getClicked().DpadRight || analog_right) {
+        int old_id = selected_id;
+        selected_id += line_number;
+        if (selected_id > button_list.size() - 1)
+            selected_id = old_id;
+    }
+    if (pad.getClicked().DpadLeft || analog_left) {
+        int old_id = selected_id;
+        selected_id -= line_number;
+        if (selected_id < 0)
+            selected_id = old_id;
     }
     button_list[selected_id]->set_is_selected(true);
 }

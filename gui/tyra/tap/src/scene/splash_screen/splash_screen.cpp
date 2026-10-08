@@ -4,6 +4,7 @@
 #include "helper.hpp"
 #include "button.hpp"
 #include "save_load.hpp"
+#include "new_game.hpp"
 
 void SplashScreen::load_background() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
@@ -22,11 +23,11 @@ void change_to_sub_menu(int selected_id, State &current_state) {
     else if (selected_id == 1)
         current_state = new_game;
     // else if (selected_id == 2)
-    //     current_state = new_game;
+        // current_state = create;
 }
 
-void temp_func() {
-    TYRA_LOG("salam 2 le retour");
+void create_or_launch(State &current_state) {
+    current_state = create;
 }
 
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
@@ -50,12 +51,16 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     // new game button
     for (int i = 1; i <= 4; i++) {
         if (is_slot_used(i) == false)
-            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {temp_func();}, this->engine));
+            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state);}, this->engine));
     }
     // player creation keyboard
     for (int i = 65; i <= 90; i++) {
         std::string str(1, static_cast<char>(i));
-        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this]() {temp_func();}, this->engine));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this]() {put_letter_name_in_player_name();}, this->engine));
+    }
+    for (int i = 48; i <= 57; i++) {
+        std::string str(1, static_cast<char>(i));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this]() {put_letter_name_in_player_name();}, this->engine));
     }
     TYRA_LOG("SPLASH_SCREEN: all assets loaded in memory");
 }
@@ -87,7 +92,7 @@ void SplashScreen::update() {
                 current_state = main_menu;
             break;
         case main_menu: {
-            loop_button_lst(this->engine, this->button_list, this->selected_id, this->is_left_joy_centered);
+            loop_button_lst(this->engine, this->button_list, this->selected_id, this->is_left_joy_centered, 1, 3);
             if (pad.getClicked().Circle)
                 current_state = welcome;
             break;
@@ -98,9 +103,15 @@ void SplashScreen::update() {
                 this->btn_save[this->selected_id]->set_is_selected(false);
                 this->selected_id = 0;
             }
-            loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered);
+            loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered, 1, 4);
             break;
         case create:
+            if (pad.getClicked().Circle) {
+                current_state = new_game;
+                this->btn_save[this->selected_id]->set_is_selected(false);
+                this->selected_id = 0;
+            }
+            loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 1, 3);
             break;
         case load_game:
             if (pad.getClicked().Circle)
@@ -138,6 +149,9 @@ void SplashScreen::draw() {
             break;
         case new_game:
             SplashScreen::draw_new_game();
+            break;
+        case create:
+            SplashScreen::draw_create_player();
             break;
         case load_game:
             SplashScreen::draw_load_game();
