@@ -1,3 +1,5 @@
+#include <fcntl.h>
+#include <memory>
 #include <tyra>
 #include "splash_screen.hpp"
 #include "debug/debug.hpp"
@@ -26,8 +28,9 @@ void change_to_sub_menu(int selected_id, State &current_state) {
         // current_state = create;
 }
 
-void create_or_launch(State &current_state) {
+void create_or_launch(State &current_state, int &slot_choose, int &selected_id) {
     current_state = create;
+    slot_choose = selected_id;
 }
 
 SplashScreen::SplashScreen(Tyra::Engine* engine) {
@@ -50,17 +53,20 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Option", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     // new game button
     for (int i = 1; i <= 4; i++) {
-        if (is_slot_used(i) == false)
-            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state);}, this->engine));
+        if (is_slot_used(i) == false) {
+            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state, this->save_slot_choice, this->selected_id);}, this->engine));
+            this->save_lst.push_back(std::make_unique<GameData>());
+            this->save_lst[i]->player_name[P_NAME_LEN - 1] = '\0';
+        }
     }
     // player creation keyboard
     for (int i = 65; i <= 90; i++) {
         std::string str(1, static_cast<char>(i));
-        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this]() {put_letter_name_in_player_name();}, this->engine));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
     }
     for (int i = 48; i <= 57; i++) {
         std::string str(1, static_cast<char>(i));
-        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this]() {put_letter_name_in_player_name();}, this->engine));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
     }
     TYRA_LOG("SPLASH_SCREEN: all assets loaded in memory");
 }

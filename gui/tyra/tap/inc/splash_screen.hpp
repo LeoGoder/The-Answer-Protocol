@@ -4,6 +4,7 @@
 #include <string>
 #include "game_scene.hpp"
 #include "button.hpp"
+#include "save_load.hpp""
 
 enum State {
     welcome = 0,
@@ -30,7 +31,9 @@ class SplashScreen : public GameScene {
         std::vector<std::unique_ptr<Button>> button_list;
         std::vector<std::unique_ptr<Button>> btn_save;
         std::vector<std::unique_ptr<Button>> btn_keyboard;
+        std::vector<std::unique_ptr<GameData>> save_lst;
         int selected_id;
+        int save_slot_choice;
     public:
         SplashScreen(Tyra::Engine* engine);
         ~SplashScreen();

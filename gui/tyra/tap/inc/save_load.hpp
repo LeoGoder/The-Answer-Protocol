@@ -5,9 +5,10 @@
 #define LOAD_FAIL 2
 #define SAVE_SUCCESS 3
 #define SAVE_FAIL 4
+#define P_NAME_LEN 12
 
 typedef struct GameData {
-    char player_name[32];
+    char player_name[P_NAME_LEN];
 } GameData;
 
 int save_game(int slot_index, GameData &data);

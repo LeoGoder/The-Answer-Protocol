@@ -1,4 +1,9 @@
+#include "helper.hpp"
 #include "splash_screen.hpp"
+#include "helper.hpp""
+#include <fcntl.h>
+#include <cctype>
+#include <cstring>
 
 
 void SplashScreen::draw_new_game() {
@@ -18,13 +23,26 @@ void SplashScreen::draw_create_player() {
         this->btn_keyboard[i]->draw_button(&this->font, pos_x, pos_y, 2.0f);
         pos_x += offset;
         if (pos_x >= (default_pos_x + (offset * 12))) {
-            // pos_y = engine->renderer.core.getSettings().getHeight() / 2;
             pos_x = 20;
             pos_y += offset;
         }
     }
+    std::string temp_str = this->save_lst[this->save_slot_choice]->player_name;
+    draw_text(engine, temp_str, &this->font, (engine->renderer.core.getSettings().getWidth() / 2) - (static_cast<float>(get_text_len(temp_str, 2.0f / 2))), 50, 2.0f);
 }
 
-void put_letter_name_in_player_name() {
+static int last_character_position(char str[P_NAME_LEN]) {
+    int res = 0;
+    for (int i = 0; i < strlen(str); i++) {
+        if (!isalnum(str[i]))
+            return res;
+        res += 1;
+    }
+    return res;
+}
 
+void put_letter_in_player_name(int save_slot_choice, GameData &data, char c) {
+    if (strlen(data.player_name) < P_NAME_LEN - 1) {
+        data.player_name[last_character_position(data.player_name)] += c;
+    }
 }
