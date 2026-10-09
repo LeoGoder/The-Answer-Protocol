@@ -1,5 +1,4 @@
 #include "button.hpp"
-#include "debug/debug.hpp"
 #include "helper.hpp"
 #include "color.hpp"
 #include "renderer/core/2d/sprite/sprite.hpp"
@@ -38,14 +37,24 @@ void Button::draw_button(Tyra::Sprite *font, float x, float y, float scale) {
         auto* texture = this->engine->renderer.core.texture.repository.getBySpriteId(this->background->id);
         float btn_w = (static_cast<float>(texture->getWidth()) / 2);
         float btn_h = static_cast<float>(texture->getHeight());
+        float temp_x;
+        float temp_y;
+
         if (this->is_selected == false)
             draw_sprite_sheet(this->engine, *this->background, x, y, btn_w, btn_h, 0, 2, scale);
         else
             draw_sprite_sheet(this->engine, *this->background, x, y, btn_w, btn_h, 1, 2, scale);
+        if (this->text.length() == 1) {
+            const float glyph_w = 5.0f;
+            const float glyph_h = 8.0f;
 
-        float temp_x = x + (((btn_w * scale) / 2.0f) - (static_cast<float>(get_text_len(this->text, scale)) / 2.0f));
-        float temp_y = y + ((btn_h * scale) / 2.0f) - (static_cast<float>(CHAR_HEIGHT * scale) / 2.0f);
-
+            temp_x = x + (((btn_w * scale) / 2.0f) - ((glyph_w * scale) / 2.0f));
+            temp_y = y + (((btn_h * scale) / 2.0f) - ((glyph_h * scale) / 2.0f)) - (1.0f * scale);
+        }
+        else {
+            temp_x = x + (((btn_w * scale) / 2.0f) - (static_cast<float>(get_text_len(this->text, scale)) / 2.0f));
+            temp_y = y + ((btn_h * scale) / 2.0f) - (static_cast<float>(CHAR_HEIGHT * scale) / 2.0f);
+        }
         draw_text(this->engine, this->text, font, temp_x, temp_y, scale);
     }
 }
@@ -66,50 +75,65 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
     bool analog_right = false;
 
     button_list[selected_id]->set_is_selected(false);
-    if (left_joy_v > 190 && is_left_joy_centered) {
-        analog_down = true;
-        is_left_joy_centered = false;
+    if (is_left_joy_centered) {
+        if (left_joy_v > 190) {
+            analog_down = true;
+            is_left_joy_centered = false;
+        }
+        else if (left_joy_v < 60) {
+            analog_up = true;
+            is_left_joy_centered = false;
+        }
+        else if (left_joy_h > 190) {
+            analog_right = true;
+            is_left_joy_centered = false;
+        }
+        else if (left_joy_h < 60) {
+            analog_left = true;
+            is_left_joy_centered = false;
+        }
     }
-    else if (left_joy_v < 60 && is_left_joy_centered) {
-        analog_up = true;
-        is_left_joy_centered = false;
-    }
-    if (left_joy_h > 190 && is_left_joy_centered) {
-        analog_right = true;
-        is_left_joy_centered = false;
-    }
-    else if (left_joy_h < 60 && is_left_joy_centered) {
-        analog_left = true;
-        is_left_joy_centered = false;
-    }
-    else if ((left_joy_v >= 60 && left_joy_v <=  190) && (left_joy_h >= 60 && left_joy_h <=  190))
+    else if ((left_joy_v >= 60 && left_joy_v <= 190) && (left_joy_h >= 60 && left_joy_h <= 190)) {
         is_left_joy_centered = true;
+    }
 
     if (pad.getClicked().Cross) {
         button_list[selected_id]->on_click();
         selected_id = 0;
     }
-    if (pad.getClicked().DpadDown || analog_down) {
-        selected_id += 1;
-        if (selected_id > button_list.size() - 1)
-            selected_id = 0;
-    }
-    if (pad.getClicked().DpadUp || analog_up) {
-        selected_id -= 1;
-        if (selected_id < 0)
-            selected_id = button_list.size() - 1;
-    }
     if (pad.getClicked().DpadRight || analog_right) {
-        int old_id = selected_id;
-        selected_id += line_number;
-        if (selected_id > button_list.size() - 1)
-            selected_id = old_id;
+        if (col_number > 1) {
+            selected_id += 1;
+            if (selected_id > static_cast<int>(button_list.size()) - 1)
+                selected_id = 0;
+        }
     }
     if (pad.getClicked().DpadLeft || analog_left) {
+        if (col_number > 1) {
+            selected_id -= 1;
+            if (selected_id < 0)
+                selected_id = button_list.size() - 1;
+        }
+    }
+    if (pad.getClicked().DpadDown || analog_down) {
         int old_id = selected_id;
-        selected_id -= line_number;
-        if (selected_id < 0)
-            selected_id = old_id;
+        selected_id += col_number;
+        if (selected_id > static_cast<int>(button_list.size()) - 1) {
+            if (col_number == 1)
+                selected_id = 0;
+            else
+                selected_id = old_id;
+        }
+    }
+    if (pad.getClicked().DpadUp || analog_up) {
+        int old_id = selected_id;
+        selected_id -= col_number;
+        if (selected_id < 0) {
+            if (col_number == 1)
+                selected_id = button_list.size() - 1;
+            else
+                selected_id = old_id;
+        }
     }
     button_list[selected_id]->set_is_selected(true);
 }

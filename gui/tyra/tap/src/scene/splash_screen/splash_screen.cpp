@@ -108,10 +108,10 @@ void SplashScreen::update() {
         case create:
             if (pad.getClicked().Circle) {
                 current_state = new_game;
-                this->btn_save[this->selected_id]->set_is_selected(false);
+                this->btn_keyboard[this->selected_id]->set_is_selected(false);
                 this->selected_id = 0;
             }
-            loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 1, 3);
+            loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 12, 3);
             break;
         case load_game:
             if (pad.getClicked().Circle)
