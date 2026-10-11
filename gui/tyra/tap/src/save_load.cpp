@@ -37,8 +37,13 @@ int save_game(int slot_index, GameData &data) {
 int load_data(int slot_index, GameData &data) {
     int res = 0;
     int fd = 0;
+    int type = 0, free = 0, format = 0;
     char file_path[64];
 
+    mcGetInfo(0, 0, &type, &free, &format);
+    mcSync(0, NULL, &res);
+    if (res < -1 || format == 0)
+        return false;
     snprintf(file_path, sizeof(file_path), "TAP_%02d/save.bin", slot_index);
     mcOpen(1, 0, file_path, O_RDONLY);
     mcSync(0, NULL, &res);

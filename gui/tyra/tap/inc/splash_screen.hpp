@@ -24,6 +24,7 @@ class SplashScreen : public GameScene {
         Tyra::Sprite btn_background;
         Tyra::Sprite keyboard;
         Tyra::Sprite keyboard_long;
+        Tyra::Sprite controller;
         Tyra::Engine *engine;
         Tyra::Color font_color;
         bool color_sens = false;

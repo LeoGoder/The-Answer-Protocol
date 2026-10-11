@@ -42,6 +42,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     load_image(&btn_background, engine, "button_save_select.png");
     load_image(&keyboard, engine, "keyboard.png");
     load_image(&keyboard_long, engine, "keyboard_long.png");
+    load_image(&controller, engine, "controller_button.png");
     font_color.a = 128.0f;
     font_color.r = 128.0f;
     font_color.g = 128.0f;
@@ -63,15 +64,12 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     // player creation keyboard
     for (int i = 65; i <= 90; i++) {
         std::string str(1, static_cast<char>(i));
-        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(*this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
     }
     for (int i = 48; i <= 57; i++) {
         std::string str(1, static_cast<char>(i));
-        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
+        btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(*this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
     }
-    btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard_long, "Space", [this]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], ' ');}, this->engine));
-    btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard_long, "Clear", [this]() {clear_all_character(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);}, this->engine));
-    btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard_long, "Delete", [this]() {delete_last_character(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);}, this->engine));
     TYRA_LOG("SPLASH_SCREEN: all assets loaded in memory");
 }
 
@@ -114,7 +112,7 @@ void SplashScreen::update() {
             break;
         case main_menu: {
             loop_button_lst(this->engine, this->button_list, this->selected_id, this->is_left_joy_centered, 1, 3);
-            if (pad.getClicked().Circle) {
+            if (pad.getClicked().Triangle) {
                 current_state = welcome;
                 this->selected_id = 0;
             }
@@ -124,7 +122,7 @@ void SplashScreen::update() {
         }
         case new_game:
             loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered, 1, 4);
-            if (pad.getClicked().Circle) {
+            if (pad.getClicked().Triangle) {
                 current_state = main_menu;
                 this->selected_id = 0;
             }
@@ -133,13 +131,14 @@ void SplashScreen::update() {
             break;
         case create:
             loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 12, 3);
-            if (pad.getClicked().Circle) {
+            keyboard_input(pad, this->save_slot_choice, *this->save_lst[save_slot_choice]);
+            if (pad.getClicked().Triangle) {
                 current_state = new_game;
                 this->selected_id = 0;
             }
             break;
         case load_game:
-            if (pad.getClicked().Circle)
+            if (pad.getClicked().Triangle)
                 current_state = main_menu;
             break;
         default:
