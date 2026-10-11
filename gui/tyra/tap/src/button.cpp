@@ -99,7 +99,6 @@ void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> 
 
     if (pad.getClicked().Cross) {
         button_list[selected_id]->on_click();
-        selected_id = 0;
     }
     if (pad.getClicked().DpadRight || analog_right) {
         if (col_number > 1) {

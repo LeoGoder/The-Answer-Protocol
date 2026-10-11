@@ -4,7 +4,7 @@
 #include <string>
 #include "game_scene.hpp"
 #include "button.hpp"
-#include "save_load.hpp""
+#include "save_load.hpp"
 
 enum State {
     welcome = 0,
@@ -23,6 +23,7 @@ class SplashScreen : public GameScene {
         Tyra::Sprite arrow;
         Tyra::Sprite btn_background;
         Tyra::Sprite keyboard;
+        Tyra::Sprite keyboard_long;
         Tyra::Engine *engine;
         Tyra::Color font_color;
         bool color_sens = false;

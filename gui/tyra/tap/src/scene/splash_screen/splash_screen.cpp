@@ -41,6 +41,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     load_image(&arrow, engine, "arrow.png");
     load_image(&btn_background, engine, "button_save_select.png");
     load_image(&keyboard, engine, "keyboard.png");
+    load_image(&keyboard_long, engine, "keyboard_long.png");
     font_color.a = 128.0f;
     font_color.r = 128.0f;
     font_color.g = 128.0f;
@@ -68,6 +69,9 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
         std::string str(1, static_cast<char>(i));
         btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard, str, [this, i]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], static_cast<char>(i));}, this->engine));
     }
+    btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard_long, "Space", [this]() {put_letter_in_player_name(this->save_slot_choice, *this->save_lst[this->save_slot_choice], ' ');}, this->engine));
+    btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard_long, "Clear", [this]() {clear_all_character(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);}, this->engine));
+    btn_keyboard.push_back(std::make_unique<Button>(nullptr, &this->keyboard_long, "Delete", [this]() {delete_last_character(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);}, this->engine));
     TYRA_LOG("SPLASH_SCREEN: all assets loaded in memory");
 }
 
@@ -78,11 +82,20 @@ SplashScreen::~SplashScreen() {
     this->engine->renderer.getTextureRepository().freeBySprite(arrow);
     this->engine->renderer.getTextureRepository().freeBySprite(btn_background);
     this->engine->renderer.getTextureRepository().freeBySprite(keyboard);
+    this->engine->renderer.getTextureRepository().freeBySprite(keyboard_long);
+}
+
+void clear_button_selection(std::vector<std::unique_ptr<Button>> &button_list) {
+    for (int i = 0; i < button_list.size(); i++) {
+        button_list[i]->set_is_selected(false);
+    }
 }
 
 void SplashScreen::update() {
     const float joy_center_value = 128.0f;
     float speed = 3.0f;
+    auto &pad = engine->pad;
+
     if (font_color.b <= 0)
         color_sens = true;
     if (font_color.b >= joy_center_value)
@@ -91,7 +104,9 @@ void SplashScreen::update() {
         font_color.b -= speed;
     else
         font_color.b += speed;
-    auto &pad = engine->pad;
+    clear_button_selection(button_list);
+    clear_button_selection(btn_save);
+    clear_button_selection(btn_keyboard);
     switch (current_state) {
         case welcome:
             if (pad.getClicked().Start)
@@ -99,25 +114,29 @@ void SplashScreen::update() {
             break;
         case main_menu: {
             loop_button_lst(this->engine, this->button_list, this->selected_id, this->is_left_joy_centered, 1, 3);
-            if (pad.getClicked().Circle)
+            if (pad.getClicked().Circle) {
                 current_state = welcome;
+                this->selected_id = 0;
+            }
+            if (pad.getClicked().Cross)
+                this->selected_id = 0;
             break;
         }
         case new_game:
+            loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered, 1, 4);
             if (pad.getClicked().Circle) {
                 current_state = main_menu;
-                this->btn_save[this->selected_id]->set_is_selected(false);
                 this->selected_id = 0;
             }
-            loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered, 1, 4);
+            if (pad.getClicked().Cross)
+                this->selected_id = 0;
             break;
         case create:
+            loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 12, 3);
             if (pad.getClicked().Circle) {
                 current_state = new_game;
-                this->btn_keyboard[this->selected_id]->set_is_selected(false);
                 this->selected_id = 0;
             }
-            loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 12, 3);
             break;
         case load_game:
             if (pad.getClicked().Circle)
@@ -130,7 +149,6 @@ void SplashScreen::update() {
 
 void SplashScreen::draw_welcome_screen() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
-    auto& renderer = engine->renderer;
     draw_text_color(this->engine, "Press start", &font, screenSettings.getWidth() - 170, screenSettings.getHeight() - 20, font_color, 1.0f);
 }
 
