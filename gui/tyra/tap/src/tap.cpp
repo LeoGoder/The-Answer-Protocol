@@ -46,18 +46,15 @@ void Tap::init() {
     //    et eviter que le polling actif de la manette ne perturbe la detection de la carte memoire.
     padPortClose(0, 0);
 
-    // 2. Charger les pilotes depuis les buffers integres (compatible toutes PS2, y compris 90004)
     ret = SifExecModuleBuffer(mcman_irx, size_mcman_irx, 0, nullptr, &mod_res);
     TYRA_LOG("MCMAN buffer: ret=", ret, ", mod_res=", mod_res);
 
     ret = SifExecModuleBuffer(mcserv_irx, size_mcserv_irx, 0, nullptr, &mod_res);
     TYRA_LOG("MCSERV buffer: ret=", ret, ", mod_res=", mod_res);
 
-    // 3. Initialiser la bibliotheque carte memoire en mode XMC (protocole etendu de mcserv.irx)
     int res = mcInit(MC_TYPE_XMC);
     TYRA_LOG("mcInit: res=", res);
 
-    // 4. Re-initialiser la manette maintenant que les pilotes MC sont enregistres
     engine->pad.init();
 
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
