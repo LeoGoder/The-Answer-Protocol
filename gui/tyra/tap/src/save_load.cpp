@@ -15,17 +15,21 @@ int save_game(int slot_index, GameData &data) {
     char file_path[64];
 
     snprintf(dir_path, sizeof(dir_path), "TAP_%02d", slot_index);
-    snprintf(dir_path, sizeof(dir_path), "%s/save.bin", dir_path);
-    mcGetInfo(1, 0, &type, &free, &format);
+    snprintf(file_path, sizeof(file_path), "%s/save.bin", dir_path);
+    mcGetInfo(0, 0, &type, &free, &format);
     mcSync(0, NULL, &res);
-    if (res < -1 || format == 0)
+    if (res != -1 && res != 0) {
+        TYRA_LOG("SAVE_FAIL Card unoformated or not ready, res=", res);
         return SAVE_FAIL;
-    mcMkDir(1, 0, dir_path);
+    }
+    mcMkDir(0, 0, dir_path);
     mcSync(0, NULL, &res);
-    mcOpen(1, 0, file_path, O_WRONLY | O_CREAT);
+    mcOpen(0, 0, file_path, O_WRONLY | O_CREAT);
     mcSync(0, NULL, &res);
-    if (res < 0)
+    if (res < 0) {
+        TYRA_LOG("SAVE_FAIL create save file in memory card, res=", res);
         return SAVE_FAIL;
+    }
     fd = res;
     mcWrite(fd, &data, sizeof(GameData));
     mcSync(0, NULL, &res);
@@ -42,10 +46,10 @@ int load_data(int slot_index, GameData &data) {
 
     mcGetInfo(0, 0, &type, &free, &format);
     mcSync(0, NULL, &res);
-    if (res < -1 || format == 0)
+    if (res != -1 && res != 0)
         return false;
     snprintf(file_path, sizeof(file_path), "TAP_%02d/save.bin", slot_index);
-    mcOpen(1, 0, file_path, O_RDONLY);
+    mcOpen(0, 0, file_path, O_RDONLY);
     mcSync(0, NULL, &res);
     fd  = res;
     if (res < 0) {
@@ -73,8 +77,10 @@ bool is_slot_used(int slot_index) {
 
     mcGetInfo(0, 0, &type, &free, &format);
     mcSync(0, NULL, &res);
-    if (res < -1 || format == 0)
+    if (res != -1 && res != 0) {
+        TYRA_LOG("Slot_used: Failed to get info, res=", res);
         return false;
+    }
     TYRA_LOG("Free space available: ", free);
     snprintf(file_path, sizeof(file_path), "TAP_%02d/save.bin", slot_index);
     mcOpen(0, 0, file_path, O_RDONLY);

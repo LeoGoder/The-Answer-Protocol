@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <functional>
 #include "renderer/core/renderer_core.hpp"
 
 namespace Tyra {

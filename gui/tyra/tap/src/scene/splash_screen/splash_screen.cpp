@@ -54,11 +54,11 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "New game", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Option", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     // new game button
-    for (int i = 1; i <= 4; i++) {
+    for (int i = 0; i <= 3; i++) {
         if (is_slot_used(i) == false) {
             btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state, this->save_slot_choice, this->selected_id);}, this->engine));
             this->save_lst.push_back(std::make_unique<GameData>());
-            this->save_lst[i]->player_name[P_NAME_LEN - 1] = '\0';
+            this->save_lst.back()->player_name[P_NAME_LEN - 1] = '\0';
         }
     }
     // player creation keyboard
@@ -131,10 +131,14 @@ void SplashScreen::update() {
             break;
         case create:
             loop_button_lst(this->engine, this->btn_keyboard, this->selected_id, this->is_left_joy_centered, 12, 3);
-            keyboard_input(pad, this->save_slot_choice, *this->save_lst[save_slot_choice]);
+            keyboard_input(pad, this->save_slot_choice, *this->save_lst[this->save_slot_choice]);
             if (pad.getClicked().Triangle) {
                 current_state = new_game;
                 this->selected_id = 0;
+            }
+            if (pad.getClicked().Start) {
+                int res = save_game(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);
+                TYRA_LOG("SAVE: Status", res);
             }
             break;
         case load_game:

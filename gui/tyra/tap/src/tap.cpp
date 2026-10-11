@@ -28,12 +28,38 @@ void Tap::init() {
     int ret = 0;
     int mod_res = 0;
 
+    // --- ANCIENNES TENTATIVES (gardees en commentaire au cas ou) ---
+    // Tentative 1: Chargement direct des modules ROM standard (echoue avec -203 sur SCPH-90004)
+    // ret = SifLoadModule("rom0:MCMAN", 0, nullptr);
+    // TYRA_LOG("rom0:MCMAN: ret=", ret);
+    // ret = SifLoadModule("rom0:MCSERV", 0, nullptr);
+    // TYRA_LOG("rom0:MCSERV: ret=", ret);
+
+    // Tentative 2: Chargement direct des modules ROM etendus (echoue avec -203 sur SCPH-90004 Deckard)
+    // ret = SifLoadModule("rom0:XMCMAN", 0, nullptr);
+    // TYRA_LOG("rom0:XMCMAN: ret=", ret);
+    // ret = SifLoadModule("rom0:XMCSERV", 0, nullptr);
+    // TYRA_LOG("rom0:XMCSERV: ret=", ret);
+
+    // --- METHODE PAR BUFFER AVEC GESTION DU BUS SIO2 ---
+    // 1. Fermer temporairement le port de la manette pour liberer le bus SIO2
+    //    et eviter que le polling actif de la manette ne perturbe la detection de la carte memoire.
+    padPortClose(0, 0);
+
+    // 2. Charger les pilotes depuis les buffers integres (compatible toutes PS2, y compris 90004)
     ret = SifExecModuleBuffer(mcman_irx, size_mcman_irx, 0, nullptr, &mod_res);
-    TYRA_LOG("MCMAN: ret=", ret, ", mod_res=", mod_res);
+    TYRA_LOG("MCMAN buffer: ret=", ret, ", mod_res=", mod_res);
+
     ret = SifExecModuleBuffer(mcserv_irx, size_mcserv_irx, 0, nullptr, &mod_res);
-    TYRA_LOG("MCSERV: ret=", ret, ", mod_res=", mod_res);
-    int res = mcInit(MC_TYPE_MC);
+    TYRA_LOG("MCSERV buffer: ret=", ret, ", mod_res=", mod_res);
+
+    // 3. Initialiser la bibliotheque carte memoire en mode XMC (protocole etendu de mcserv.irx)
+    int res = mcInit(MC_TYPE_XMC);
     TYRA_LOG("mcInit: res=", res);
+
+    // 4. Re-initialiser la manette maintenant que les pilotes MC sont enregistres
+    engine->pad.init();
+
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
     game_state.last_time = game_state.timer.getTimeDelta();
     engine->renderer.core.renderer2D.setTextureMappingType(game_state.texture_filter);
