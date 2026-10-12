@@ -3,10 +3,12 @@
 #include <tyra>
 #include "splash_screen.hpp"
 #include "debug/debug.hpp"
+#include "game_state.hpp"
 #include "helper.hpp"
 #include "button.hpp"
 #include "save_load.hpp"
 #include "new_game.hpp"
+#include "game.hpp"
 
 void SplashScreen::load_background() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
@@ -33,7 +35,7 @@ void create_or_launch(State &current_state, int &slot_choose, int &selected_id) 
     slot_choose = selected_id;
 }
 
-SplashScreen::SplashScreen(Tyra::Engine* engine) {
+SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
     this->engine = engine;
     // load_image(&background, engine, "oui.png");
     load_image(&font, engine, "test_font.png");
@@ -147,6 +149,7 @@ void SplashScreen::update() {
             if (pad.getClicked().Start) {
                 int res = save_game(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);
                 TYRA_LOG("SAVE: Status", res);
+                game_state.set_game_scene(new GameWorld());
             }
             break;
         case load_game:

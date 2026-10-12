@@ -4,6 +4,7 @@
 #include <string>
 #include "game_scene.hpp"
 #include "button.hpp"
+#include "game_state.hpp"
 #include "save_load.hpp"
 
 enum State {
@@ -37,7 +38,8 @@ class SplashScreen : public GameScene {
         int selected_id;
         int save_slot_choice;
     public:
-        SplashScreen(Tyra::Engine* engine);
+        GameState game_state;
+        SplashScreen(Tyra::Engine* engine, GameState *game_state);
         ~SplashScreen();
         void update() override;
         void draw() override;

@@ -73,7 +73,7 @@ void Tap::loop() {
         }
         switch(scene) {
             case splash_screen:
-                game_state.set_game_scene(new SplashScreen(engine));
+                game_state.set_game_scene(new SplashScreen(engine, &game_state));
                 break;
             case game:
                 break;
