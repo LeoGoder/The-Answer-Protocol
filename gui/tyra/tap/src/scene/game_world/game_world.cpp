@@ -1,17 +1,17 @@
-#include "game.hpp"
+#include "game_world.hpp"
 
 GameWorld::GameWorld() {
 
 }
 
-~GameWorld::GameWorld() {
+GameWorld::~GameWorld() {
 
 }
 
-GameWorld::update() {
+void GameWorld::update() {
 
 }
 
-GameWorld::draw() {
+void GameWorld::draw() {
 
 }

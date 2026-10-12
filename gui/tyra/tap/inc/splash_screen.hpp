@@ -38,7 +38,7 @@ class SplashScreen : public GameScene {
         int selected_id;
         int save_slot_choice;
     public:
-        GameState game_state;
+        GameState *game_state;
         SplashScreen(Tyra::Engine* engine, GameState *game_state);
         ~SplashScreen();
         void update() override;

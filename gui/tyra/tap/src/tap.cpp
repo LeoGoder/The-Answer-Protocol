@@ -7,6 +7,7 @@
 #include "game_state.hpp"
 #include "splash_screen.hpp"
 #include "time/timer.hpp"
+#include "game_world.hpp"
 
 // IRX modules
 extern "C" {
@@ -76,6 +77,7 @@ void Tap::loop() {
                 game_state.set_game_scene(new SplashScreen(engine, &game_state));
                 break;
             case game:
+                game_state.set_game_scene(new GameWorld());
                 break;
             case end_screen:
                 break;

@@ -8,7 +8,6 @@
 #include "button.hpp"
 #include "save_load.hpp"
 #include "new_game.hpp"
-#include "game.hpp"
 
 void SplashScreen::load_background() {
     const auto& screenSettings = this->engine->renderer.core.getSettings();
@@ -37,6 +36,7 @@ void create_or_launch(State &current_state, int &slot_choose, int &selected_id) 
 
 SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
     this->engine = engine;
+    this->game_state = game_state;
     // load_image(&background, engine, "oui.png");
     load_image(&font, engine, "test_font.png");
     load_image(&mn_background, engine, "main_menu.png");
@@ -84,7 +84,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
 }
 
 SplashScreen::~SplashScreen() {
-    this->engine->renderer.getTextureRepository().freeBySprite(background);
+    // this->engine->renderer.getTextureRepository().freeBySprite(background);
     this->engine->renderer.getTextureRepository().freeBySprite(mn_background);
     this->engine->renderer.getTextureRepository().freeBySprite(font);
     this->engine->renderer.getTextureRepository().freeBySprite(arrow);
@@ -149,7 +149,9 @@ void SplashScreen::update() {
             if (pad.getClicked().Start) {
                 int res = save_game(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);
                 TYRA_LOG("SAVE: Status", res);
-                game_state.set_game_scene(new GameWorld());
+                game_state->set_init_scene(true);
+                game_state->set_actual_scene(game);
+                TYRA_LOG("Scene: ", game_state->get_actual_scene());
             }
             break;
         case load_game:
