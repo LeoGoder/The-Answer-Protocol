@@ -70,7 +70,8 @@ static int last_character_position(char str[P_NAME_LEN]) {
 
 void delete_last_character(GameData &data) {
     int last_char = last_character_position(data.player_name) - 1;
-    data.player_name[last_char] = '\0';
+    if (last_char >= 0)
+        data.player_name[last_char] = '\0';
 }
 
 void clear_all_character(GameData &data) {
@@ -82,9 +83,9 @@ void clear_all_character(GameData &data) {
 void put_letter_in_player_name(GameData &data, char c) {
     if (strlen(data.player_name) < P_NAME_LEN - 1) {
         if (c == ' ')
-            data.player_name[last_character_position(data.player_name)] += c;
+            data.player_name[last_character_position(data.player_name)] = c;
         else
-            data.player_name[last_character_position(data.player_name)] += c;
+            data.player_name[last_character_position(data.player_name)] = c;
     }
 }
 

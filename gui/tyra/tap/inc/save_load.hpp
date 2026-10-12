@@ -1,6 +1,10 @@
-#pragma  once
+#pragma once
 #include <libmc.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+// return value
 #define LOAD_SUCCESS 1
 #define LOAD_FAIL 2
 #define SAVE_SUCCESS 3

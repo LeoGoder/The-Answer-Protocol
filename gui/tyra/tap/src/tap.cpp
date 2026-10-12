@@ -10,10 +10,10 @@
 
 // IRX modules
 extern "C" {
-extern unsigned char mcman_irx[];
-extern unsigned int size_mcman_irx;
-extern unsigned char mcserv_irx[];
-extern unsigned int size_mcserv_irx;
+extern unsigned char xmcman_irx[];
+extern unsigned int size_xmcman_irx;
+extern unsigned char xmcserv_irx[];
+extern unsigned int size_xmcserv_irx;
 }
 
 namespace Tyra {
@@ -45,11 +45,11 @@ void Tap::init() {
     // 1. Fermer temporairement le port de la manette pour liberer le bus SIO2
     padPortClose(0, 0);
 
-    ret = SifExecModuleBuffer(mcman_irx, size_mcman_irx, 0, nullptr, &mod_res);
-    TYRA_LOG("MCMAN buffer: ret=", ret, ", mod_res=", mod_res);
+    ret = SifExecModuleBuffer(xmcman_irx, size_xmcman_irx, 0, nullptr, &mod_res);
+    TYRA_LOG("XMCMAN buffer: ret=", ret, ", mod_res=", mod_res);
 
-    ret = SifExecModuleBuffer(mcserv_irx, size_mcserv_irx, 0, nullptr, &mod_res);
-    TYRA_LOG("MCSERV buffer: ret=", ret, ", mod_res=", mod_res);
+    ret = SifExecModuleBuffer(xmcserv_irx, size_xmcserv_irx, 0, nullptr, &mod_res);
+    TYRA_LOG("XMCSERV buffer: ret=", ret, ", mod_res=", mod_res);
 
     int res = mcInit(MC_TYPE_XMC);
     TYRA_LOG("mcInit: res=", res);

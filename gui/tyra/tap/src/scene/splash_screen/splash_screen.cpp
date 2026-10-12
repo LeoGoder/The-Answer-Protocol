@@ -49,6 +49,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
     font_color.b = 128.0f;
     SplashScreen::load_background();
     selected_id = 0;
+    save_slot_choice = 0;
     // main menu button
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Load", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "New game", [this]() {change_to_sub_menu(selected_id, current_state);}, this->engine));
@@ -59,6 +60,13 @@ SplashScreen::SplashScreen(Tyra::Engine* engine) {
             btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state, this->save_slot_choice, this->selected_id);}, this->engine));
             this->save_lst.push_back(std::make_unique<GameData>());
             this->save_lst.back()->player_name[P_NAME_LEN - 1] = '\0';
+        }
+        else {
+            this->save_lst.push_back(std::make_unique<GameData>());
+            load_data(i, *this->save_lst.back());
+            std::string str(this->save_lst.back()->player_name);
+            TYRA_LOG(str);
+            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, str, [this]() {create_or_launch(current_state, this->save_slot_choice, this->selected_id);}, this->engine));
         }
     }
     // player creation keyboard
