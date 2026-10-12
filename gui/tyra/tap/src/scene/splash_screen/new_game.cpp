@@ -21,8 +21,10 @@ void SplashScreen::draw_create_player() {
     float pos_y = engine->renderer.core.getSettings().getHeight() / 2;
     float default_pos_x = pos_x;
     float offset = 40;
+    float command_offset = 5;
     const std::string space = "Space";
     const std::string delete_char = "Delete";
+    const std::string start = "Start";
     unsigned int btn_key_size = this->btn_keyboard.size();
 
     for (unsigned int i = 0; i < btn_key_size; i++) {
@@ -35,18 +37,22 @@ void SplashScreen::draw_create_player() {
     }
     float last_button_size = btn_background.size.x / 2 + 10;
     pos_y += 20;
-    pos_x = 50;
+    pos_x = 20;
 
     draw_sprite_sheet(this->engine, this->controller, pos_x, pos_y, 32.0f, 32.0f, 1, 4, 1.0f);
     draw_text(this->engine, space, &this->font, pos_x + 36.0f, pos_y + 12.0f, 1.0f);
-    pos_x = pos_x + 36.0f + get_text_len(space, 1.0f) + offset;
+    pos_x = pos_x + 36.0f + get_text_len(space, 1.0f) + command_offset;
 
     draw_sprite_sheet(this->engine, this->controller, pos_x, pos_y, 32.0f, 32.0f, 3, 4, 1.0f);
     draw_text(this->engine, delete_char, &this->font, pos_x + 36.0f, pos_y + 12.0f, 1.0f);
-    pos_x = pos_x + 36.0f + get_text_len(delete_char, 1.0f) + offset;
+    pos_x = pos_x + 36.0f + get_text_len(delete_char, 1.0f) + command_offset;
 
     draw_sprite_sheet(this->engine, this->controller, pos_x, pos_y, 32.0f, 32.0f, 4, 4, 1.0f);
-    draw_text(this->engine, "Start", &this->font, pos_x + 36.0f, pos_y + 12.0f, 1.0f);
+    draw_text(this->engine, start, &this->font, pos_x + 36.0f, pos_y + 12.0f, 1.0f);
+    pos_x = pos_x + 36.0f + get_text_len(start, 1.0f) + command_offset;
+
+    draw_sprite_sheet(this->engine, this->controller, pos_x, pos_y, 32.0f, 32.0f, 5, 4, 1.0f);
+    draw_text(this->engine, "Clear", &this->font, pos_x + 36.0f, pos_y + 12.0f, 1.0f);
 
     std::string temp_str = this->save_lst[this->save_slot_choice]->player_name;
     draw_text_color(engine, temp_str, &this->font, (engine->renderer.core.getSettings().getWidth() / 2) - (static_cast<float>(get_text_len(temp_str, 2.0f / 2))), 50, this->font_color, 2.0f);

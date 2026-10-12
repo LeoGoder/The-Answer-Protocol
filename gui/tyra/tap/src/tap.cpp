@@ -43,7 +43,6 @@ void Tap::init() {
 
     // --- METHODE PAR BUFFER AVEC GESTION DU BUS SIO2 ---
     // 1. Fermer temporairement le port de la manette pour liberer le bus SIO2
-    //    et eviter que le polling actif de la manette ne perturbe la detection de la carte memoire.
     padPortClose(0, 0);
 
     ret = SifExecModuleBuffer(mcman_irx, size_mcman_irx, 0, nullptr, &mod_res);
