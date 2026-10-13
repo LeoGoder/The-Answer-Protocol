@@ -3,6 +3,7 @@
 #include <tyra>
 #include "splash_screen.hpp"
 #include "debug/debug.hpp"
+#include "game.hpp"
 #include "game_state.hpp"
 #include "helper.hpp"
 #include "button.hpp"
@@ -29,9 +30,16 @@ void change_to_sub_menu(int selected_id, State &current_state) {
         // current_state = create;
 }
 
-void create_or_launch(State &current_state, int &slot_choose, int &selected_id) {
-    current_state = create;
-    slot_choose = selected_id;
+void create_or_launch(State &current_state, GameState *game_state, int &slot_choose, int &selected_id) {
+    if (current_state == new_game) {
+        current_state = create;
+        slot_choose = selected_id;
+    }
+    else {
+        game_state->set_init_scene(true);
+        game_state->set_actual_scene(game);
+
+    }
 }
 
 SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
@@ -42,6 +50,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
     load_image(&mn_background, engine, "main_menu.png");
     load_image(&arrow, engine, "arrow.png");
     load_image(&btn_background, engine, "button_save_select.png");
+    load_image(&btn_background_variant, engine, "button_save_select_variant.png");
     load_image(&keyboard, engine, "keyboard.png");
     load_image(&keyboard_long, engine, "keyboard_long.png");
     load_image(&controller, engine, "controller_button.png");
@@ -59,7 +68,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
     // new game button
     for (int i = 0; i <= 3; i++) {
         if (is_slot_used(i) == false) {
-            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state, this->save_slot_choice, this->selected_id);}, this->engine));
+            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this]() {create_or_launch(current_state, this->game_state, this->save_slot_choice, this->selected_id);}, this->engine));
             this->save_lst.push_back(std::make_unique<GameData>());
             this->save_lst.back()->player_name[P_NAME_LEN - 1] = '\0';
         }
@@ -68,7 +77,7 @@ SplashScreen::SplashScreen(Tyra::Engine* engine, GameState *game_state) {
             load_data(i, *this->save_lst.back());
             std::string str(this->save_lst.back()->player_name);
             TYRA_LOG(str);
-            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, str, [this]() {create_or_launch(current_state, this->save_slot_choice, this->selected_id);}, this->engine));
+            btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background_variant, str, [this]() {create_or_launch(current_state, this->game_state, this->save_slot_choice, this->selected_id);}, this->engine));
         }
     }
     // player creation keyboard
@@ -89,6 +98,7 @@ SplashScreen::~SplashScreen() {
     this->engine->renderer.getTextureRepository().freeBySprite(font);
     this->engine->renderer.getTextureRepository().freeBySprite(arrow);
     this->engine->renderer.getTextureRepository().freeBySprite(btn_background);
+    this->engine->renderer.getTextureRepository().freeBySprite(btn_background_variant);
     this->engine->renderer.getTextureRepository().freeBySprite(keyboard);
     this->engine->renderer.getTextureRepository().freeBySprite(keyboard_long);
 }
@@ -155,6 +165,7 @@ void SplashScreen::update() {
             }
             break;
         case load_game:
+            loop_button_lst(this->engine, this->btn_save, this->selected_id, this->is_left_joy_centered, 1, 4);
             if (pad.getClicked().Triangle)
                 current_state = main_menu;
             break;

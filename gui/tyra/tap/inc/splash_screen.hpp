@@ -23,6 +23,7 @@ class SplashScreen : public GameScene {
         Tyra::Sprite font;
         Tyra::Sprite arrow;
         Tyra::Sprite btn_background;
+        Tyra::Sprite btn_background_variant;
         Tyra::Sprite keyboard;
         Tyra::Sprite keyboard_long;
         Tyra::Sprite controller;
