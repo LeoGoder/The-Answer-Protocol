@@ -3,7 +3,6 @@
 #include <tyra>
 #include "splash_screen.hpp"
 #include "debug/debug.hpp"
-#include "game.hpp"
 #include "game_state.hpp"
 #include "helper.hpp"
 #include "button.hpp"
@@ -26,8 +25,6 @@ void change_to_sub_menu(int selected_id, State &current_state) {
         current_state = load_game;
     else if (selected_id == 1)
         current_state = new_game;
-    // else if (selected_id == 2)
-        // current_state = create;
 }
 
 void create_or_launch(State &current_state, GameState *game_state, int &slot_choose, int &selected_id) {
@@ -38,7 +35,6 @@ void create_or_launch(State &current_state, GameState *game_state, int &slot_cho
     else {
         game_state->set_init_scene(true);
         game_state->set_actual_scene(game);
-
     }
 }
 
