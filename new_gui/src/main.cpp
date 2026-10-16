@@ -1,18 +1,24 @@
-#include "engine.hpp"
-#include <libmc.h>
 #include "tap.hpp"
-#include <unistd.h>
+#include "helper.hpp"
+#include "raylib.h"
 
 int main(int argc, char **argv) {
-    Tyra::EngineOptions options;
-    // guys set it to true before compiling for the real console find it in tap.hpp
-    if (Tyra::IS_REAL_PS2_VIA_USB) {
-        options.writeLogsToFile = true;
-        options.loadUsbDriver = true;
+    (void)argc;
+    (void)argv;
+
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "The Answer Protocol");
+    SetTargetFPS(60);
+
+    Tap game;
+    game.init();
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(Color{ 32, 32, 32, 255 });
+        game.loop();
+        EndDrawing();
     }
-    Tyra::Engine engine(options);
-    sleep(3);
-    Tyra::Tap game(&engine);
-    engine.run(&game);
+
+    CloseWindow();
     return 0;
 }

@@ -1,0 +1,6 @@
+/* GNU ld script */
+INPUT (
+  /home/lgoderne/Documents/42Proj/m5/The-Answer-Protocol/new_gui/inc/lib/raylib_combined.o
+  -lstdc++
+  -lm
+)

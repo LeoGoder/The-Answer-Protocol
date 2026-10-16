@@ -1,6 +1,6 @@
 #pragma once
-#include "renderer/models/color.hpp"
+#include "raylib.h"
 
 namespace Color {
-    const Tyra::Color Yellow(128.0f, 128.0f, 0.0f, 128.0f);
+    const ::Color Yellow = { 255, 255, 0, 255 };
 }

@@ -1,8 +1,5 @@
 #pragma once
-#include <tyra>
 #include "game_scene.hpp"
-#include "renderer/3d/pipeline/shared/pipeline_texture_mapping_type.hpp"
-#include "tamtypes.h"
 
 enum Scene {
     splash_screen = 0,
@@ -17,12 +14,10 @@ class GameState {
         bool init_scene;
         GameScene *game_scene = nullptr;
     public:
-        Tyra::Timer timer;
-        u32 last_time;
         float dt;
-        Tyra::PipelineTextureMappingType texture_filter = Tyra::TyraNearest;
         GameState();
         ~GameState();
+
         void set_actual_scene(Scene new_scene) {
             actual_scene = new_scene;
         }

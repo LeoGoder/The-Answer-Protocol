@@ -1,41 +1,46 @@
 #pragma once
 #include <functional>
 #include <string>
-#include <tyra>
+#include "raylib.h"
 #include "helper.hpp"
 
 class Button {
-    private:
-        std::string text;
-        bool is_selected;
-        std::function<void()> callback;
-        Tyra::Sprite *background = nullptr;
-        Tyra::Sprite *arrow = nullptr;
-        Tyra::Engine *engine = nullptr;
-        bool flip_arrow_animation = false;
-        float offset = 0.0f;
-        float speed = 1.5f;
-    public:
-        // Button(Tyra::Sprite *arrow, Tyra::Sprite *background, std::function<void()> callback, Tyra::Engine *engine);
-        Button(Tyra::Sprite *arrow, Tyra::Sprite *background, const std::string text, std::function<void()> callback, Tyra::Engine *engine);
-        ~Button();
-        void draw_button(Tyra::Sprite *font, float x, float y, float scale);
-        void on_click();
-        float get_size_text(float scale) {
-            return get_text_len(this->text, scale);
-        }
-        float get_sprite_width() {
-            return this->background->size.x;
-        }
-        float get_sprite_height() {
-            return this->background->size.y;
-        }
-        Tyra::Sprite *get_sprite() {
-            return this->background;
-        }
-        void set_is_selected(bool state) {
-            this->is_selected = state;
-        }
-};
+private:
+    std::string text;
+    bool is_selected;
+    std::function<void()> callback;
+    const Texture2D *background;
+    const Texture2D *arrow;
+    bool flip_arrow_animation;
+    float offset;
+    float speed;
+    Rectangle bounds;
 
-void loop_button_lst(Tyra::Engine *engine, std::vector<std::unique_ptr<Button>> &button_list, int &selected_id, bool &is_left_joy_centered, int col_number, int line_number);
+public:
+    Button(const Texture2D *arrow, const Texture2D *background, const std::string &text, std::function<void()> callback);
+    ~Button();
+
+    void draw_button(const Texture2D &font, float x, float y, float scale = 1.0f);
+    void on_click();
+
+    float get_size_text(float scale = 1.0f) const {
+        return GetFontTextWidth(this->text, scale);
+    }
+    float get_sprite_width() const {
+        if (!this->background) return 0.0f;
+        return static_cast<float>(this->background->width) / 2.0f;
+    }
+    float get_sprite_height() const {
+        if (!this->background) return 0.0f;
+        return static_cast<float>(this->background->height);
+    }
+    void set_is_selected(bool state) {
+        this->is_selected = state;
+    }
+    bool get_is_selected() const {
+        return this->is_selected;
+    }
+    Rectangle get_bounds() const {
+        return this->bounds;
+    }
+};
