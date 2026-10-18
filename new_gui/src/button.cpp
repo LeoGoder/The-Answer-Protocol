@@ -1,4 +1,6 @@
 #include "button.hpp"
+#include "helper.hpp"
+#include <cstdio>
 
 Button::Button(const Texture2D *arrow, const Texture2D *background, const std::string &text, std::function<void()> callback) {
     this->arrow = arrow;
@@ -21,7 +23,7 @@ void Button::on_click() {
 }
 
 void Button::draw_button(const Texture2D &font, float x, float y, float scale) {
-    Vector2 mouse_pos = GetMousePosition();
+    Vector2 mouse_pos = get_virtual_mouse_position();
 
     if (this->background == nullptr) {
         float text_w = get_size_text(scale);

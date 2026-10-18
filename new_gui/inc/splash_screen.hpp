@@ -47,4 +47,5 @@ public:
     void draw_new_game();
     void draw_create_player();
     void draw_load_game();
+    void keyboard_input();
 };

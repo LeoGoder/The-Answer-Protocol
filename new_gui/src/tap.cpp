@@ -1,13 +1,27 @@
 #include "tap.hpp"
+#include "raylib.h"
 #include "splash_screen.hpp"
 #include "game_world.hpp"
+#include <cstdio>
 
-Tap::Tap() : game_state() {}
+Tap::Tap() : game_state() {
+    this->mouse_cursor = LoadTexture(GetAssetPath("cursor.png").c_str());
+}
 
 Tap::~Tap() {}
 
 void Tap::init() {
     game_state.dt = 0.0f;
+}
+
+void Tap::draw_cursor() {
+    Vector2 mouse_pos = get_virtual_mouse_position();
+
+    DrawTexture(this->mouse_cursor, mouse_pos.x, mouse_pos.y, WHITE);
+    if (!IsCursorOnScreen())
+        ShowCursor();
+    else
+        HideCursor();
 }
 
 void Tap::loop() {
@@ -39,6 +53,6 @@ void Tap::loop() {
         game_scene->update();
         game_scene->draw();
     }
-
+    Tap::draw_cursor();
     game_state.dt = GetFrameTime();
 }

@@ -13,3 +13,4 @@
 std::string GetAssetPath(const std::string &path);
 void DrawFontText(const Texture2D &font, const std::string &text, float x, float y, Color color = WHITE, float scale = 1.0f);
 float GetFontTextWidth(const std::string &text, float scale = 1.0f);
+Vector2 get_virtual_mouse_position();

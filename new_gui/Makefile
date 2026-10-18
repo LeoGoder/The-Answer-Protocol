@@ -1,7 +1,11 @@
-CC=gcc
+CC=g++
 NAME=tap
 
-C_FLAGS = -Wall -Wextra -Werror -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+CPPFLAGS = -Iinc
+CFLAGS   = -Wall -Wextra -Werror -g3
+
+LDFLAGS  = -Linc/lib
+LDLIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 LIB = inc/lib/
 
@@ -16,20 +20,22 @@ INC = inc/button.hpp \
 	 inc/splash_screen.hpp \
 	 inc/tap.hpp \
 
-SRC = main.cpp \
-	 helper.cpp \
-	 tap.cpp \
-	 save_load.cpp \
-	 button.cpp \
-	 game_state.cpp \
-	 scene/game_world/game_world.cpp \
-	 scene/splash_screen/load_game.cpp \
-	 scene/splash_screen/new_game.cpp \
-	 scene/splash_screen/splash_screen.cpp \
+SRC = src/main.cpp \
+	 src/helper.cpp \
+	 src/tap.cpp \
+	 src/save_load.cpp \
+	 src/button.cpp \
+	 src/game_state.cpp \
+	 src/scene/game_world/game_world.cpp \
+	 src/scene/splash_screen/load_game.cpp \
+	 src/scene/splash_screen/new_game.cpp \
+	 src/scene/splash_screen/splash_screen.cpp \
 
 OBJ_DIR = obj
 
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
+
+BIN_DIR = bin
 
 BLUE = \033[1;34m
 GREEN = \033[1;32m
@@ -38,7 +44,7 @@ YELLOW = \033[1;33m
 
 all: build-raylib $(NAME)
 
-run:
+run: build-raylib $(NAME)
 	./$(NAME)
 
 build-raylib:
@@ -46,13 +52,13 @@ build-raylib:
 	cp raylib/src/libraylib.a inc/lib/.
 
 $(NAME): $(OBJ)
-	@$(CC) $(C_FLAGS) $(OBJ) -o $(NAME)
-	@printf "$(GREEN)Codexion Build successful!$(RESET)\n"
+	@$(CC) $(OBJ) $(LDFLAGS) $(LDLIBS) -o $(NAME)
+	@printf "$(GREEN)Tap gui Build successful!$(RESET)\n"
 
 $(OBJ): $(OBJ_DIR)/%.o: %.cpp $(INC) Makefile
-	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	@printf "$(BLUE)[+] Compiling $(RESET)$<\n"
-	@$(CC) $(C_FLAGS) -c $< -o $@ -g3
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
 	@cd raylib/src && make clean
@@ -67,6 +73,9 @@ fclean: clean
 	@rm -fr $(NAME)
 	@printf "$(YELLOW)[-] Delete $(NAME) binary$(RESET)\n"
 
-re: fclean build-raylib build-tap
+re: fclean build-raylib $(NAME)
+
+lint:
+	cpplint --filter=-legal/copyright --recursive .
 
 .PHONY: all clean fclean re

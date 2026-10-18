@@ -1,6 +1,5 @@
 #include "splash_screen.hpp"
 #include "helper.hpp"
-#include "new_game.hpp"
 
 static void change_to_sub_menu(int id, State &current_state) {
     if (id == 0)
@@ -100,6 +99,7 @@ void SplashScreen::update() {
         case create:
             if (IsKeyPressed(KEY_ESCAPE) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
                 current_state = new_game;
+            SplashScreen::keyboard_input();
             if (IsKeyPressed(KEY_ENTER)) {
                 save_game(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);
                 game_state->set_init_scene(true);

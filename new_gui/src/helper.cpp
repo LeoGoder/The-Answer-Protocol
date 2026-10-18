@@ -45,3 +45,11 @@ void DrawFontText(const Texture2D &font, const std::string &text, float x, float
         temp_x += scaled_w;
     }
 }
+
+Vector2 get_virtual_mouse_position() {
+    Vector2 mouse = GetMousePosition();
+    return Vector2{
+        mouse.x * ((float)SCREEN_WIDTH / (float)GetScreenWidth()),
+        mouse.y * ((float)SCREEN_HEIGHT / (float)GetScreenHeight())
+    };
+}
