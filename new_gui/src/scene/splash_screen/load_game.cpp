@@ -10,4 +10,5 @@ void SplashScreen::draw_load_game() {
     this->btn_save[1]->draw_button(font, center_x, pos_x + sprite_height, 1.0f);
     this->btn_save[2]->draw_button(font, center_x, pos_x + (sprite_height * 2), 1.0f);
     this->btn_save[3]->draw_button(font, center_x, pos_x + (sprite_height * 3), 1.0f);
+    input_hint(this->font, this->mouse_keyboard_icons, "back");
 }

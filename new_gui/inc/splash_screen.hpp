@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include <string>
 #include "raylib.h"
 #include "game_scene.hpp"
 #include "button.hpp"
@@ -23,6 +22,8 @@ private:
     Texture2D arrow;
     Texture2D btn_background;
     Texture2D btn_background_variant;
+    Texture2D mouse_keyboard_icons;
+    Texture2D splash_art;
 
     Color font_color;
     bool color_sens;

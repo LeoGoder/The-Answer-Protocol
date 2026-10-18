@@ -1,5 +1,6 @@
 #include "splash_screen.hpp"
 #include "helper.hpp"
+#include "raylib.h"
 
 static void change_to_sub_menu(int id, State &current_state) {
     if (id == 0)
@@ -26,6 +27,8 @@ SplashScreen::SplashScreen(GameState *game_state) {
     this->arrow = LoadTexture(GetAssetPath("arrow.png").c_str());
     this->btn_background = LoadTexture(GetAssetPath("button_save_select.png").c_str());
     this->btn_background_variant = LoadTexture(GetAssetPath("button_save_select_variant.png").c_str());
+    this->mouse_keyboard_icons = LoadTexture(GetAssetPath("mouse_keyboard_icon.png").c_str());
+    this->splash_art = LoadTexture(GetAssetPath("splash_art_temp.png").c_str());
 
     font_color = Color{ 255, 255, 255, 255 };
     color_sens = false;
@@ -122,14 +125,17 @@ void SplashScreen::draw_welcome_screen() {
 void SplashScreen::draw_main_menu() {
     Rectangle src = { 0, 0, (float)mn_background.width, (float)mn_background.height };
     Rectangle dst = { SCREEN_WIDTH / 2.0f - 128.0f, SCREEN_HEIGHT / 2.0f - 128.0f, 256.0f, 256.0f };
-    DrawTexturePro(mn_background, src, dst, Vector2{0, 0}, 0.0f, WHITE);
+    std::string back = "back";
 
+    DrawTexturePro(mn_background, src, dst, Vector2{0, 0}, 0.0f, WHITE);
     this->button_list[0]->draw_button(font, (SCREEN_WIDTH - this->button_list[0]->get_size_text(1.0f)) / 2.0f, (SCREEN_HEIGHT / 2.0f) - (256.0f * 0.3f), 1.0f);
     this->button_list[1]->draw_button(font, (SCREEN_WIDTH - this->button_list[1]->get_size_text(1.0f)) / 2.0f, (SCREEN_HEIGHT / 2.0f) - (256.0f * 0.0f), 1.0f);
     this->button_list[2]->draw_button(font, (SCREEN_WIDTH - this->button_list[2]->get_size_text(1.0f)) / 2.0f, (SCREEN_HEIGHT / 2.0f) + (256.0f * 0.3f), 1.0f);
+    input_hint(this->font, this->mouse_keyboard_icons, "back");
 }
 
 void SplashScreen::draw() {
+    DrawTexture(this->splash_art, 0, 0, WHITE);
     switch (current_state) {
         case welcome:
             draw_welcome_screen();

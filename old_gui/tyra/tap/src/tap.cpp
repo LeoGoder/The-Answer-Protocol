@@ -11,10 +11,10 @@
 
 // IRX modules
 extern "C" {
-extern unsigned char xmcman_irx[];
-extern unsigned int size_xmcman_irx;
-extern unsigned char xmcserv_irx[];
-extern unsigned int size_xmcserv_irx;
+    extern unsigned char xmcman_irx[];
+    extern unsigned int size_xmcman_irx;
+    extern unsigned char xmcserv_irx[];
+    extern unsigned int size_xmcserv_irx;
 }
 
 namespace Tyra {
@@ -29,23 +29,7 @@ void Tap::init() {
     int ret = 0;
     int mod_res = 0;
 
-    // --- ANCIENNES TENTATIVES (gardees en commentaire au cas ou) ---
-    // Tentative 1: Chargement direct des modules ROM standard (echoue avec -203 sur SCPH-90004)
-    // ret = SifLoadModule("rom0:MCMAN", 0, nullptr);
-    // TYRA_LOG("rom0:MCMAN: ret=", ret);
-    // ret = SifLoadModule("rom0:MCSERV", 0, nullptr);
-    // TYRA_LOG("rom0:MCSERV: ret=", ret);
-
-    // Tentative 2: Chargement direct des modules ROM etendus (echoue avec -203 sur SCPH-90004 Deckard)
-    // ret = SifLoadModule("rom0:XMCMAN", 0, nullptr);
-    // TYRA_LOG("rom0:XMCMAN: ret=", ret);
-    // ret = SifLoadModule("rom0:XMCSERV", 0, nullptr);
-    // TYRA_LOG("rom0:XMCSERV: ret=", ret);
-
-    // --- METHODE PAR BUFFER AVEC GESTION DU BUS SIO2 ---
-    // 1. Fermer temporairement le port de la manette pour liberer le bus SIO2
     padPortClose(0, 0);
-
     ret = SifExecModuleBuffer(xmcman_irx, size_xmcman_irx, 0, nullptr, &mod_res);
     TYRA_LOG("XMCMAN buffer: ret=", ret, ", mod_res=", mod_res);
 
@@ -56,7 +40,6 @@ void Tap::init() {
     TYRA_LOG("mcInit: res=", res);
 
     engine->pad.init();
-
     engine->renderer.setClearScreenColor(Color(32.0F, 32.0F, 32.0F));
     game_state.last_time = game_state.timer.getTimeDelta();
     engine->renderer.core.renderer2D.setTextureMappingType(game_state.texture_filter);
