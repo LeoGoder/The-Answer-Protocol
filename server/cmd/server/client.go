@@ -3,8 +3,16 @@ package main
 import (
 	"net"
 	"sync"
+	"time"
+
+	"tap/server/internal/game"
+	"tap/server/internal/logger"
 )
 
+// A client that stops reading cannot block a sender longer than this.
+const WriteTimeout = 2 * time.Second
+
+// ClientHub maps usernames to connections.
 type ClientHub struct {
 	mutex   sync.Mutex
 	clients map[string]net.Conn
@@ -30,29 +38,36 @@ func (h *ClientHub) Remove(username string) {
 	delete(h.clients, username)
 }
 
-func (h *ClientHub) SendTo(username, message string) {
-	h.mutex.Lock()
-	conn, exists := h.clients[username]
-	h.mutex.Unlock()
+// Deliver goes on if a recipient fails; its own goroutine cleans it up.
+func (h *ClientHub) Deliver(events []game.Event) {
+	for _, event := range events {
+		for _, username := range event.To {
+			h.mutex.Lock()
+			conn, exists := h.clients[username]
+			h.mutex.Unlock()
 
-	if !exists {
-		return
+			// Send outside the lock: a slow client must not block the hub.
+			if exists {
+				send(conn, username, event.Line)
+			}
+		}
 	}
-
-	send(conn, message)
 }
 
-func (h *ClientHub) SendToAll(message string) {
-	h.mutex.Lock()
+func send(conn net.Conn, username string, message string) bool {
+	_ = conn.SetWriteDeadline(time.Now().Add(WriteTimeout))
 
-	connections := make([]net.Conn, 0, len(h.clients))
-	for _, conn := range h.clients {
-		connections = append(connections, conn)
+	_, err := conn.Write([]byte(message + "\n"))
+	if err != nil {
+		logger.Error("send_failed", logger.Fields{
+			"ip": conn.RemoteAddr().String(), "player": username, "error": err.Error(),
+		})
+		return false
 	}
 
-	h.mutex.Unlock()
+	logger.Info("message_sent", logger.Fields{
+		"ip": conn.RemoteAddr().String(), "player": username, "message": message,
+	})
 
-	for _, conn := range connections {
-		send(conn, message)
-	}
+	return true
 }

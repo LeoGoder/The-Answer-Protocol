@@ -3,9 +3,9 @@ package game
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 
+	"tap/server/internal/logger"
 	"tap/server/internal/protocol"
 )
 
@@ -23,104 +23,142 @@ type lookResponse struct {
 	NPCs    []string `json:"npcs"`
 }
 
-func (s *State) Handle(username string, cmd protocol.Command) string {
+// Handle locks once: never call an exported method below (deadlock).
+func (s *State) Handle(username string, cmd protocol.Command) Result {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	player, exists := s.players[username]
+	if !exists {
+		return reply(protocol.ErrNotAuthenticated)
+	}
+
 	switch cmd.Name {
 	case "LOOK":
-		return s.look(username)
+		return reply(s.look(player))
 	case "MOVE":
-		return s.move(username, cmd.Args[0])
-	case "CHAT":
-		return "OK"
+		return s.move(player, cmd.Args[0])
 	case "WHO":
-		return fmt.Sprintf("OK players=%d", len(s.players))
+		return reply(fmt.Sprintf("OK players=%d", len(s.players)))
+	case "CHAT":
+		return s.chat(player, cmd.Args)
 	case "GROUP":
-		return handleGroup(cmd.Args)
+		return s.group(player, cmd.Args)
 	case "TAKE":
-		return "ERR 404 ITEM_NOT_FOUND"
+		return s.take(player, targetName(cmd.Args))
 	case "DROP":
-		return "ERR 404 ITEM_NOT_IN_INVENTORY"
+		return s.drop(player, targetName(cmd.Args))
 	case "INVENTORY":
-		return "OK []"
-	case "TALK", "ATTACK", "QUEST":
-		return "ERR 404 NPC_NOT_FOUND"
+		return reply(s.inventory(player))
+	case "USE":
+		return s.use(player, targetName(cmd.Args))
+	case "TALK":
+		return reply(s.talk(player, targetName(cmd.Args)))
+	case "ATTACK":
+		return s.attack(player, targetName(cmd.Args))
 	case "STATUS":
-		return `OK {"hp":100,"max_hp":100,"status":"healthy"}`
+		return reply(s.status(player))
+	case "QUEST":
+		return reply(s.quest(player, targetName(cmd.Args)))
 	case "QUESTS":
-		return "OK []"
+		return reply(s.questLog(player))
 	}
-	return ""
+
+	return reply(protocol.ErrUnknownCommand)
 }
 
-func (s *State) look(username string) string {
-	player, ok := s.players[username]
-	if !ok {
-		return protocol.ErrNotAuthenticated
-	}
-	room, ok := s.rooms[player.CurrentRoom]
-	if !ok {
-		return "ERR 500 INTERNAL_ERROR"
+func reply(line string) Result {
+	return Result{Reply: line}
+}
+
+func okJSON(value interface{}) string {
+	data, err := json.Marshal(value)
+	if err != nil {
+		logger.Error("json_encode_failed", logger.Fields{"error": err.Error()})
+		return protocol.ErrInternal
 	}
 
-	players := make([]string, 0)
-	for _, p := range s.players {
-		if p.CurrentRoom == player.CurrentRoom {
-			players = append(players, p.Username)
-		}
-	}
-	sort.Strings(players)
+	return "OK " + string(data)
+}
 
-	response := lookResponse{
+func (s *State) look(player *Player) string {
+	room := s.world.rooms[player.Room]
+
+	return okJSON(lookResponse{
 		Room: roomView{
 			ID:          room.ID,
 			Name:        room.Name,
 			Description: room.Description,
 			Exits:       room.Exits,
 		},
-		Players: players,
+		Players: s.playersIn(room.ID),
 		Items:   room.Items,
-		NPCs:    room.NPCs,
-	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		return "ERR 500 INTERNAL_ERROR"
-	}
-	return "OK " + string(data)
+		NPCs:    s.aliveNPCsIn(room.ID),
+	})
 }
 
-func (s *State) move(username, direction string) string {
-	player, ok := s.players[username]
-	if !ok {
-		return protocol.ErrNotAuthenticated
-	}
-	room, ok := s.rooms[player.CurrentRoom]
-	if !ok {
-		return "ERR 500 INTERNAL_ERROR"
+func (s *State) move(player *Player, direction string) Result {
+	room := s.world.rooms[player.Room]
+
+	target, exists := room.Exits[strings.ToLower(direction)]
+	if !exists {
+		return reply(protocol.ErrNoExit)
 	}
 
-	target, ok := room.Exits[strings.ToLower(direction)]
-	if !ok {
-		return "ERR 301 NO_EXIT"
-	}
-	if _, ok := s.rooms[target]; !ok {
-		return "ERR 301 NO_EXIT"
+	result := Result{Reply: "OK room=" + target}
+
+	if player.Target != "" {
+		logger.Info("combat_left", logger.Fields{
+			"player": player.Username, "npc": player.Target, "reason": "moved",
+		})
+		player.Target = ""
 	}
 
-	player.CurrentRoom = target
-	return "OK room=" + target
+	result.Events = s.changeRoom(player, target)
+
+	logger.Info("player_moved", logger.Fields{
+		"player": player.Username, "from": room.ID, "to": target,
+	})
+
+	return result
 }
 
-func handleGroup(args []string) string {
-	switch strings.ToUpper(args[0]) {
-	case "CREATE":
-		return "OK group=group.default"
-	case "INVITE", "LEAVE":
-		return "OK"
-	case "JOIN":
-		return "OK group=group.default"
+// changeRoom returns the LEAVE / ENTER events for the others.
+func (s *State) changeRoom(player *Player, target string) []Event {
+	oldRoom := player.Room
+	player.Room = target
+
+	return []Event{
+		s.toRoom(oldRoom, "EVT ROOM PRESENCE LEAVE "+player.Username, player.Username),
+		s.toRoom(target, "EVT ROOM PRESENCE ENTER "+player.Username, player.Username),
 	}
-	return ""
+}
+
+func (s *State) chat(player *Player, args []string) Result {
+	scope := strings.ToUpper(args[0])
+	message := strings.Join(args[1:], " ")
+
+	logger.Info("chat", logger.Fields{
+		"player": player.Username, "scope": scope, "message": message,
+	})
+
+	switch scope {
+	case "GLOBAL":
+		line := "EVT GLOBAL CHAT " + player.Username + " " + message
+		return Result{Reply: protocol.OK, Events: []Event{s.toAll(line, "")}}
+
+	case "ROOM":
+		line := "EVT ROOM CHAT " + player.Username + " " + message
+		return Result{Reply: protocol.OK, Events: []Event{s.toRoom(player.Room, line, "")}}
+
+	case "GROUP":
+		if player.Group == "" {
+			return reply(protocol.ErrNotInGroup)
+		}
+
+		line := "EVT GROUP CHAT " + player.Username + " " + message
+		return Result{Reply: protocol.OK, Events: []Event{s.toGroup(player.Group, line, "")}}
+	}
+
+	return reply(protocol.ErrBadRequest)
 }

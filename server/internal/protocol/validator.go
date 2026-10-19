@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Validate checks arguments only; unknown commands pass to the game.
 func Validate(cmd Command) error {
 	switch cmd.Name {
 
@@ -13,9 +14,7 @@ func Validate(cmd Command) error {
 			return fmt.Errorf("CONNECT requires one argument")
 		}
 
-		if err := ValidateUsername(cmd.Args[0]); err != nil {
-			return err
-		}
+		return ValidateUsername(cmd.Args[0])
 
 	case "MOVE":
 		if len(cmd.Args) != 1 {
@@ -24,36 +23,27 @@ func Validate(cmd Command) error {
 
 	case "QUIT", "LOOK", "WHO", "INVENTORY", "STATUS", "QUESTS":
 		if len(cmd.Args) != 0 {
-			return fmt.Errorf(
-				"%s does not accept arguments",
-				cmd.Name,
-			)
+			return fmt.Errorf("%s does not accept arguments", cmd.Name)
 		}
 
 	case "CHAT":
 		if len(cmd.Args) < 2 {
-			return fmt.Errorf(
-				"CHAT requires scope and message",
-			)
+			return fmt.Errorf("CHAT requires scope and message")
 		}
 
 		scope := strings.ToUpper(cmd.Args[0])
 
-		if scope != "GLOBAL" &&
-			scope != "ROOM" &&
-			scope != "GROUP" {
+		if scope != "GLOBAL" && scope != "ROOM" && scope != "GROUP" {
 			return fmt.Errorf("invalid CHAT scope")
 		}
 
 	case "GROUP":
 		return validateGroup(cmd.Args)
 
-	case "TAKE", "DROP", "TALK", "ATTACK", "QUEST":
+	// At least one word: names can contain spaces ("Object 1").
+	case "TAKE", "DROP", "TALK", "ATTACK", "QUEST", "USE":
 		if len(cmd.Args) == 0 {
-			return fmt.Errorf(
-				"%s requires a target",
-				cmd.Name,
-			)
+			return fmt.Errorf("%s requires a target", cmd.Name)
 		}
 	}
 
@@ -71,18 +61,12 @@ func validateGroup(args []string) error {
 
 	case "CREATE", "LEAVE":
 		if len(args) != 1 {
-			return fmt.Errorf(
-				"GROUP %s accepts no argument",
-				action,
-			)
+			return fmt.Errorf("GROUP %s accepts no argument", action)
 		}
 
 	case "INVITE", "JOIN":
 		if len(args) != 2 {
-			return fmt.Errorf(
-				"GROUP %s requires one username",
-				action,
-			)
+			return fmt.Errorf("GROUP %s requires one username", action)
 		}
 
 	default:

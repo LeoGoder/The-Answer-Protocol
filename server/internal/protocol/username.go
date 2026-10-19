@@ -3,6 +3,7 @@ package protocol
 import (
 	"fmt"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -14,10 +15,8 @@ var AllowedUsernameSpecialChars = []rune{
 }
 
 // Add forbidden words here after team discussion.
-// Matching is case-insensitive.
 var ForbiddenUsernameParts = []string{
 	"admin",
-	"administrator",
 }
 
 func ValidateUsername(username string) error {
@@ -65,10 +64,9 @@ func ValidateUsername(username string) error {
 	return nil
 }
 
+// Unicode letters and digits are accepted (RFC 9.2).
 func isAlphaNumeric(char rune) bool {
-	return (char >= 'a' && char <= 'z') ||
-		(char >= 'A' && char <= 'Z') ||
-		(char >= '0' && char <= '9')
+	return unicode.IsLetter(char) || unicode.IsDigit(char)
 }
 
 func isAllowedSpecialChar(char rune) bool {

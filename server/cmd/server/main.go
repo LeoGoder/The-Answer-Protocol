@@ -2,442 +2,232 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"flag"
 	"net"
-	"strings"
+	"os"
+	"sync/atomic"
 
 	"tap/server/internal/game"
+	"tap/server/internal/logger"
 	"tap/server/internal/protocol"
 )
 
-func send(conn net.Conn, message string) bool {
-	_, err := conn.Write([]byte(message + "\n"))
-	if err != nil {
-		logError(
-			"send_failed ip=%s error=%v",
-			conn.RemoteAddr(),
-			err,
-		)
-		return false
-	}
+const MaxClients = 64
 
-	logInfo(
-		"message_sent ip=%s message=%q",
-		conn.RemoteAddr(),
-		message,
-	)
-
-	return true
-}
-
-func sendPresenceEvent(
-	state *game.State,
-	hub *ClientHub,
-	roomID string,
-	username string,
-	eventType string,
-) {
-	event := fmt.Sprintf(
-		"EVT ROOM PRESENCE %s %s",
-		eventType,
-		username,
-	)
-
-	players := state.PlayersInRoom(roomID)
-
-	for _, player := range players {
-		if player == username {
-			continue
-		}
-
-		hub.SendTo(player, event)
-	}
-}
-
-func handleClient(
-	conn net.Conn,
-	state *game.State,
-	hub *ClientHub,
-) {
-	username := ""
-
-	defer func() {
-		if username != "" {
-			roomID, exists := state.PlayerRoom(username)
-
-			hub.Remove(username)
-			state.RemovePlayer(username)
-
-			if exists {
-				sendPresenceEvent(
-					state,
-					hub,
-					roomID,
-					username,
-					"LEAVE",
-				)
-			}
-
-			logInfo(
-				"player_disconnected player=%s ip=%s",
-				username,
-				conn.RemoteAddr(),
-			)
-		} else {
-			logInfo(
-				"client_disconnected ip=%s",
-				conn.RemoteAddr(),
-			)
-		}
-
-		conn.Close()
-	}()
-
-	logInfo(
-		"client_connected ip=%s",
-		conn.RemoteAddr(),
-	)
-
-	if !send(conn, protocol.OKHello) {
-		return
-	}
-
-	reader := bufio.NewReader(conn)
-
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			logInfo(
-				"connection_closed player=%q ip=%s",
-				username,
-				conn.RemoteAddr(),
-			)
-			return
-		}
-
-		cmd := protocol.Parse(line)
-
-		if cmd.Name == "" {
-			continue
-		}
-
-		if err := protocol.Validate(cmd); err != nil {
-			logWarn(
-				"invalid_command player=%q ip=%s command=%s args=%v error=%v",
-				username,
-				conn.RemoteAddr(),
-				cmd.Name,
-				cmd.Args,
-				err,
-			)
-
-			if !send(conn, protocol.ErrBadRequest) {
-				return
-			}
-
-			continue
-		}
-
-		logInfo(
-			"command player=%q ip=%s command=%s args=%v",
-			username,
-			conn.RemoteAddr(),
-			cmd.Name,
-			cmd.Args,
-		)
-
-		switch cmd.Name {
-
-		case "QUIT":
-			send(conn, protocol.OKBye)
-			return
-
-		case "CONNECT":
-			if username != "" {
-				logWarn(
-					"connect_rejected player=%s reason=already_authenticated",
-					username,
-				)
-
-				if !send(conn, protocol.ErrBadRequest) {
-					return
-				}
-
-				continue
-			}
-
-			requested := cmd.Args[0]
-
-			if !state.AddPlayer(requested) {
-				logWarn(
-					"connect_rejected player=%s reason=name_in_use",
-					requested,
-				)
-
-				if !send(conn, protocol.ErrNameInUse) {
-					return
-				}
-
-				continue
-			}
-
-			username = requested
-
-			hub.Add(username, conn)
-
-			logInfo(
-				"player_authenticated player=%s ip=%s",
-				username,
-				conn.RemoteAddr(),
-			)
-
-			if !send(conn, protocol.OKConnected) {
-				return
-			}
-
-			roomID, exists := state.PlayerRoom(username)
-			if exists {
-				sendPresenceEvent(
-					state,
-					hub,
-					roomID,
-					username,
-					"ENTER",
-				)
-			}
-
-		case "CHAT":
-			if username == "" {
-				logWarn(
-					"unauthenticated_command ip=%s command=CHAT",
-					conn.RemoteAddr(),
-				)
-
-				if !send(
-					conn,
-					protocol.ErrNotAuthenticated,
-				) {
-					return
-				}
-
-				continue
-			}
-
-			handleChat(
-				conn,
-				state,
-				hub,
-				username,
-				cmd,
-			)
-
-		case "MOVE":
-			if username == "" {
-				logWarn(
-					"unauthenticated_command ip=%s command=MOVE",
-					conn.RemoteAddr(),
-				)
-
-				if !send(
-					conn,
-					protocol.ErrNotAuthenticated,
-				) {
-					return
-				}
-
-				continue
-			}
-
-			oldRoom, oldRoomExists := state.PlayerRoom(username)
-
-			response := state.Handle(username, cmd)
-
-			if !send(conn, response) {
-				return
-			}
-
-			if !strings.HasPrefix(response, "OK room=") {
-				continue
-			}
-
-			newRoom, newRoomExists := state.PlayerRoom(username)
-
-			if oldRoomExists {
-				sendPresenceEvent(
-					state,
-					hub,
-					oldRoom,
-					username,
-					"LEAVE",
-				)
-			}
-
-			if newRoomExists {
-				sendPresenceEvent(
-					state,
-					hub,
-					newRoom,
-					username,
-					"ENTER",
-				)
-			}
-
-			logInfo(
-				"player_moved player=%s from=%s to=%s",
-				username,
-				oldRoom,
-				newRoom,
-			)
-
-		case "LOOK", "WHO", "GROUP",
-			"TAKE", "DROP", "INVENTORY", "TALK",
-			"ATTACK", "STATUS", "QUEST", "QUESTS":
-
-			if username == "" {
-				logWarn(
-					"unauthenticated_command ip=%s command=%s",
-					conn.RemoteAddr(),
-					cmd.Name,
-				)
-
-				if !send(
-					conn,
-					protocol.ErrNotAuthenticated,
-				) {
-					return
-				}
-
-				continue
-			}
-
-			response := state.Handle(username, cmd)
-
-			if response == "" {
-				response = protocol.ErrBadRequest
-			}
-
-			if !send(conn, response) {
-				return
-			}
-
-		default:
-			logWarn(
-				"unknown_command player=%q ip=%s command=%s",
-				username,
-				conn.RemoteAddr(),
-				cmd.Name,
-			)
-
-			if !send(
-				conn,
-				protocol.ErrUnknownCommand,
-			) {
-				return
-			}
-		}
-	}
-}
-
-func handleChat(
-	conn net.Conn,
-	state *game.State,
-	hub *ClientHub,
-	username string,
-	cmd protocol.Command,
-) {
-	scope := strings.ToUpper(cmd.Args[0])
-
-	message := strings.Join(
-		cmd.Args[1:],
-		" ",
-	)
-
-	logInfo(
-		"chat player=%s scope=%s message=%q",
-		username,
-		scope,
-		message,
-	)
-
-	if !send(conn, "OK") {
-		return
-	}
-
-	switch scope {
-
-	case "GLOBAL":
-		event := fmt.Sprintf(
-			"EVT GLOBAL CHAT %s %s",
-			username,
-			message,
-		)
-
-		hub.SendToAll(event)
-
-	case "ROOM":
-		event := fmt.Sprintf(
-			"EVT ROOM CHAT %s %s",
-			username,
-			message,
-		)
-
-		players := state.PlayersInSameRoom(
-			username,
-		)
-
-		for _, player := range players {
-			hub.SendTo(player, event)
-		}
-
-	case "GROUP":
-		// Group chat will be implemented
-		// when the real group system is ready.
-	}
-}
+// Shared by all goroutines: only changed with atomic operations.
+var activeClients int32
 
 func main() {
-	logInfo("server_starting")
+	worldPath := flag.String("world", "data/world.json", "path to the world JSON file")
+	port := flag.String("port", "4242", "TCP port to listen on")
+	flag.Parse()
 
-	state, err := game.LoadState()
+	logger.Info("server_starting", logger.Fields{"world": *worldPath, "port": *port})
+
+	state, err := game.LoadState(*worldPath)
 	if err != nil {
-		logError(
-			"world_load_failed error=%v",
-			err,
-		)
-		return
+		logger.Error("world_load_failed", logger.Fields{"error": err.Error()})
+		os.Exit(1)
 	}
 
-	logInfo("world_loaded")
+	logger.Info("world_loaded", logger.Fields{"world": *worldPath})
 
-	hub := NewClientHub()
-
-	listener, err := net.Listen("tcp", ":4242")
+	listener, err := net.Listen("tcp", ":"+*port)
 	if err != nil {
-		logError(
-			"listen_failed port=4242 error=%v",
-			err,
-		)
-		return
+		logger.Error("listen_failed", logger.Fields{"port": *port, "error": err.Error()})
+		os.Exit(1)
 	}
-
 	defer listener.Close()
 
-	logInfo("server_listening port=4242")
+	logger.Info("server_listening", logger.Fields{"port": *port})
+
+	hub := NewClientHub()
+	monitor := newConnectionMonitor()
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			logWarn(
-				"accept_failed error=%v",
-				err,
-			)
+			logger.Warn("accept_failed", logger.Fields{"error": err.Error()})
 			continue
 		}
 
-		go handleClient(
-			conn,
-			state,
-			hub,
-		)
+		monitor.record(conn.RemoteAddr())
+
+		if atomic.AddInt32(&activeClients, 1) > MaxClients {
+			atomic.AddInt32(&activeClients, -1)
+			logger.Warn("connection_refused", logger.Fields{
+				"ip": conn.RemoteAddr().String(), "reason": "server_full",
+			})
+			send(conn, "", protocol.ErrConnectionFailed)
+			conn.Close()
+			continue
+		}
+
+		go handleClient(conn, state, hub)
 	}
+}
+
+func handleClient(conn net.Conn, state *game.State, hub *ClientHub) {
+	ip := conn.RemoteAddr().String()
+	username := "" // stays empty until a successful CONNECT
+
+	// Cleanup, whatever ends the connection.
+	defer func() {
+		if username != "" {
+			hub.Remove(username)
+			hub.Deliver(state.Leave(username))
+			logger.Info("player_disconnected", logger.Fields{"player": username, "ip": ip})
+		} else {
+			logger.Info("client_disconnected", logger.Fields{"ip": ip})
+		}
+
+		conn.Close()
+		atomic.AddInt32(&activeClients, -1)
+	}()
+
+	logger.Info("client_connected", logger.Fields{"ip": ip})
+
+	if !send(conn, "", protocol.OKHello) {
+		return
+	}
+
+	reader := bufio.NewReaderSize(conn, protocol.MaxLineLength)
+	flood := &floodDetector{}
+
+	for {
+		line, tooLong, err := readLine(reader)
+		if err != nil {
+			logger.Info("connection_closed", logger.Fields{
+				"player": username, "ip": ip, "reason": err.Error(),
+			})
+			return
+		}
+
+		flood.record(ip, username)
+
+		if tooLong {
+			logger.Warn("line_too_long", logger.Fields{"player": username, "ip": ip})
+
+			if !send(conn, username, protocol.ErrLineTooLong) {
+				return
+			}
+
+			continue
+		}
+
+		if err := protocol.CheckLine(line); err != nil {
+			logger.Warn("invalid_line", logger.Fields{
+				"player": username, "ip": ip, "error": err.Error(),
+			})
+
+			if !send(conn, username, protocol.ErrBadRequest) {
+				return
+			}
+
+			continue
+		}
+
+		cmd := protocol.Parse(line)
+		if cmd.Name == "" {
+			continue // empty line: ignored silently
+		}
+
+		logger.Info("command_received", logger.Fields{
+			"player": username, "ip": ip, "command": cmd.Name, "args": cmd.Args,
+		})
+
+		if err := protocol.Validate(cmd); err != nil {
+			logger.Warn("invalid_command", logger.Fields{
+				"player": username, "ip": ip, "command": cmd.Name, "error": err.Error(),
+			})
+
+			if !send(conn, username, protocol.ErrBadRequest) {
+				return
+			}
+
+			continue
+		}
+
+		switch {
+		case cmd.Name == "QUIT":
+			send(conn, username, protocol.OKBye)
+			return
+
+		case cmd.Name == "CONNECT":
+			if username != "" {
+				logger.Warn("connect_rejected", logger.Fields{
+					"player": username, "ip": ip, "reason": "already_authenticated",
+				})
+
+				if !send(conn, username, protocol.ErrBadRequest) {
+					return
+				}
+
+				continue
+			}
+
+			events, ok := state.Join(cmd.Args[0])
+			if !ok {
+				logger.Warn("connect_rejected", logger.Fields{
+					"player": cmd.Args[0], "ip": ip, "reason": "name_in_use",
+				})
+
+				if !send(conn, "", protocol.ErrNameInUse) {
+					return
+				}
+
+				continue
+			}
+
+			username = cmd.Args[0]
+			hub.Add(username, conn)
+
+			logger.Info("player_authenticated", logger.Fields{"player": username, "ip": ip})
+
+			if !send(conn, username, protocol.OKConnected) {
+				return
+			}
+
+			hub.Deliver(events)
+
+		// Single authentication check for every other command.
+		case username == "":
+			logger.Warn("unauthenticated_command", logger.Fields{"ip": ip, "command": cmd.Name})
+
+			if !send(conn, "", protocol.ErrNotAuthenticated) {
+				return
+			}
+
+		default:
+			result := state.Handle(username, cmd)
+
+			if !send(conn, username, result.Reply) {
+				return
+			}
+
+			hub.Deliver(result.Events)
+		}
+	}
+}
+
+// readLine returns one full line; ErrBufferFull means longer than MaxLineLength.
+func readLine(reader *bufio.Reader) (line string, tooLong bool, err error) {
+	data, err := reader.ReadSlice('\n')
+	if err == nil {
+		return string(data), false, nil
+	}
+
+	if err != bufio.ErrBufferFull {
+		return "", false, err
+	}
+
+	for err == bufio.ErrBufferFull {
+		_, err = reader.ReadSlice('\n')
+	}
+
+	if err != nil {
+		return "", true, err
+	}
+
+	return "", true, nil
 }
