@@ -1,6 +1,7 @@
 #include "splash_screen.hpp"
 #include "helper.hpp"
 #include "raylib.h"
+#include <cstring>
 
 static void change_to_sub_menu(int id, State &current_state) {
     if (id == 0)
@@ -9,11 +10,15 @@ static void change_to_sub_menu(int id, State &current_state) {
         current_state = new_game;
 }
 
-static void create_or_launch(State &current_state, GameState *game_state, int &slot_choose, int id) {
+static void create_or_launch(State &current_state, GameState *game_state, int &slot_choose, int id, const char player_name[P_NAME_LEN]) {
     if (current_state == new_game) {
         current_state = create;
         slot_choose = id;
-    } else {
+    } 
+    else if (std::strcmp(player_name, "Empty") == 0) {
+        current_state = error_screen;
+    }
+    else {
         game_state->set_init_scene(true);
         game_state->set_actual_scene(game);
     }
@@ -50,8 +55,9 @@ SplashScreen::SplashScreen(GameState *game_state) {
     // Save slot buttons
     for (int i = 0; i <= 3; i++) {
         if (!is_slot_used(i)) {
+
             btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this, i]() {
-                create_or_launch(current_state, this->game_state, this->save_slot_choice, i);
+                create_or_launch(current_state, this->game_state, this->save_slot_choice, i, "Empty");
             }));
             this->save_lst.push_back(std::make_unique<GameData>());
             this->save_lst.back()->player_name[P_NAME_LEN - 1] = '\0';
@@ -59,8 +65,9 @@ SplashScreen::SplashScreen(GameState *game_state) {
             this->save_lst.push_back(std::make_unique<GameData>());
             load_data(i, *this->save_lst.back());
             std::string str(this->save_lst.back()->player_name);
+
             btn_save.push_back(std::make_unique<Button>(nullptr, &this->btn_background_variant, str, [this, i]() {
-                create_or_launch(current_state, this->game_state, this->save_slot_choice, i);
+                create_or_launch(current_state, this->game_state, this->save_slot_choice, i, this->save_lst[i]->player_name);
             }));
         }
     }
@@ -113,6 +120,9 @@ void SplashScreen::update() {
             if (IsKeyPressed(KEY_ESCAPE) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
                 current_state = main_menu;
             break;
+        case error_screen:
+            if (IsKeyPressed(KEY_ESCAPE) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+                current_state = main_menu;
         default:
             break;
     }
@@ -151,6 +161,9 @@ void SplashScreen::draw() {
             break;
         case load_game:
             draw_load_game();
+            break;
+        case error_screen:
+            draw_error_screen();
             break;
         default:
             break;

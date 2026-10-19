@@ -30,6 +30,7 @@ SRC = src/main.cpp \
 	 src/scene/splash_screen/load_game.cpp \
 	 src/scene/splash_screen/new_game.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \
+	 src/scene/splash_screen/error_screen.cpp \
 
 OBJ_DIR = obj
 

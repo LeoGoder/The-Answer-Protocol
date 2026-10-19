@@ -13,6 +13,7 @@ enum State {
     new_game = 2,
     create = 3,
     load_game = 4,
+    error_screen = 5,
 };
 
 class SplashScreen : public GameScene {
@@ -48,5 +49,6 @@ public:
     void draw_new_game();
     void draw_create_player();
     void draw_load_game();
+    void draw_error_screen();
     void keyboard_input();
 };
