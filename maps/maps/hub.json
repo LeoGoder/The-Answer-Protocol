@@ -623,35 +623,35 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/Map.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/Map.tsx"
         }, 
         {
          "firstgid":145,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/exterior.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/exterior.tsx"
         }, 
         {
          "firstgid":320,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/Sheep_with_shadow.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/Sheep_with_shadow.tsx"
         }, 
         {
          "firstgid":368,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/Cow_with_shadow.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/Cow_with_shadow.tsx"
         }, 
         {
          "firstgid":560,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/trees.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/trees.tsx"
         }, 
         {
          "firstgid":735,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/rock and flowers.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/rock and flowers.tsx"
         }, 
         {
          "firstgid":910,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/Fox_with_shadow.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/Fox_with_shadow.tsx"
         }, 
         {
          "firstgid":926,
-         "source":"..\/..\/..\/Downloads\/tap texture\/tsx\/Hare_Idle_with_shadow.tsx"
+         "source":"..\/..\/..\/..\/Downloads\/tap texture\/tsx\/Hare_Idle_with_shadow.tsx"
         }],
  "tilewidth":32,
  "type":"map",
