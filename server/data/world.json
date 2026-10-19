@@ -1,0 +1,122 @@
+{
+  "start_room": "room.1",
+  "respawn_room": "room.1",
+
+  "rooms": [
+    {
+      "id": "room.1",
+      "name": "Room 1",
+      "description": "Room 1",
+      "exits": { "north": "room.2", "east": "room.5" },
+      "items": [],
+      "npcs": ["npc.1"]
+    },
+    {
+      "id": "room.2",
+      "name": "Room 2",
+      "description": "Room 2",
+      "exits": { "south": "room.1", "east": "room.3" },
+      "items": ["item.1"],
+      "npcs": []
+    },
+    {
+      "id": "room.3",
+      "name": "Room 3",
+      "description": "Room 3",
+      "exits": { "west": "room.2", "east": "room.4", "south": "room.5" },
+      "items": [],
+      "npcs": ["npc.2"]
+    },
+    {
+      "id": "room.4",
+      "name": "Room 4",
+      "description": "Room 4",
+      "exits": { "west": "room.3", "south": "room.6" },
+      "items": ["item.2"],
+      "npcs": []
+    },
+    {
+      "id": "room.5",
+      "name": "Room 5",
+      "description": "Room 5",
+      "exits": { "west": "room.1", "north": "room.3", "east": "room.6" },
+      "items": ["item.4"],
+      "npcs": []
+    },
+    {
+      "id": "room.6",
+      "name": "Room 6",
+      "description": "Room 6",
+      "exits": { "west": "room.5", "north": "room.4", "south": "room.7" },
+      "items": [],
+      "npcs": []
+    },
+    {
+      "id": "room.7",
+      "name": "Room 7",
+      "description": "Room 7",
+      "exits": { "north": "room.6", "south": "room.8" },
+      "items": [],
+      "npcs": ["npc.3"]
+    },
+    {
+      "id": "room.8",
+      "name": "Room 8",
+      "description": "Room 8",
+      "exits": { "north": "room.7" },
+      "items": ["item.3"],
+      "npcs": []
+    }
+  ],
+
+  "items": [
+    { "id": "item.1", "name": "Object 1", "description": "Object 1", "heal": 20 },
+    { "id": "item.2", "name": "Object 2", "description": "Object 2", "heal": 40 },
+    { "id": "item.3", "name": "Object 3", "description": "Object 3" },
+    { "id": "item.4", "name": "Object 4", "description": "Object 4" }
+  ],
+
+  "npcs": [
+    {
+      "id": "npc.1",
+      "name": "NPC 1",
+      "description": "NPC 1",
+      "dialogue": ["Hello, I am NPC 1.", "NPC 2 has quests for you."]
+    },
+    {
+      "id": "npc.2",
+      "name": "NPC 2",
+      "description": "NPC 2",
+      "dialogue": ["Hello, I am NPC 2.", "Ask me for a QUEST."]
+    },
+    {
+      "id": "npc.3",
+      "name": "NPC 3",
+      "description": "NPC 3",
+      "dialogue": ["Grrr..."],
+      "hostile": true,
+      "hp": 80,
+      "attack": 18,
+      "defense": 1
+    }
+  ],
+
+  "quests": [
+    {
+      "id": "quest.1",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Quest 1: bring Object 3 to NPC 2.",
+      "target": "item.3",
+      "reward": { "name": "Reward 1", "max_hp": 10 }
+    },
+    {
+      "id": "quest.2",
+      "type": "defeat",
+      "giver": "npc.2",
+      "description": "Quest 2: defeat NPC 3.",
+      "target": "npc.3",
+      "reward": { "name": "Reward 2", "attack": 3 }
+    }
+  ]
+}
