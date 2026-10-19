@@ -62,6 +62,8 @@ func (s *State) Handle(username string, cmd protocol.Command) Result {
 		return reply(s.quest(player, targetName(cmd.Args)))
 	case "QUESTS":
 		return reply(s.questLog(player))
+	case "ALIVE":
+		return reply("Alive")
 	}
 
 	return reply(protocol.ErrUnknownCommand)
