@@ -19,6 +19,7 @@ INC = inc/button.hpp \
 	 inc/save_load.hpp \
 	 inc/splash_screen.hpp \
 	 inc/tap.hpp \
+	 inc/server.hpp \
 
 SRC = src/main.cpp \
 	 src/helper.cpp \

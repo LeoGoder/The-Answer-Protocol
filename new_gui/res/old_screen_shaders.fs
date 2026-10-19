@@ -23,7 +23,7 @@ vec2 curve_screen(vec2 uv) {
 void main() {
     vec2 uv = fragTexCoord;
     vec2 curved_uv = curve_screen(uv);
-    vec2 split = vec2(0.001, 0.0);
+    vec2 split = vec2(0.0015, 0.0);
     float number_line = resolution.y / 2;
     float speed = 10.0;
     float scan_speed = 2.0;

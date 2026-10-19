@@ -19,6 +19,7 @@ static void create_or_launch(State &current_state, GameState *game_state, int &s
         current_state = error_screen;
     }
     else {
+        game_state->player_name = player_name;
         game_state->set_init_scene(true);
         game_state->set_actual_scene(game);
     }

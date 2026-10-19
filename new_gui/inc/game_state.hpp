@@ -1,5 +1,6 @@
 #pragma once
 #include "game_scene.hpp"
+#include <string>
 
 enum Scene {
     splash_screen = 0,
@@ -14,6 +15,7 @@ class GameState {
         bool init_scene;
         GameScene *game_scene = nullptr;
     public:
+        std::string player_name;
         float dt;
         GameState();
         ~GameState();

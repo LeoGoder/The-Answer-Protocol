@@ -1,6 +1,9 @@
 #include "game_world.hpp"
 #include "helper.hpp"
+#include "raylib.h"
+#include <cstddef>
 #include <cstring>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -43,35 +46,36 @@ void GameWorld::draw() {
             int flags = fcntl(this->fd, F_GETFL, 0);
             fcntl(this->fd, F_SETFL, flags | O_NONBLOCK);
             int cret = connect(this->fd, (struct sockaddr *)&this->server, sizeof(this->server));
+            bool connected = false;
 
             if (cret == 0) {
-                this->intern_scene = island_1;
+                connected = true;
             } else if (errno == EINPROGRESS) {
                 fd_set fdset;
-                struct timeval tv;
+                struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
+            
                 FD_ZERO(&fdset);
                 FD_SET(this->fd, &fdset);
-                tv.tv_sec = 0;
-                tv.tv_usec = 100000;
-
-                int sel = select(this->fd + 1, NULL, &fdset, NULL, &tv);
-                if (sel > 0) {
+            
+                if (select(this->fd + 1, NULL, &fdset, NULL, &tv) > 0) {
                     int so_err = 0;
                     socklen_t len = sizeof(so_err);
                     getsockopt(this->fd, SOL_SOCKET, SO_ERROR, &so_err, &len);
                     if (so_err == 0) {
-                        this->intern_scene = island_1;
-                    } else {
-                        close(this->fd);
-                        this->fd = -1;
-                        this->intern_scene = connection_error;
+                        connected = true;
                     }
-                } else {
-                    close(this->fd);
-                    this->fd = -1;
-                    this->intern_scene = connection_error;
                 }
-            } else {
+            }
+            if (connected) {
+                std::string msg = this->command.CONNECT + this->game_state->player_name + '\n';
+                ssize_t res = send(this->fd, msg.data(), msg.size(), 0);
+                
+                if (res >= 0) {
+                    this->intern_scene = island_1;
+                    break;
+                }
+            }
+            else {
                 close(this->fd);
                 this->fd = -1;
                 this->intern_scene = connection_error;
@@ -79,6 +83,7 @@ void GameWorld::draw() {
             break;
         }
         case connection_error:
+            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(RED, 0.30));
             DrawFontText(this->font, "Connection issue !", 20, 20, WHITE, 1.0f);
             DrawFontText(this->font, "Press ESC to return", 20, 50, Color{180, 180, 180, 255}, 1.0f);
             break;
