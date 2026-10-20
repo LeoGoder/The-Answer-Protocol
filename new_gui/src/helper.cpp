@@ -12,12 +12,22 @@ std::string GetAssetPath(const std::string &path) {
     return path;
 }
 
+void kill_return_line(std::string &str) {
+    for (long unsigned int i = 0; i < str.size(); i++) {
+        if (str[i] == '\n') {
+            str[i] = ' ';
+        }
+    }
+}
+
 std::vector<std::string> split(std::string &str, char limiter) {
     std::vector<std::string> tokens;
     std::stringstream ss(str);
     std::string token;
     
     while (std::getline(ss, token, limiter)) {
+        if (token.back() == '\n')
+            token.pop_back();
         tokens.push_back(token);
     }
     return tokens;

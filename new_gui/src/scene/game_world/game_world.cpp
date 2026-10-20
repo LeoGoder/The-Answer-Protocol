@@ -40,10 +40,38 @@ void GameWorld::update() {
     }
 }
 
+static bool is_connection_approved(std::vector<std::string> msg) {
+        std::cout << "j'approuve " << '\n';
+    for (long unsigned int i = 0; i < msg.size(); i++) {
+        std::cout << "j'approuve "<< msg[i] << '\n';
+        if (msg[i] == "OK" && msg[i + 1] == "connected") {
+            return true;
+        }
+    }
+    return false;
+}
+
 void GameWorld::net_update() {
+    std::vector<std::string> msg_split;
     std::string buffer = receiv_msg(this->fd);
-    // std::vector<std::string> test = split(buffer, ' ');
-    // std::cout << test[0] << '\n';
+    if (buffer != "") {
+        kill_return_line(buffer);
+        msg_split = split(buffer, ' ');
+    }
+    switch (this->intern_scene) {
+        case connection:
+            break;
+        case connection_loading:
+            if (!msg_split.empty()) {
+                if (is_connection_approved(msg_split) == true)
+                    this->intern_scene = island_1;
+            }
+            break;
+        case connection_error:
+            break;
+        case island_1:
+            break;
+    }
 }
 
 void GameWorld::draw() {
