@@ -41,9 +41,7 @@ void GameWorld::update() {
 }
 
 static bool is_connection_approved(std::vector<std::string> msg) {
-        std::cout << "j'approuve " << '\n';
     for (long unsigned int i = 0; i < msg.size(); i++) {
-        std::cout << "j'approuve "<< msg[i] << '\n';
         if (msg[i] == "OK" && msg[i + 1] == "connected") {
             return true;
         }
@@ -53,9 +51,11 @@ static bool is_connection_approved(std::vector<std::string> msg) {
 
 void GameWorld::net_update() {
     std::vector<std::string> msg_split;
+    std::string msg_copy;
     std::string buffer = receiv_msg(this->fd);
     if (buffer != "") {
         kill_return_line(buffer);
+        msg_copy = buffer;
         msg_split = split(buffer, ' ');
     }
     switch (this->intern_scene) {
@@ -65,6 +65,10 @@ void GameWorld::net_update() {
             if (!msg_split.empty()) {
                 if (is_connection_approved(msg_split) == true)
                     this->intern_scene = island_1;
+                else {
+                    this->intern_scene = connection_error;
+                    this->error_log = msg_copy;
+                }
             }
             break;
         case connection_error:
@@ -126,7 +130,8 @@ void GameWorld::draw() {
         case connection_error:
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(RED, 0.30));
             DrawFontText(this->font, "Connection issue !", 20, 20, WHITE, 1.0f);
-            DrawFontText(this->font, "Press ESC to return", 20, 50, Color{180, 180, 180, 255}, 1.0f);
+            DrawFontText(this->font, this->error_log, 20, 50, WHITE, 1.0f);
+            DrawFontText(this->font, "Press ESC to return", 20, 80, Color{180, 180, 180, 255}, 1.0f);
             break;
         case island_1:
             DrawFontText(this->font, "Connection working !", 20, 20, WHITE, 1.0f);

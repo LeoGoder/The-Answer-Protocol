@@ -19,6 +19,7 @@ class GameWorld : public GameScene {
 public:
     int fd;
     std::string player_name;
+    std::string error_log;
     NetCommand command;
     struct sockaddr_in server;
     GameWorldScene intern_scene;
