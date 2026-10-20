@@ -3,17 +3,16 @@
 #include "game_state.hpp"
 #include "raylib.h"
 #include "server.hpp"
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 4242
 
 enum GameWorldScene {
     connection = 0,
-    connection_error = 1,
-    island_1 = 2,
+    connection_loading = 1,
+    connection_error = 2,
+    island_1 = 3,
 };
 
 class GameWorld : public GameScene {
@@ -30,5 +29,7 @@ public:
     ~GameWorld();
 
     void update() override;
+    void server_alive();
+    void net_update();
     void draw() override;
 };

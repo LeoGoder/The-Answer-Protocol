@@ -1,6 +1,5 @@
 #include "button.hpp"
 #include "helper.hpp"
-#include <cstdio>
 
 Button::Button(const Texture2D *arrow, const Texture2D *background, const std::string &text, std::function<void()> callback) {
     this->arrow = arrow;

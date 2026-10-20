@@ -1,12 +1,17 @@
 #include "game_world.hpp"
 #include "helper.hpp"
 #include "raylib.h"
+#include "server.hpp"
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <vector>
 
 GameWorld::GameWorld(GameState *game_state) {
     this->font = LoadTexture(GetAssetPath("test_font.png").c_str());
@@ -33,6 +38,12 @@ void GameWorld::update() {
         game_state->set_init_scene(true);
         game_state->set_actual_scene(splash_screen);
     }
+}
+
+void GameWorld::net_update() {
+    std::string buffer = receiv_msg(this->fd);
+    // std::vector<std::string> test = split(buffer, ' ');
+    // std::cout << test[0] << '\n';
 }
 
 void GameWorld::draw() {
@@ -68,11 +79,9 @@ void GameWorld::draw() {
             }
             if (connected) {
                 std::string msg = this->command.CONNECT + this->game_state->player_name + '\n';
-                ssize_t res = send(this->fd, msg.data(), msg.size(), 0);
-                
-                if (res >= 0) {
-                    this->intern_scene = island_1;
-                    break;
+                ssize_t res = send(this->fd, msg.data(), strlen(msg.data()), 0);
+                if (res > 0) {
+                    this->intern_scene = connection_loading;
                 }
             }
             else {
@@ -82,6 +91,10 @@ void GameWorld::draw() {
             }
             break;
         }
+        case connection_loading:
+            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(GREEN, 0.30));
+            DrawFontText(this->font, "Connecting...", 20, 20, WHITE, 1.0f);
+            break;
         case connection_error:
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(RED, 0.30));
             DrawFontText(this->font, "Connection issue !", 20, 20, WHITE, 1.0f);
@@ -90,6 +103,8 @@ void GameWorld::draw() {
         case island_1:
             DrawFontText(this->font, "Connection working !", 20, 20, WHITE, 1.0f);
             DrawFontText(this->font, "Press ESC to return", 20, 50, Color{180, 180, 180, 255}, 1.0f);
+            GameWorld::server_alive();
             break;
     }
+    GameWorld::net_update();
 }

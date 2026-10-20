@@ -27,11 +27,13 @@ SRC = src/main.cpp \
 	 src/save_load.cpp \
 	 src/button.cpp \
 	 src/game_state.cpp \
+	 src/server.cpp \
 	 src/scene/game_world/game_world.cpp \
 	 src/scene/splash_screen/load_game.cpp \
 	 src/scene/splash_screen/new_game.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \
 	 src/scene/splash_screen/error_screen.cpp \
+	 src/scene/game_world/net_update.cpp \
 
 OBJ_DIR = obj
 

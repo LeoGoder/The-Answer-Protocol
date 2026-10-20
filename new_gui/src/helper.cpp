@@ -1,5 +1,7 @@
 #include "helper.hpp"
 #include "raylib.h"
+#include <sstream>
+#include <vector>
 
 std::string GetAssetPath(const std::string &path) {
     if (FileExists(path.c_str())) return path;
@@ -8,6 +10,17 @@ std::string GetAssetPath(const std::string &path) {
     std::string bin = "bin/" + path;
     if (FileExists(bin.c_str())) return bin;
     return path;
+}
+
+std::vector<std::string> split(std::string &str, char limiter) {
+    std::vector<std::string> tokens;
+    std::stringstream ss(str);
+    std::string token;
+    
+    while (std::getline(ss, token, limiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
 }
 
 float GetFontTextWidth(const std::string &text, float scale) {

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include "raylib.h"
 
 #define SCREEN_WIDTH 640
@@ -13,6 +14,7 @@
 #define SPRITE_SIZE Vector2 {32.0, 32.0}
 
 std::string GetAssetPath(const std::string &path);
+std::vector<std::string> split(std::string &str, char limiter);
 void DrawFontText(const Texture2D &font, const std::string &text, float x, float y, Color color = WHITE, float scale = 1.0f);
 float GetFontTextWidth(const std::string &text, float scale = 1.0f);
 Vector2 get_virtual_mouse_position();
