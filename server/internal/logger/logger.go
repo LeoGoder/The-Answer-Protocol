@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -25,6 +26,31 @@ func Warn(event string, fields Fields) {
 
 func Error(event string, fields Fields) {
 	write(os.Stderr, "ERROR", event, fields)
+}
+
+func colorFor(level string, event string, fields Fields) string {
+	if level == "ERROR" {
+		return "\033[31m"
+	}
+	if event == "command_received" {
+		return "\033[33m"
+	}
+	if message, ok := fields["message"].(string); ok {
+		switch {
+		case strings.HasPrefix(message, "OK"):
+			return "\033[32m"
+		case strings.HasPrefix(message, "ERR"):
+			return "\033[31m"
+		case strings.HasPrefix(message, "EVT"):
+			return "\033[2m"
+		}
+	}
+	return ""
+}
+
+func isTerminal(file *os.File) bool {
+	info, err := file.Stat()
+	return err == nil && info.Mode()&os.ModeCharDevice != 0
 }
 
 // "time", "level" and "event" first, then the fields sorted by key.
@@ -55,7 +81,14 @@ func write(out io.Writer, level string, event string, fields Fields) {
 
 	mutex.Lock()
 	defer mutex.Unlock()
-	_, _ = out.Write(buffer.Bytes())
+	line := buffer.Bytes()
+	if file, ok := out.(*os.File); ok && isTerminal(file) {
+		if color := colorFor(level, event, fields); color != "" {
+			line = []byte(color + strings.TrimSuffix(string(line), "\n") + "\033[0m\n")
+		}
+	}
+	_, _ = out.Write(line)
+	//_, _ = out.Write(buffer.Bytes())
 }
 
 func writeValue(buffer *bytes.Buffer, value interface{}) {
