@@ -26,6 +26,9 @@ GameWorld::GameWorld(GameState *game_state) {
     this->server.sin_addr.s_addr = inet_addr(SERVER_IP);
     this->fd = socket(AF_INET, SOCK_STREAM, 0);
     this->player_name = this->game_state->player_name;
+    this->alive_check_timer = 15;
+    this->alive_timer = 0.0;
+    this->alive_nb_fail = 0;
 }
 
 GameWorld::~GameWorld() {
@@ -94,6 +97,8 @@ void GameWorld::net_update() {
             }
             break;
     }
+    GameWorld::server_alive(msg_split);
+    this->alive_timer += this->game_state->dt;
 }
 
 void GameWorld::draw() {

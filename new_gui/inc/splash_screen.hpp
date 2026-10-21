@@ -27,8 +27,8 @@ private:
     Texture2D splash_art;
 
     Color font_color;
-    bool color_sens;
     State current_state;
+    bool color_sens;
 
     std::vector<std::unique_ptr<Button>> button_list;
     std::vector<std::unique_ptr<Button>> btn_save;
