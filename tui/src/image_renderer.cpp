@@ -1,14 +1,14 @@
-#include "../includes/image.hpp"
+#include "../includes/image_renderer.hpp"
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <unordered_map>
-#include <vector>
-#include <utility>
 #include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <ftxui/dom/node.hpp>
 #include <ftxui/dom/requirement.hpp>
@@ -41,22 +41,22 @@ struct Bitmap {
     std::vector<Rgb> cache;
 };
 
-struct Entree {
+struct ImageEntry {
     std::shared_ptr<Bitmap> bitmap;
-    std::string erreur;
+    std::string error;
 };
 
 std::mutex images_mutex;
-std::unordered_map<std::string, Entree> images_chargees;
+std::unordered_map<std::string, ImageEntry> loaded_images;
 
-Entree charger(const std::string& chemin) {
-    Entree e;
-    int w = 0, h = 0, canaux = 0;
-    unsigned char* data = stbi_load(chemin.c_str(), &w, &h, &canaux, 4);
+ImageEntry loadImage(const std::string& path) {
+    ImageEntry entry;
+    int w = 0, h = 0, channels = 0;
+    unsigned char* data = stbi_load(path.c_str(), &w, &h, &channels, 4);
     if (!data) {
-        const char* raison = stbi_failure_reason();
-        e.erreur = raison ? raison : "erreur inconnue";
-        return e;
+        const char* reason = stbi_failure_reason();
+        entry.error = reason ? reason : "unknown error";
+        return entry;
     }
 
     auto bmp = std::make_shared<Bitmap>();
@@ -72,11 +72,11 @@ Entree charger(const std::string& chemin) {
                           static_cast<std::uint8_t>(p[2] * a / 255)};
     }
     stbi_image_free(data);
-    e.bitmap = bmp;
-    return e;
+    entry.bitmap = bmp;
+    return entry;
 }
 
-void ajuster(const Bitmap& b, int max_w, int max_h, int& tw, int& th) {
+void adjustSize(const Bitmap& b, int max_w, int max_h, int& tw, int& th) {
     double s = 1.0;
     if (max_w > 0) s = std::min(s, static_cast<double>(max_w) / b.w);
     if (max_h > 0) s = std::min(s, static_cast<double>(max_h) / b.h);
@@ -84,12 +84,12 @@ void ajuster(const Bitmap& b, int max_w, int max_h, int& tw, int& th) {
     th = std::max(1, static_cast<int>(b.h * s + 0.5));
 }
 
-void redimensionner(Bitmap& b, int tw, int th) {
+void rescale(Bitmap& b, int tw, int th) {
     if (b.cache_w == tw && b.cache_h == th) return;
 
     b.cache.assign(
-        static_cast<std::size_t>(tw) * static_cast<std::size_t>(
-            th), Rgb{0, 0, 0});
+        static_cast<std::size_t>(tw) * static_cast<std::size_t>(th),
+        Rgb{0, 0, 0});
     for (int y = 0; y < th; ++y) {
         const int y0 = static_cast<int>(
             static_cast<std::int64_t>(y) * b.h / th);
@@ -123,26 +123,26 @@ void redimensionner(Bitmap& b, int tw, int th) {
     b.cache_h = th;
 }
 
-int limite(int disponible, int maximum) {
-    return maximum > 0 ? std::min(disponible, maximum) : disponible;
+int clampDimension(int available, int maximum) {
+    return maximum > 0 ? std::min(available, maximum) : available;
 }
 
-class NoeudImage : public Node {
+class ImageNode : public Node {
  public:
-    NoeudImage(std::shared_ptr<Bitmap> bmp, int largeur_max,
-               int hauteur_max, bool garder_ratio = false)
+    ImageNode(std::shared_ptr<Bitmap> bmp, int max_w,
+              int max_h, bool keep_ratio = false)
         : bmp_(std::move(bmp)),
-          largeur_max_(largeur_max),
-          hauteur_max_(hauteur_max),
-          garder_ratio_(garder_ratio) {}
+          max_w_(max_w),
+          max_h_(max_h),
+          keep_ratio_(keep_ratio) {}
 
     void ComputeRequirement() override {
-        if (largeur_max_ <= 0 && hauteur_max_ <= 0) {
+        if (max_w_ <= 0 && max_h_ <= 0) {
             requirement_.min_x = 1;
             requirement_.min_y = 1;
         } else {
             int tw, th;
-            ajuster(*bmp_, largeur_max_, hauteur_max_ * 2, tw, th);
+            adjustSize(*bmp_, max_w_, max_h_ * 2, tw, th);
             requirement_.min_x = tw;
             requirement_.min_y = (th + 1) / 2;
         }
@@ -159,30 +159,31 @@ class NoeudImage : public Node {
 
         int tw = cw;
         int th = ch * 2;
-        if (garder_ratio_) {
-            ajuster(*bmp_, limite(cw, largeur_max_), limite(
-                ch * 2, hauteur_max_ * 2), tw, th);
+        if (keep_ratio_) {
+            adjustSize(*bmp_, clampDimension(cw, max_w_),
+                       clampDimension(ch * 2, max_h_ * 2), tw, th);
         } else {
-            if (largeur_max_ > 0) tw = std::min(tw, largeur_max_);
-            if (hauteur_max_ > 0) th = std::min(th, hauteur_max_ * 2);
+            if (max_w_ > 0) tw = std::min(tw, max_w_);
+            if (max_h_ > 0) th = std::min(th, max_h_ * 2);
         }
-        redimensionner(*bmp_, tw, th);
+        rescale(*bmp_, tw, th);
 
-        const int lignes = (th + 1) / 2;
+        const int lines = (th + 1) / 2;
         const int offset_x = std::max(0, (cw - tw) / 2);
-        const int offset_y = std::max(0, (ch - lignes) / 2);
-        for (int y = 0; y < lignes; ++y) {
+        const int offset_y = std::max(0, (ch - lines) / 2);
+        for (int y = 0; y < lines; ++y) {
             for (int x = 0; x < tw; ++x) {
-                const Rgb& haut = bmp_->cache[static_cast<std::size_t>(
+                const Rgb& top = bmp_->cache[static_cast<std::size_t>(
                     2 * y) * tw + x];
                 auto& pix = screen.PixelAt(box_.x_min + offset_x + x,
                     box_.y_min + offset_y + y);
                 pix.character = "▀";
-                pix.foreground_color = Color::RGB(haut.r, haut.g, haut.b);
+                pix.foreground_color = Color::RGB(top.r, top.g, top.b);
                 if (2 * y + 1 < th) {
-                    const Rgb& bas = bmp_->cache[static_cast<std::size_t>(
+                    const Rgb& bottom = bmp_->cache[static_cast<std::size_t>(
                         2 * y + 1) * tw + x];
-                    pix.background_color = Color::RGB(bas.r, bas.g, bas.b);
+                    pix.background_color = Color::RGB(
+                        bottom.r, bottom.g, bottom.b);
                 } else {
                     pix.background_color = Color::Default;
                 }
@@ -192,30 +193,29 @@ class NoeudImage : public Node {
 
  private:
     std::shared_ptr<Bitmap> bmp_;
-    int largeur_max_;
-    int hauteur_max_;
-    bool garder_ratio_;
+    int max_w_;
+    int max_h_;
+    bool keep_ratio_;
 };
 
 }  // namespace
 
-Element put_image(const std::string& chemin, int largeur_max,
-                  int hauteur_max, bool garder_ratio) {
-    Entree entree;
+Element renderImage(const std::string& path, int max_width,
+                    int max_height, bool keep_ratio) {
+    ImageEntry entry;
     {
         std::lock_guard<std::mutex> lock(images_mutex);
-        auto it = images_chargees.find(chemin);
-        if (it == images_chargees.end()) {
-            it = images_chargees.emplace(chemin, charger(chemin)).first;
+        auto it = loaded_images.find(path);
+        if (it == loaded_images.end()) {
+            it = loaded_images.emplace(path, loadImage(path)).first;
         }
-        entree = it->second;
+        entry = it->second;
     }
 
-    if (!entree.bitmap) {
-        return text(
-            "[image illisible] " + chemin + " : " + entree.erreur) | color(
-                Color::Red);
+    if (!entry.bitmap) {
+        return text("[image error] " + path + " : " + entry.error) |
+               color(Color::Red);
     }
-    return std::make_shared<NoeudImage>(entree.bitmap, largeur_max,
-                                        hauteur_max, garder_ratio);
+    return std::make_shared<ImageNode>(entry.bitmap, max_width,
+                                       max_height, keep_ratio);
 }

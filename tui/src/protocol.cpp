@@ -1,5 +1,6 @@
-#include "../includes/parssing.hpp"
+#include "../includes/protocol.hpp"
 
+#include <cctype>
 #include <iostream>
 #include <map>
 #include <string>
@@ -111,6 +112,119 @@ std::vector<std::string> formatRoomInfo(const RoomInfo& info) {
     return lines;
 }
 
+static void parseQuestObjective(QuestInfo& out) {
+    if (out.description.empty()) return;
+
+    size_t colon_pos = out.description.find(':');
+    std::string after_colon;
+    if (colon_pos != std::string::npos) {
+        if (out.quest_id.empty()) {
+            std::string id_cand = out.description.substr(0, colon_pos);
+            while (!id_cand.empty() && std::isspace(
+                       static_cast<unsigned char>(id_cand.front()))) {
+                id_cand.erase(id_cand.begin());
+            }
+            while (!id_cand.empty() && std::isspace(
+                       static_cast<unsigned char>(id_cand.back()))) {
+                id_cand.pop_back();
+            }
+            out.quest_id = id_cand;
+        }
+        after_colon = out.description.substr(colon_pos + 1);
+    } else {
+        after_colon = out.description;
+    }
+
+    while (!after_colon.empty() && std::isspace(
+               static_cast<unsigned char>(after_colon.front()))) {
+        after_colon.erase(after_colon.begin());
+    }
+    while (!after_colon.empty() && std::isspace(
+               static_cast<unsigned char>(after_colon.back()))) {
+        after_colon.pop_back();
+    }
+    out.objective = after_colon;
+
+    std::string lower_after = after_colon;
+    for (char& c : lower_after) {
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+
+    size_t bring_pos = lower_after.find("bring ");
+    size_t to_pos = lower_after.find(" to ");
+    if (bring_pos != std::string::npos && to_pos != std::string::npos &&
+        to_pos > bring_pos + 6) {
+        std::string item_part = after_colon.substr(
+            bring_pos + 6, to_pos - (bring_pos + 6));
+        std::string npc_part = after_colon.substr(to_pos + 4);
+
+        while (!item_part.empty() && std::isspace(
+                   static_cast<unsigned char>(item_part.front()))) {
+            item_part.erase(item_part.begin());
+        }
+        while (!item_part.empty() && std::isspace(
+                   static_cast<unsigned char>(item_part.back()))) {
+            item_part.pop_back();
+        }
+
+        while (!npc_part.empty() && (std::isspace(
+                   static_cast<unsigned char>(npc_part.back())) ||
+                   npc_part.back() == '.')) {
+            npc_part.pop_back();
+        }
+        while (!npc_part.empty() && std::isspace(
+                   static_cast<unsigned char>(npc_part.front()))) {
+            npc_part.erase(npc_part.begin());
+        }
+
+        out.target_item = item_part;
+        out.target_npc = npc_part;
+
+        int count = 0;
+        for (size_t i = 0; i < item_part.size(); ++i) {
+            if (std::isdigit(static_cast<unsigned char>(item_part[i]))) {
+                size_t start = i;
+                while (i < item_part.size() &&
+                       std::isdigit(
+                           static_cast<unsigned char>(item_part[i]))) {
+                    i++;
+                }
+                try {
+                    count = std::stoi(item_part.substr(start, i - start));
+                } catch (...) {
+                    count = 1;
+                }
+                break;
+            }
+        }
+        out.required_items = (count > 0) ? count : 1;
+    } else {
+        int count = 0;
+        for (size_t i = 0; i < after_colon.size(); ++i) {
+            if (std::isdigit(static_cast<unsigned char>(after_colon[i]))) {
+                size_t start = i;
+                while (i < after_colon.size() &&
+                       std::isdigit(
+                           static_cast<unsigned char>(after_colon[i]))) {
+                    i++;
+                }
+                try {
+                    count = std::stoi(after_colon.substr(start, i - start));
+                } catch (...) {
+                    count = 0;
+                }
+                break;
+            }
+        }
+        out.required_items = count;
+        out.target_item = after_colon;
+    }
+
+    if (out.progress.empty() && out.required_items > 0) {
+        out.progress = std::to_string(out.required_items) + " required";
+    }
+}
+
 bool parseQuestResponse(const std::string& raw_response, QuestInfo& out) {
     const std::string prefix = "OK ";
     if (raw_response.substr(0, prefix.size()) != prefix) {
@@ -123,10 +237,15 @@ bool parseQuestResponse(const std::string& raw_response, QuestInfo& out) {
         json j = json::parse(json_str);
 
         if (!j.is_object()) return false;
-        if (!j.contains("quest_id")) return false;
 
-        if (j.contains("quest_id") && j["quest_id"].is_string())
+        if (j.contains("quest_id") && j["quest_id"].is_string()) {
             out.quest_id = j["quest_id"].get<std::string>();
+        } else if (j.contains("id") && j["id"].is_string()) {
+            out.quest_id = j["id"].get<std::string>();
+        } else if (j.contains("id") && j["id"].is_number()) {
+            out.quest_id = std::to_string(j["id"].get<int>());
+        }
+
         if (j.contains("description") && j["description"].is_string())
             out.description = j["description"].get<std::string>();
         if (j.contains("reward") && j["reward"].is_string())
@@ -135,6 +254,8 @@ bool parseQuestResponse(const std::string& raw_response, QuestInfo& out) {
             out.status = j["status"].get<std::string>();
         if (j.contains("progress") && j["progress"].is_string())
             out.progress = j["progress"].get<std::string>();
+
+        parseQuestObjective(out);
 
         return true;
     } catch (const json::exception& e) {
@@ -159,8 +280,14 @@ bool parseQuestsResponse(const std::string& raw_response,
 
         for (const auto& item : j) {
             QuestInfo q;
-            if (item.contains("quest_id") && item["quest_id"].is_string())
+            if (item.contains("quest_id") && item["quest_id"].is_string()) {
                 q.quest_id = item["quest_id"].get<std::string>();
+            } else if (item.contains("id") && item["id"].is_string()) {
+                q.quest_id = item["id"].get<std::string>();
+            } else if (item.contains("id") && item["id"].is_number()) {
+                q.quest_id = std::to_string(item["id"].get<int>());
+            }
+
             if (item.contains("description") && item["description"].is_string())
                 q.description = item["description"].get<std::string>();
             if (item.contains("reward") && item["reward"].is_string())
@@ -169,6 +296,8 @@ bool parseQuestsResponse(const std::string& raw_response,
                 q.status = item["status"].get<std::string>();
             if (item.contains("progress") && item["progress"].is_string())
                 q.progress = item["progress"].get<std::string>();
+
+            parseQuestObjective(q);
             out.push_back(q);
         }
 
@@ -259,8 +388,19 @@ bool parseGenericOkJson(const std::string& raw_response,
 
 std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
     std::vector<std::string> lines;
-    lines.push_back("Quest: " + info.quest_id);
+    if (!info.quest_id.empty())
+        lines.push_back("Quest: " + info.quest_id);
     lines.push_back("Description: " + info.description);
+    if (!info.objective.empty() && info.objective != info.description)
+        lines.push_back("Objective: " + info.objective);
+    if (info.required_items > 0) {
+        lines.push_back("Required items: " +
+                        std::to_string(info.required_items));
+    }
+    if (!info.target_item.empty())
+        lines.push_back("Target item: " + info.target_item);
+    if (!info.target_npc.empty())
+        lines.push_back("Deliver to: " + info.target_npc);
     if (!info.progress.empty())
         lines.push_back("Progress: " + info.progress);
     if (!info.reward.empty())
@@ -268,4 +408,71 @@ std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
     if (!info.status.empty())
         lines.push_back("Status: " + info.status);
     return lines;
+}
+
+ParsedChat parseChatCommand(const std::string& input) {
+    ParsedChat result;
+    size_t i = 0;
+    while (i < input.size() &&
+           std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    if (i >= input.size()) return result;
+
+    size_t cmd_start = i;
+    while (i < input.size() &&
+           !std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    std::string cmd = input.substr(cmd_start, i - cmd_start);
+    for (char& c : cmd) c = static_cast<char>(std::toupper(c));
+    if (cmd != "CHAT") return result;
+
+    while (i < input.size() &&
+           std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    if (i >= input.size()) return result;
+
+    size_t scope_start = i;
+    while (i < input.size() &&
+           !std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    std::string scope = input.substr(scope_start, i - scope_start);
+    for (char& c : scope) c = static_cast<char>(std::toupper(c));
+
+    std::string channel;
+    std::string wire_scope;
+    if (scope == "ROOM") {
+        channel = "ROOM";
+        wire_scope = "ROOM";
+    } else if (scope == "GLOBAL") {
+        channel = "GLOBAL";
+        wire_scope = "GLOBAL";
+    } else if (scope == "PARTY" || scope == "GROUP") {
+        channel = "PARTY";
+        wire_scope = "GROUP";
+    } else {
+        return result;
+    }
+
+    while (i < input.size() &&
+           std::isspace(static_cast<unsigned char>(input[i]))) {
+        i++;
+    }
+    if (i >= input.size()) return result;
+
+    std::string msg = input.substr(i);
+    while (!msg.empty() &&
+           std::isspace(static_cast<unsigned char>(msg.back()))) {
+        msg.pop_back();
+    }
+    if (msg.empty()) return result;
+
+    result.is_chat = true;
+    result.channel = channel;
+    result.message = msg;
+    result.command_to_send = "CHAT " + wire_scope + " " + msg;
+    return result;
 }

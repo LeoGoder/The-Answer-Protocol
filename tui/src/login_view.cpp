@@ -1,4 +1,4 @@
-#include "../includes/connexion.hpp"
+#include "../includes/login_view.hpp"
 
 #include <string>
 
@@ -26,21 +26,22 @@ using ftxui::separator;
 using ftxui::text;
 using ftxui::vbox;
 
-bool ecranConnexion(InfosConnexion& infos, const std::string& erreur_initiale) {
-    Component input_pseudo = Input(&infos.pseudo, "Ex: Alice");
-    Component input_ip     = Input(&infos.ip, "Ex: 127.0.0.1");
-    Component input_port   = Input(&infos.port, "Ex: 4242");
+bool showLoginView(ConnectionConfig& config,
+                   const std::string& initial_error) {
+    Component input_pseudo = Input(&config.pseudo, "Ex: Alice");
+    Component input_ip     = Input(&config.ip, "Ex: 127.0.0.1");
+    Component input_port   = Input(&config.port, "Ex: 4242");
 
     auto screen = ScreenInteractive::TerminalOutput();
-    bool valide = false;
-    std::string erreur = erreur_initiale;
+    bool is_valid = false;
+    std::string error = initial_error;
 
     auto on_connect = [&] {
-        if (infos.pseudo.empty()) {
-            erreur = "Le pseudo ne peut pas etre vide.";
+        if (config.pseudo.empty()) {
+            error = "Le pseudo ne peut pas etre vide.";
             return;
         }
-        valide = true;
+        is_valid = true;
         screen.Exit();
     };
     Component btn_connect = Button(
@@ -71,13 +72,13 @@ bool ecranConnexion(InfosConnexion& infos, const std::string& erreur_initiale) {
             hbox({text(" IP     : "), input_ip->Render()}),
             hbox({text(" Port   : "), input_port->Render()}),
             separator(),
-            erreur.empty() ? emptyElement()
-                           : text(" " + erreur) | color(Color::Red),
+            error.empty() ? emptyElement()
+                          : text(" " + error) | color(Color::Red),
             btn_connect->Render() | center,
         }) | border | flex_shrink;
     });
 
     screen.Loop(renderer);
 
-    return valide;
+    return is_valid;
 }
