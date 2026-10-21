@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -23,6 +24,7 @@ GameWorld::GameWorld(GameState *game_state) {
     this->server.sin_port = htons(SERVER_PORT);
     this->server.sin_addr.s_addr = inet_addr(SERVER_IP);
     this->fd = socket(AF_INET, SOCK_STREAM, 0);
+    this->player_name = this->game_state->player_name;
 }
 
 GameWorld::~GameWorld() {
@@ -63,8 +65,15 @@ void GameWorld::net_update() {
             break;
         case connection_loading:
             if (!msg_split.empty()) {
-                if (is_connection_approved(msg_split) == true)
+                if (is_connection_approved(msg_split) == true) {
                     this->intern_scene = island_1;
+
+                    int res = send_message(this->command.LOOK, "", this->fd);
+                    if (res < 0) {
+                        // TODO: change to notify system for ux enhanced
+                        std::cout << "Error send\n";
+                    }
+                }
                 else {
                     this->intern_scene = connection_error;
                     this->error_log = msg_copy;
@@ -96,10 +105,10 @@ void GameWorld::draw() {
             } else if (errno == EINPROGRESS) {
                 fd_set fdset;
                 struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
-            
+
                 FD_ZERO(&fdset);
                 FD_SET(this->fd, &fdset);
-            
+
                 if (select(this->fd + 1, NULL, &fdset, NULL, &tv) > 0) {
                     int so_err = 0;
                     socklen_t len = sizeof(so_err);
@@ -110,8 +119,7 @@ void GameWorld::draw() {
                 }
             }
             if (connected) {
-                std::string msg = this->command.CONNECT + this->game_state->player_name + '\n';
-                ssize_t res = send(this->fd, msg.data(), strlen(msg.data()), 0);
+                int res = send_message(this->command.CONNECT, this->player_name, this->fd);
                 if (res > 0) {
                     this->intern_scene = connection_loading;
                 }
@@ -124,19 +132,13 @@ void GameWorld::draw() {
             break;
         }
         case connection_loading:
-            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(GREEN, 0.30));
-            DrawFontText(this->font, "Connecting...", 20, 20, WHITE, 1.0f);
+            draw_loading_screen();
             break;
         case connection_error:
-            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(RED, 0.30));
-            DrawFontText(this->font, "Connection issue !", 20, 20, WHITE, 1.0f);
-            DrawFontText(this->font, this->error_log, 20, 50, WHITE, 1.0f);
-            DrawFontText(this->font, "Press ESC to return", 20, 80, Color{180, 180, 180, 255}, 1.0f);
+            draw_connection_error();
             break;
         case island_1:
-            DrawFontText(this->font, "Connection working !", 20, 20, WHITE, 1.0f);
-            DrawFontText(this->font, "Press ESC to return", 20, 50, Color{180, 180, 180, 255}, 1.0f);
-            GameWorld::server_alive();
+            draw_island_1();
             break;
     }
     GameWorld::net_update();

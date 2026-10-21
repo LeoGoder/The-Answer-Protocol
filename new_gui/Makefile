@@ -29,6 +29,9 @@ SRC = src/main.cpp \
 	 src/game_state.cpp \
 	 src/server.cpp \
 	 src/scene/game_world/game_world.cpp \
+	 src/scene/game_world/connection_error.cpp \
+	 src/scene/game_world/connection_loading.cpp \
+	 src/scene/game_world/island_1.cpp \
 	 src/scene/splash_screen/load_game.cpp \
 	 src/scene/splash_screen/new_game.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \
