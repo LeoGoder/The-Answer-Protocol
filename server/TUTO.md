@@ -82,28 +82,64 @@ Combat :
 - Mort : retour en room.1 avec la moitié des PV.
 - `MOVE` quitte le combat. Un ennemi vaincu revient après 30 s.
 
-### Quêtes
+### Les PNJ en bref
 
-| Commande | Réponse | Erreurs |
+Il y a 3 PNJ, chacun a **un seul rôle** :
+
+| PNJ | Où | Rôle | Commande utile |
+|---|---|---|---|
+| `npc.1` | room.1 | il parle, c'est tout | `TALK npc.1` |
+| `npc.2` | room.3 | il donne les quêtes | `QUEST npc.2` |
+| `npc.3` | room.7 | ennemi, on le tape | `ATTACK npc.3` |
+
+Il faut être **dans la même salle** que le PNJ, sinon `ERR 404 NPC_NOT_FOUND`.
+
+### Les quêtes en bref
+
+**Une seule commande pour tout : `QUEST npc.2`** (dans room.3).
+On la tape plusieurs fois, et la réponse change selon où on en est :
+
+| Situation | Ce que `QUEST npc.2` fait | `status` |
 |---|---|---|
-| `QUEST npc.2` | `OK {"quest_id":"quest.1",...,"status":"active","progress":"0/1"}` | `404`, `406 NO_QUEST_AVAILABLE` |
-| `QUESTS` | `OK [{"quest_id":"quest.1","status":"completed"},...]` | |
+| Je n'ai pas de quête | il me **donne** une quête | `active`, `0/1` |
+| J'ai la quête, mais pas encore fait l'objectif | il me **redonne la même quête** (rappel) | `active`, `0/1` |
+| J'ai la quête et j'ai fait l'objectif | il **termine** la quête + récompense | `completed` |
+| Tout est fini | rien à donner | `ERR 406 NO_QUEST_AVAILABLE` |
 
-`QUEST npc.2` (en room.3) sert à **prendre, suivre et rendre** une quête. `TALK` ne valide rien.
+> **« Il me redonne la même quête et ne me donne pas l'autre ? »**
+> C'est normal : la quête 1 n'est pas finie. Il faut **d'abord faire l'objectif**,
+> revenir, retaper `QUEST npc.2` → elle est terminée → retaper `QUEST npc.2` → quête 2.
+
+- `TALK` ne sert **pas** aux quêtes.
+- `QUESTS` (avec un S) affiche juste où on en est. `1/1` = objectif fait, il reste à revenir le dire à `npc.2`.
+
+### Les 2 quêtes
 
 | Quête | Objectif | Récompense |
 |---|---|---|
-| `quest.1` | rapporter `item.3` à `npc.2` | +10 PV max |
-| `quest.2` | vaincre `npc.3` (quête prise **avant** le combat) | +3 attaque |
+| `quest.1` | avoir `item.3` (room.8) dans son inventaire, puis revenir voir `npc.2` | +10 PV max |
+| `quest.2` | tuer `npc.3` (room.7), puis revenir voir `npc.2` | +3 attaque |
+
+Attention :
+- quest.1 : ne pas `DROP` l'objet avant de revenir.
+- quest.2 : prendre la quête **avant** de tuer `npc.3`, sinon ça ne compte pas.
+
+### Parcours complet (à copier)
 
 ```
-QUEST npc.2      room.3 : prendre quest.1
-TAKE item.3      room.8
-QUEST npc.2      room.3 : rendre quest.1
-QUEST npc.2      room.3 : prendre quest.2
-ATTACK npc.3     room.7 : jusqu'à "victory"
-QUEST npc.2      room.3 : rendre quest.2
+QUEST npc.2      room.3 : je prends quest.1            -> active 0/1
+TAKE item.3      room.8 : je ramasse l'objet
+QUEST npc.2      room.3 : je rends quest.1             -> completed
+QUEST npc.2      room.3 : je prends quest.2            -> active 0/1
+ATTACK npc.3     room.7 : je répète jusqu'à "victory"
+QUEST npc.2      room.3 : je rends quest.2             -> completed
+QUEST npc.2      room.3 : plus rien                    -> ERR 406 NO_QUEST_AVAILABLE
 ```
+
+Chemin : room.3 → room.5 → room.6 → room.7 → room.8 (et retour pareil).
+
+> Le monde, les PNJ et les quêtes actuels sont **temporaires** (noms « Room 1 », « Object 3 »...) :
+> ce sont des cases à remplir pour le game design. Ils sont dans `server/data/world.json`.
 
 ## Événements
 
