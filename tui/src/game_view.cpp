@@ -1,7 +1,9 @@
 #include "../includes/game_view.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <ftxui/component/component.hpp>
@@ -13,6 +15,8 @@
 #include "../includes/protocol.hpp"
 #include "../includes/ui_helpers.hpp"
 
+using ftxui::bgcolor;
+using ftxui::bold;
 using ftxui::borderRounded;
 using ftxui::CatchEvent;
 using ftxui::Color;
@@ -20,6 +24,7 @@ using ftxui::color;
 using ftxui::Component;
 using ftxui::Element;
 using ftxui::Elements;
+using ftxui::emptyElement;
 using ftxui::Event;
 using ftxui::flex;
 using ftxui::focus;
@@ -31,6 +36,7 @@ using ftxui::ScreenInteractive;
 using ftxui::text;
 using ftxui::vbox;
 using ftxui::window;
+using ftxui::xflex;
 using ftxui::yframe;
 
 void runGameView(NetworkClient& client,
@@ -126,11 +132,42 @@ void runGameView(NetworkClient& client,
         Element left_column =
             vbox({items_panel, quests_panel}) | flex;
 
+        int pos = std::max(0, std::min(cursor_pos,
+                                       static_cast<int>(saisie.size())));
+        Elements input_parts;
+        input_parts.push_back(text(" > ") | color(Color::Cyan) | bold);
+
+        if (saisie.empty()) {
+            input_parts.push_back(text("█") | color(Color::Cyan));
+            input_parts.push_back(
+                text(" Tapez votre commande ici...") | color(Color::GrayDark));
+        } else if (pos < static_cast<int>(saisie.size())) {
+            std::string before = saisie.substr(0, pos);
+            std::string at_char = saisie.substr(pos, 1);
+            std::string after = saisie.substr(pos + 1);
+            if (!before.empty()) {
+                input_parts.push_back(text(before));
+            }
+            input_parts.push_back(
+                text(at_char) | bgcolor(Color::Cyan) |
+                color(Color::Black) | bold);
+            if (!after.empty()) {
+                input_parts.push_back(text(after));
+            }
+        } else {
+            input_parts.push_back(text(saisie));
+            input_parts.push_back(text("█") | color(Color::Cyan));
+        }
+
+        input_parts.push_back(emptyElement() | xflex);
+        std::string pos_str = " [" + std::to_string(pos) + "/" +
+                              std::to_string(saisie.size()) + "] ";
+        input_parts.push_back(text(pos_str) | color(Color::GrayLight));
+
         Element terminal_panel = vbox({
             window(text(title),
                    vbox(msg_elements) | yframe | flex) | flex,
-            borderRounded(hbox({text(" > "),
-                shrinkable(champ->Render()) | flex})),
+            borderRounded(hbox(std::move(input_parts))),
         }) | flex;
 
         std::string map_path = state.getMapImage();

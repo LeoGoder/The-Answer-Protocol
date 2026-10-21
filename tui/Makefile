@@ -33,17 +33,20 @@ SRC = src/main.cpp \
       src/protocol.cpp \
       src/ui_helpers.cpp
 OBJ = $(SRC:src/%.cpp=.obj/%.o)
+TOTAL_FILES := $(words $(SRC))
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	@printf "  $(MAGENTA)[LD]$(RESET) Linking   $(BOLD)$(GREEN)%-25s$(RESET)\n" "$@"
+	@printf "  $(MAGENTA)[100%%]$(RESET) $(GREEN)[LD]$(RESET) Linking   $(BOLD)$(GREEN)%-25s$(RESET)\n" "$@"
 	@$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJ) $(LDFLAGS) $(LDLIBS)
 	@printf "  $(BOLD)$(GREEN)✔  Build complete: $(TARGET)$(RESET)\n\n"
 
 .obj/%.o: src/%.cpp | $(FTXUI_LIB)
 	@mkdir -p .obj
-	@printf "  $(BLUE)[CC]$(RESET) Compiling $(CYAN)%-25s$(RESET) $(GRAY)-> $(RESET)%-20s\n" "$<" "$@"
+	@IDX=$$(printf "%s\n" $(SRC) | grep -n -F "$<" | head -n1 | cut -d: -f1); \
+	PCT=$$(( IDX * 100 / $(TOTAL_FILES) )); \
+	printf "  $(BLUE)[%3d%%]$(RESET) $(CYAN)[CC]$(RESET) Compiling $(BOLD)%-25s$(RESET) $(GRAY)-> $(RESET)%-20s\n" "$$PCT" "$<" "$@"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clone + compile FTXUI (une seule fois)
