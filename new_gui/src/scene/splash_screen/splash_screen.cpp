@@ -14,7 +14,7 @@ static void create_or_launch(State &current_state, GameState *game_state, int &s
     if (current_state == new_game) {
         current_state = create;
         slot_choose = id;
-    } 
+    }
     else if (std::strcmp(player_name, "Empty") == 0) {
         current_state = error_screen;
     }
@@ -113,6 +113,7 @@ void SplashScreen::update() {
             SplashScreen::keyboard_input();
             if (IsKeyPressed(KEY_ENTER)) {
                 save_game(this->save_slot_choice, *this->save_lst[this->save_slot_choice]);
+                game_state->player_name = this->save_lst[this->save_slot_choice]->player_name;
                 game_state->set_init_scene(true);
                 game_state->set_actual_scene(game);
             }
