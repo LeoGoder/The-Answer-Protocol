@@ -2,6 +2,7 @@
 #include "helper.hpp"
 #include "raylib.h"
 #include "server.hpp"
+#include "parsing_command_response.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -43,8 +44,10 @@ void GameWorld::update() {
 }
 
 static bool is_connection_approved(std::vector<std::string> msg) {
-    for (long unsigned int i = 0; i < msg.size(); i++) {
-        if (msg[i] == "OK" && msg[i + 1] == "connected") {
+    std::vector<std::string> args_split = split(msg[1], ' ');
+
+    for (long unsigned int i = 0; i < args_split.size(); i++) {
+        if (args_split[i] == "OK" && args_split[i + 1] == "connected") {
             return true;
         }
     }
@@ -58,7 +61,8 @@ void GameWorld::net_update() {
     if (buffer != "") {
         kill_return_line(buffer);
         msg_copy = buffer;
-        msg_split = split(buffer, ' ');
+        msg_split = split(buffer, ' ', 1);
+        // std::cout << msg_split[0];
     }
     switch (this->intern_scene) {
         case connection:
@@ -67,8 +71,8 @@ void GameWorld::net_update() {
             if (!msg_split.empty()) {
                 if (is_connection_approved(msg_split) == true) {
                     this->intern_scene = island_1;
-
                     int res = send_message(this->command.LOOK, "", this->fd);
+
                     if (res < 0) {
                         // TODO: change to notify system for ux enhanced
                         std::cout << "Error send\n";
@@ -83,6 +87,11 @@ void GameWorld::net_update() {
         case connection_error:
             break;
         case island_1:
+            if (!msg_split.empty()) {
+                if (msg_split[0] == "OK" && msg_split[1].front() == '{') {
+                    parse_look_response(msg_split, this->room);
+                }
+            }
             break;
     }
 }

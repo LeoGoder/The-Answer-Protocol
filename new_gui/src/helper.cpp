@@ -1,6 +1,8 @@
 #include "helper.hpp"
 #include "raylib.h"
-#include <sstream>
+#include <cstddef>
+#include <iostream>
+#include <string>
 #include <vector>
 
 std::string GetAssetPath(const std::string &path) {
@@ -20,17 +22,82 @@ void kill_return_line(std::string &str) {
     }
 }
 
-std::vector<std::string> split(std::string &str, char limiter) {
+std::vector<std::string> split(std::string &str, char limiter, int nb_split) {
     std::vector<std::string> tokens;
-    std::stringstream ss(str);
-    std::string token;
-    
-    while (std::getline(ss, token, limiter)) {
-        if (token.back() == '\n')
-            token.pop_back();
-        tokens.push_back(token);
+    size_t start = 0;
+
+    while (nb_split != 0) {
+        size_t end = str.find(limiter, start);
+        if (end == std::string::npos) {
+            break;
+        }
+        std::string sub_str = str.substr(start, end - start);
+
+        // if (sub_str.back() == '\n')
+            // sub_str.pop_back();
+        tokens.push_back(sub_str);
+        start = end + 1;
+        nb_split--;
+    }
+    if (start <= str.size()) {
+        tokens.push_back(str.substr(start));
     }
     return tokens;
+}
+
+std::string extract_value(const std::string &src, std::string key) {
+    std::string pattern = "\"" + key + "\":\"";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return "";
+    start += pattern.length();
+
+    size_t end = src.find("\"", start);
+
+    if (end == std::string::npos) return "";
+
+    return src.substr(start, end - start);
+}
+
+std::string extract_sub_tab(const std::string &src, std::string key) {
+    std::string pattern = "\"" + key + "\":{";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return "";
+    start += pattern.length();
+
+    size_t end = src.find("}", start);
+
+    if (end == std::string::npos) return "";
+
+    return src.substr(start, end - start);
+}
+
+std::vector<std::string> extract_vector(const std::string &src, std::string key) {
+    std::vector<std::string> vector_r;
+    std::string pattern = "\"" + key + "\":[";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return vector_r;
+    start += pattern.length();
+
+    size_t end = src.find("]", start);
+    if (end == std::string::npos) return vector_r;
+
+    std::string element = src.substr(start, end - start);
+    std::cout << element + '\n';
+    size_t cursor = 0;
+    while (cursor < element.size()) {
+        size_t v_start = element.find('"', cursor);
+        if (v_start == std::string::npos) break;
+
+        size_t v_end = element.find('"', v_start + 1);
+        if (v_end == std::string::npos) break;
+
+        vector_r.push_back(element.substr(v_start + 1, v_end - v_start - 1));
+        cursor = v_end + 1;
+    }
+    return vector_r;
 }
 
 float GetFontTextWidth(const std::string &text, float scale) {

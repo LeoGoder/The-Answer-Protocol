@@ -20,6 +20,7 @@ INC = inc/button.hpp \
 	 inc/splash_screen.hpp \
 	 inc/tap.hpp \
 	 inc/server.hpp \
+	 inc/parsing_command_response.hpp \
 
 SRC = src/main.cpp \
 	 src/helper.cpp \
@@ -32,6 +33,7 @@ SRC = src/main.cpp \
 	 src/scene/game_world/connection_error.cpp \
 	 src/scene/game_world/connection_loading.cpp \
 	 src/scene/game_world/island_1.cpp \
+	 src/scene/game_world/parsing_command_response.cpp \
 	 src/scene/splash_screen/load_game.cpp \
 	 src/scene/splash_screen/new_game.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \

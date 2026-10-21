@@ -25,9 +25,7 @@ public:
     GameWorldScene intern_scene;
     GameState *game_state;
     Texture2D font;
-    void draw_loading_screen();
-    void draw_connection_error();
-    void draw_island_1();
+    Room room;
 
     GameWorld(GameState *game_state);
     ~GameWorld();
@@ -36,4 +34,7 @@ public:
     void server_alive();
     void net_update();
     void draw() override;
+    void draw_loading_screen();
+    void draw_connection_error();
+    void draw_island_1();
 };
