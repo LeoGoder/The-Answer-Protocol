@@ -38,7 +38,7 @@ bool showLoginView(ConnectionConfig& config,
 
     auto on_connect = [&] {
         if (config.pseudo.empty()) {
-            error = "Le pseudo ne peut pas etre vide.";
+            error = "Pseudo cannot be empty.";
             return;
         }
         is_valid = true;

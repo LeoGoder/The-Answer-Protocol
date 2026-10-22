@@ -273,7 +273,12 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                         if (quests.empty()) {
                             state.addMessage("", "No active quests.", false);
                         } else {
-                            for (const auto& q : quests) {
+                            for (auto q : quests) {
+                                if (q.description.empty()) {
+                                    std::string desc =
+                                        state.getQuestDescription(q.quest_id);
+                                    if (!desc.empty()) q.description = desc;
+                                }
                                 auto formatted = formatQuestInfo(q);
                                 for (const auto& line : formatted) {
                                     state.addMessage("", line, false);

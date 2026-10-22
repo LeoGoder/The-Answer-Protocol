@@ -105,8 +105,11 @@ void runGameView(NetworkClient& client,
                     color(Color::GrayDark));
         } else {
             for (const auto& q : quests) {
+                std::string title =
+                    !q.description.empty() ? q.description : q.quest_id;
+                if (title.empty()) title = "Unknown quest";
                 quest_elements.push_back(
-                    shrinkable(paragraph("  " + q.description)) |
+                    shrinkable(paragraph("  " + title)) |
                         color(Color::Yellow));
                 std::string progress_str;
                 if (!q.progress.empty()) {
@@ -250,8 +253,26 @@ void runGameView(NetworkClient& client,
             for (auto& c : cmd_upper) {
                 c = static_cast<char>(std::toupper(c));
             }
-            if (cmd_upper == "QUIT") {
+
+            std::string trimmed = cmd_upper;
+            while (!trimmed.empty() &&
+                   std::isspace(static_cast<unsigned char>(trimmed.front()))) {
+                trimmed.erase(trimmed.begin());
+            }
+            while (!trimmed.empty() &&
+                   std::isspace(static_cast<unsigned char>(trimmed.back()))) {
+                trimmed.pop_back();
+            }
+
+            if (trimmed == "QUIT") {
                 screen.Exit();
+                return true;
+            }
+            if (trimmed == "CLEAN" || trimmed == "CLEAR" ||
+                trimmed == "/CLEAN" || trimmed == "/CLEAR") {
+                state.clearMessages();
+                state.clearCompletedQuests();
+                saisie.clear();
                 return true;
             }
             if (cmd_upper == "LOOK") {

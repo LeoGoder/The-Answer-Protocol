@@ -390,7 +390,8 @@ std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
     std::vector<std::string> lines;
     if (!info.quest_id.empty())
         lines.push_back("Quest: " + info.quest_id);
-    lines.push_back("Description: " + info.description);
+    if (!info.description.empty())
+        lines.push_back("Description: " + info.description);
     if (!info.objective.empty() && info.objective != info.description)
         lines.push_back("Objective: " + info.objective);
     if (info.required_items > 0) {
