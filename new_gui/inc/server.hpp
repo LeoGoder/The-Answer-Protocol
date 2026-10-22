@@ -1,4 +1,6 @@
 #pragma once
+#include "player.hpp"
+#include <memory>
 #include <string>
 #include <vector>
 #define MAX_DATA 1024
@@ -21,7 +23,7 @@ struct Room {
     std::string name;
     std::string description;
     Exits exists;
-    std::vector<std::string> player;
+    std::vector<std::unique_ptr<Player>> player;
     std::vector<std::string> items;
     std::vector<std::string> npcs;
 };

@@ -1,5 +1,6 @@
 #include "game_world.hpp"
 #include "helper.hpp"
+#include "player.hpp"
 #include "raylib.h"
 #include "server.hpp"
 #include "parsing_command_response.hpp"
@@ -15,11 +16,11 @@
 #include <errno.h>
 #include <vector>
 
-GameWorld::GameWorld(GameState *game_state) {
+GameWorld::GameWorld(GameState *game_state){
     this->font = LoadTexture(GetAssetPath("test_font.png").c_str());
+    this->player_sprite = LoadTexture(GetAssetPath("player.png").c_str());
     this->game_state = game_state;
     this->intern_scene = connection;
-
     memset(&this->server, 0, sizeof(this->server));
     this->server.sin_family = AF_INET;
     this->server.sin_port = htons(SERVER_PORT);
@@ -29,6 +30,7 @@ GameWorld::GameWorld(GameState *game_state) {
     this->alive_check_timer = 15;
     this->alive_timer = 0.0;
     this->alive_nb_fail = 0;
+    this->player = Player(&this->font, "", &this->player_sprite);
 }
 
 GameWorld::~GameWorld() {
@@ -43,6 +45,9 @@ void GameWorld::update() {
     if (IsKeyPressed(KEY_ESCAPE)) {
         game_state->set_init_scene(true);
         game_state->set_actual_scene(splash_screen);
+    }
+    if (this->intern_scene == in_game) {
+        this->player.input_player(this->game_state->dt);
     }
 }
 
@@ -79,7 +84,7 @@ void GameWorld::net_update() {
         case connection_loading:
             if (!msg_split.empty()) {
                 if (is_connection_approved(msg_split) == true) {
-                    this->intern_scene = island_1;
+                    this->intern_scene = in_game;
                     int res = send_message(this->command.LOOK, "", this->fd);
 
                     if (res < 0) {
@@ -95,10 +100,10 @@ void GameWorld::net_update() {
             break;
         case connection_error:
             break;
-        case island_1:
+        case in_game:
             if (!msg_split.empty()) {
                 if (msg_split[0] == "OK" && msg_split[1].front() == '{') {
-                    parse_look_response(msg_split, this->room);
+                    parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
                 }
             }
             break;
@@ -157,8 +162,8 @@ void GameWorld::draw() {
         case connection_error:
             draw_connection_error();
             break;
-        case island_1:
-            draw_island_1();
+        case in_game:
+            draw_game();
             break;
     }
     GameWorld::net_update();

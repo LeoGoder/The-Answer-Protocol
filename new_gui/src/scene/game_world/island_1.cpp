@@ -1,7 +1,14 @@
 #include "game_world.hpp"
-#include "helper.hpp"
+#include <cstddef>
 
-void GameWorld::draw_island_1() {
-    DrawFontText(this->font, "Connection working !", 20, 20, WHITE, 1.0f);
-    DrawFontText(this->font, "Press ESC to return", 20, 50, Color{180, 180, 180, 255}, 1.0f);
+void GameWorld::draw_game() {
+    player.draw_player(this->player_name);
+    if (!this->room.player.empty()) {
+        for (size_t i = 0; i < this->room.player.size(); i++) {
+            std::string player_room_name = this->room.player[i]->name;
+
+            if (player_room_name != this->player_name)
+                room.player[i]->draw_player(player_room_name);
+        }
+    }
 }

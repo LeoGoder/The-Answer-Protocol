@@ -21,6 +21,8 @@ INC = inc/button.hpp \
 	 inc/tap.hpp \
 	 inc/server.hpp \
 	 inc/parsing_command_response.hpp \
+	 inc/map.hpp \
+	 inc/player.hpp \
 
 SRC = src/main.cpp \
 	 src/helper.cpp \
@@ -39,6 +41,8 @@ SRC = src/main.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \
 	 src/scene/splash_screen/error_screen.cpp \
 	 src/scene/game_world/net_update.cpp \
+	 src/scene/game_world/map.cpp \
+	 src/scene/game_world/player.cpp \
 
 OBJ_DIR = obj
 
