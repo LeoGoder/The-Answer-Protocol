@@ -36,6 +36,7 @@ using ftxui::ScreenInteractive;
 using ftxui::text;
 using ftxui::vbox;
 using ftxui::window;
+using ftxui::xframe;
 using ftxui::xflex;
 using ftxui::yframe;
 
@@ -137,40 +138,46 @@ void runGameView(NetworkClient& client,
 
         int pos = std::max(0, std::min(cursor_pos,
                                        static_cast<int>(saisie.size())));
-        Elements input_parts;
-        input_parts.push_back(text(" > ") | color(Color::Cyan) | bold);
+        Elements content_parts;
 
         if (saisie.empty()) {
-            input_parts.push_back(text("█") | color(Color::Cyan));
-            input_parts.push_back(
-                text(" Tapez votre commande ici...") | color(Color::GrayDark));
+            content_parts.push_back(text("█") | color(Color::Cyan));
+            content_parts.push_back(
+                text(" Write your commande here...") | color(Color::GrayDark));
         } else if (pos < static_cast<int>(saisie.size())) {
             std::string before = saisie.substr(0, pos);
             std::string at_char = saisie.substr(pos, 1);
             std::string after = saisie.substr(pos + 1);
             if (!before.empty()) {
-                input_parts.push_back(text(before));
+                content_parts.push_back(text(before));
             }
-            input_parts.push_back(
+            content_parts.push_back(
                 text(at_char) | bgcolor(Color::Cyan) |
                 color(Color::Black) | bold);
             if (!after.empty()) {
-                input_parts.push_back(text(after));
+                content_parts.push_back(text(after));
             }
         } else {
-            input_parts.push_back(text(saisie));
-            input_parts.push_back(text("█") | color(Color::Cyan));
+            content_parts.push_back(text(saisie));
+            content_parts.push_back(text("█") | color(Color::Cyan));
         }
 
-        input_parts.push_back(emptyElement() | xflex);
         std::string pos_str = " [" + std::to_string(pos) + "/" +
                               std::to_string(saisie.size()) + "] ";
-        input_parts.push_back(text(pos_str) | color(Color::GrayLight));
+
+        Elements bar_parts;
+        bar_parts.push_back(text(" > ") | color(Color::Cyan) | bold);
+        bar_parts.push_back(hbox(std::move(content_parts)) | xframe | flex);
+        bar_parts.push_back(text(pos_str) | color(Color::GrayLight));
+
+        Element input_box =
+            shrinkable(borderRounded(hbox(std::move(bar_parts)))) |
+            ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 3);
 
         Element terminal_panel = vbox({
             window(text(title),
                    vbox(msg_elements) | yframe | flex) | flex,
-            borderRounded(hbox(std::move(input_parts))),
+            input_box,
         }) | flex;
 
         std::string map_path = state.getMapImage();
