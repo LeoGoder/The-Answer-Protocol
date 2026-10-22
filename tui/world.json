@@ -1,0 +1,465 @@
+{
+  "_README": [
+    "HOW TO READ THIS FILE",
+    "Keys starting with '_' are comments: the server ignores them (Go json.Unmarshal skips unknown keys).",
+    "JSON has no // or /* */ comments: never add any, the server would refuse to start.",
+    "",
+    "Tags used in the comments:",
+    "  [SUBJECT] mandatory in en.subject.pdf. NOT checked by the server: check it yourself.",
+    "  [RFC]     required by rfc/protocol-rfc.html.",
+    "  [SERVER]  checked when the server starts: if it is wrong, the server prints world_load_failed and exits.",
+    "  [TEAM]    our own rules, to keep the clients working.",
+    "",
+    "[TEAM] IDs (room.hub, room.1, item.1, npc.1, quest.1) are what LOOK / INVENTORY send to the clients:",
+    "       the GUI and CLI map them to images and texts. Change names, descriptions and dialogue freely,",
+    "       add new IDs freely, but tell the client devs before renaming or removing an existing ID.",
+    "",
+    "[TEAM] After every change, test it: cd server && go run ./cmd/server",
+    "       It must print server_listening (not world_load_failed). Then play the quests with nc localhost 4242.",
+    "",
+    "MINIMUM CHECKLIST [SUBJECT] (the server does not check these):",
+    "  [x] at least 8 rooms, all interconnected",
+    "  [x] at least one loop: a circuit you can walk around and come back (no line-only map)",
+    "  [x] at least one optional branch (a side path you do not need to go through)",
+    "  [x] at least 3 distinct NPC roles: dialogue, quest-giver, enemy",
+    "  [x] at least 4 distinct items, at least 2 of them obtainable in the world (placed in a room)",
+    "  [x] at least 2 quests (e.g. fetch an item, defeat an NPC, deliver an item)",
+    "  [x] a coherent map (names, descriptions and exits make sense together)",
+    "  [ ] the README 'World Design' section describes: layout, room connections, NPC roles, item distribution"
+  ],
+  "_comment_start_room": "[SERVER] must be an existing room id. Every player appears here after CONNECT (here: room.hub).",
+  "start_room": "room.hub",
+  "_comment_respawn_room": [
+    "[SUBJECT] a player at 0 HP respawns at a safe location with reduced health (here: half of max HP).",
+    "[SERVER] must be an existing room id and must NOT contain an enemy (hostile NPC).",
+    "Can be the same room as start_room. If omitted, start_room is used.",
+    "Here: room.hub (safe restaurant hub with npc.1 and npc.2, no hostile enemies)."
+  ],
+  "respawn_room": "room.hub",
+  "_comment_rooms": [
+    "[SUBJECT] at least 8 rooms, interconnected, forming one or more loops, plus at least one optional branch.",
+    "[SUBJECT] movement must allow a full circuit (no line-only map).",
+    "[SERVER] id: not empty, unique.",
+    "[SERVER] exits: only north / south / east / west, and each one must lead to an existing room id.",
+    "[SERVER] items / npcs: must exist below; an item or an NPC can be placed in ONE room only.",
+    "[TEAM] make every exit two-way: if A has east -> B, then B must have west -> A (not checked by the server).",
+    "[TEAM] every room must be reachable from start_room (not checked by the server).",
+    "",
+    "Fields:",
+    "  id          stable identifier sent to the clients, e.g. room.hub, room.1",
+    "  name        title shown to the players (LOOK)",
+    "  description one or two sentences shown to the players (LOOK)",
+    "  exits       { direction: room id }",
+    "  items       item ids lying on the floor when the server starts (changes with TAKE / DROP)",
+    "  npcs        ids of the NPCs standing in this room",
+    "",
+    "Current map (Archipel Culinaire):",
+    "  [room.5 (Ile 5)] ----- [room.3 (Ile 3)] ----------+",
+    "         |                      |                   |",
+    "  [room.4 (Ile 4)] ----- [room.2 (Ile 2)] ----- [room.6 (Ile 6)]",
+    "         |                      |",
+    "  [room.1 (Ile 1)] ----- [room.hub (HUB)] ----- [room.7 (END / Ile 7)]",
+    "  (start/respawn)",
+    "",
+    "  Loops: hub-1-4-2-hub, 4-5-3-2-4, 2-3-6-2, and outer circuit 1-4-5-3-6-2-hub.",
+    "  Optional branch: room.hub -> room.7 (Sanctuaire de Fugoumitak / Boss Final)."
+  ],
+  "rooms": [
+    {
+      "id": "room.hub",
+      "name": "HUB - Le Restaurant et la Ferme",
+      "description": "Le coeur de l'archipel. Votre restaurant attend les ingredients des iles voisines. Des ponts partent vers l'ile 1 a l'ouest, l'ile 2 au nord et l'ile finale (END) a l'est.",
+      "exits": {
+        "west": "room.1",
+        "north": "room.2",
+        "east": "room.7"
+      },
+      "items": [
+        "item.1"
+      ],
+      "npcs": [
+        "npc.1",
+        "npc.2"
+      ]
+    },
+    {
+      "id": "room.1",
+      "name": "Ile 1 - Komolexos",
+      "description": "L'ile au sud-ouest de l'archipel. Ses terres ensoleillees produisent des tomates fraiches. Un pont mene au HUB a l'est et un passage relie l'ile 4 au nord.",
+      "exits": {
+        "east": "room.hub",
+        "north": "room.4"
+      },
+      "items": [
+        "item.2"
+      ],
+      "npcs": []
+    },
+    {
+      "id": "room.2",
+      "name": "Ile 2 - Jeetomal",
+      "description": "La grande ile centrale montagneuse. On y eleve du boeuf de qualite. Ses quatre ponts menent au HUB au sud, a l'ile 4 a l'ouest, a l'ile 3 au nord et a l'ile 6 a l'est.",
+      "exits": {
+        "south": "room.hub",
+        "west": "room.4",
+        "north": "room.3",
+        "east": "room.6"
+      },
+      "items": [
+        "item.3"
+      ],
+      "npcs": []
+    },
+    {
+      "id": "room.3",
+      "name": "Ile 3 - Smycka",
+      "description": "Une ile escarpee au nord de l'archipel, reputee pour son fromage affine. Des ponts rejoignent l'ile 5 a l'ouest, l'ile 2 au sud et l'ile 6 a l'est.",
+      "exits": {
+        "south": "room.2",
+        "west": "room.5",
+        "east": "room.6"
+      },
+      "items": [
+        "item.4"
+      ],
+      "npcs": []
+    },
+    {
+      "id": "room.4",
+      "name": "Ile 4 - Vinterfint",
+      "description": "Une ile rocheuse a l'ouest ou poussent des pommes de terre robustes. Elle est reliee a l'ile 1 au sud, l'ile 2 a l'est et l'ile 5 au nord.",
+      "exits": {
+        "south": "room.1",
+        "east": "room.2",
+        "north": "room.5"
+      },
+      "items": [
+        "item.5"
+      ],
+      "npcs": []
+    },
+    {
+      "id": "room.5",
+      "name": "Ile 5 - Fejka",
+      "description": "L'ile au nord-ouest de la carte. On y recolte des oeufs frais. Des ponts menent vers l'ile 4 au sud et l'ile 3 a l'est.",
+      "exits": {
+        "south": "room.4",
+        "east": "room.3"
+      },
+      "items": [
+        "item.6"
+      ],
+      "npcs": []
+    },
+    {
+      "id": "room.6",
+      "name": "Ile 6 - Kuggis",
+      "description": "Une vaste ile boisee a l'est regorgeant de champignons rares, mais protegee par le Gardien Sauvage. Des ponts menent a l'ile 2 a l'ouest et l'ile 3 au nord.",
+      "exits": {
+        "west": "room.2",
+        "north": "room.3"
+      },
+      "items": [
+        "item.7"
+      ],
+      "npcs": [
+        "npc.3"
+      ]
+    },
+    {
+      "id": "room.7",
+      "name": "Ile 7 (END) - Sanctuaire de Fugoumitak",
+      "description": "L'ile finale a l'est du HUB. Au milieu des dalles antiques se trouve le coffre contenant la recette du Graal culinaire, garde par le Critique Supreme.",
+      "exits": {
+        "west": "room.hub"
+      },
+      "items": [
+        "item.8"
+      ],
+      "npcs": [
+        "npc.4"
+      ]
+    }
+  ],
+  "_comment_items": [
+    "[SUBJECT] at least 4 distinct items; at least 2 must be obtainable in-world (= listed in a room's items).",
+    "[SUBJECT] items are unique instances: TAKE removes it from the room, DROP puts it back for the others.",
+    "[SUBJECT][RFC] items can be referenced by ID or by display name; multi-word names are supported.",
+    "[SERVER] id: not empty, unique. name: required.",
+    "[SERVER] name must be unique among ALL items AND NPCs (case-insensitive), so 'TAKE <name>' is never ambiguous.",
+    "[TEAM] an item placed in no room can never be obtained: place every item somewhere.",
+    "",
+    "Fields:",
+    "  id          stable identifier sent to the clients (INVENTORY, LOOK)",
+    "  name        what players can type: TAKE Farine, TAKE Tomate, TAKE item.1",
+    "  description not sent by the server today (LOOK only gives ids): for us and the clients",
+    "  heal        optional. > 0: USE <item> heals this many HP (never above max HP);",
+    "              the item is used up and comes back in the room where it spawns.",
+    "              0 or missing: a normal item (USE answers ERR 408 ITEM_NOT_USABLE).",
+    "              Consumables here: item.2 (Tomate, heal 20), item.4 (Fromage, heal 35), item.6 (Oeuf, heal 25)."
+  ],
+  "items": [
+    {
+      "id": "item.1",
+      "name": "Farine",
+      "description": "Sac de farine disponible sur le HUB. Base de la pizza, de la tourte et de la pate feuilletee du Wellington."
+    },
+    {
+      "id": "item.2",
+      "name": "Tomate",
+      "description": "Tomate fraiche de l'ile 1 (Komolexos). Permet de cuisiner la Pizza Margherita avec la Farine.",
+      "heal": 20
+    },
+    {
+      "id": "item.3",
+      "name": "Boeuf",
+      "description": "Piece de boeuf de l'ile 2 (Jeetomal). Permet de cuisiner la Tourte a la viande, la Bolognaise et le Boeuf Wellington."
+    },
+    {
+      "id": "item.4",
+      "name": "Fromage",
+      "description": "Fromage affine de l'ile 3 (Smycka). Permet de preparer le Burger du Chef avec la Farine, la Tomate et le Boeuf.",
+      "heal": 35
+    },
+    {
+      "id": "item.5",
+      "name": "Pomme de terre",
+      "description": "Pommes de terre de l'ile 4 (Vinterfint). Permettent de cuisiner la Poutine et la Moussaka."
+    },
+    {
+      "id": "item.6",
+      "name": "Oeuf",
+      "description": "Oeufs frais de l'ile 5 (Fejka). Indispensables pour les Empanadas et la dorure du Boeuf Wellington.",
+      "heal": 25
+    },
+    {
+      "id": "item.7",
+      "name": "Champignon",
+      "description": "Champignons sauvages de l'ile 6 (Kuggis). Essentiels pour le Boeuf Bourguignon et la duxelles du Boeuf Wellington."
+    },
+    {
+      "id": "item.8",
+      "name": "Recette du Wellington",
+      "description": "Le parchemin ultime enferme dans le coffre de l'ile 7 (END). Permet d'assembler Farine, Boeuf, Oeuf et Champignon pour creer le Boeuf Wellington."
+    }
+  ],
+  "_comment_npcs": [
+    "[SUBJECT] at least 3 distinct NPC roles (e.g. dialogue, quest-giver, enemy).",
+    "[SUBJECT] enemy NPCs have varying HP based on their type and difficulty: if you add enemies, give them different hp.",
+    "",
+    "How each role is made in this file:",
+    "  dialogue NPC   name + dialogue. Players use TALK <npc> (here: npc.1 Apprenti Serveur).",
+    "  quest-giver    any NPC used as 'giver' in a quest below. Players use QUEST <npc> (here: npc.2 Chef Gusto).",
+    "  enemy          \"hostile\": true + hp + attack (+ defense). Players use ATTACK <npc> (here: npc.3 and npc.4).",
+    "",
+    "[SERVER] id: not empty, unique. name: required, unique among ALL items AND NPCs (case-insensitive).",
+    "[SERVER] dialogue: at least one line (TALK goes through the lines one after the other, in a loop).",
+    "[SERVER] hostile: needs hp > 0 and attack > 0, and cannot be placed in respawn_room.",
+    "[TEAM] keep quest-givers non-hostile: a defeated enemy disappears for 30 seconds.",
+    "",
+    "Combat numbers, to balance enemies:",
+    "  player at start: 100 HP, attack 10, defense 2",
+    "  damage of one hit = attack + random(0..4) - defense of the one hit (minimum 1)",
+    "  one ATTACK = the player hits, then the enemy hits back if still alive",
+    "  a defeated enemy comes back with full HP after 30 seconds",
+    "  examples with current data:",
+    "    - npc.3 Gardien Sauvage (60 HP, attack 12, defense 1): guarding item.7 (Champignon) on room.6.",
+    "      Player deals ~10 dmg/hit (6 hits to kill), takes ~12 dmg/hit (~70 HP lost without healing).",
+    "    - npc.4 Critique Supreme (110 HP, attack 18, defense 2): boss guarding item.8 on room.7 (END).",
+    "      Deals ~18 dmg/hit. A fresh player without quest rewards or healing will lose.",
+    "",
+    "Fields: id, name, description (not sent by the server today), dialogue, hostile, hp, attack, defense"
+  ],
+  "npcs": [
+    {
+      "id": "npc.1",
+      "name": "Apprenti Serveur",
+      "description": "Le serveur du restaurant sur le HUB.",
+      "dialogue": [
+        "Bienvenue au HUB ! Nous n'avons que de la Farine ici.",
+        "Commencez par aller a l'ouest sur l'ile 1 pour chercher la Tomate, puis au nord sur l'ile 2 pour le Boeuf.",
+        "N'allez pas tout de suite a l'est vers l'ile 7 (END) : le Critique Supreme qui garde le coffre est redoutable !"
+      ]
+    },
+    {
+      "id": "npc.2",
+      "name": "Chef Gusto",
+      "description": "Le chef du restaurant qui donne les quetes de progression.",
+      "dialogue": [
+        "Chaque ile de 1 a 6 possede un ingredient unique pour enrichir notre carte.",
+        "Une fois que vous aurez recolte nos produits et pris des forces, allez ouvrir le coffre sur l'ile 7 a l'est du HUB !"
+      ]
+    },
+    {
+      "id": "npc.3",
+      "name": "Gardien Sauvage",
+      "description": "Une creature qui garde les champignons sur l'ile 6.",
+      "dialogue": [
+        "Grrr... Les champignons de l'ile 6 sont a moi !"
+      ],
+      "hostile": true,
+      "hp": 60,
+      "attack": 12,
+      "defense": 1
+    },
+    {
+      "id": "npc.4",
+      "name": "Critique Supreme",
+      "description": "Le boss final qui garde le coffre sur l'ile 7 (END).",
+      "dialogue": [
+        "Vous osez entrer sur l'ile finale pour reclamer la Recette du Wellington ?",
+        "Prouvez-moi que vous etes digne du Graal de la cuisine !"
+      ],
+      "hostile": true,
+      "hp": 110,
+      "attack": 18,
+      "defense": 2
+    }
+  ],
+  "_comment_quests": [
+    "[SUBJECT] at least 2 simple quests (e.g. fetch item, defeat NPC, deliver item).",
+    "[SUBJECT] progression, completion and rewards are our own design: they must be explained in the README 'Quest System' section.",
+    "[RFC] players use QUEST <npc> and QUESTS. ERR 406 NO_QUEST_AVAILABLE when the NPC has nothing more to give.",
+    "",
+    "How quests work in our server:",
+    "  - QUEST <giver> gives the next quest of this NPC, shows its progress, or completes it when the goal is done.",
+    "  - Quests of the same giver are a chain, in the order of this list: the next one is given only after",
+    "    the previous one is completed.",
+    "  - Progress is automatic, completion is manual: the player must go back to the giver and type QUEST <giver>.",
+    "",
+    "Types:",
+    "  fetch   target = an item id. The player must have it in their inventory when they report to the giver.",
+    "          The item is then taken and goes back to the room where it spawns (other players can do the quest).",
+    "          A 'deliver' quest is a fetch quest where the item is far from the giver.",
+    "  defeat  target = a hostile NPC id. The quest must be accepted BEFORE the kill.",
+    "          Group members in the same room who also have the quest get the credit too.",
+    "",
+    "[SERVER] giver: existing NPC. type: only fetch or defeat.",
+    "[SERVER] fetch: target must be an item placed in a room. defeat: target must be a hostile NPC.",
+    "[SERVER] description and reward.name are required.",
+    "",
+    "Current progression chain (giver: npc.2 Chef Gusto):",
+    "  quest.1 -> quest.2 -> quest.3 -> quest.4 -> quest.5 (fetch ingredients from islands 1 to 5)",
+    "  quest.6 (defeat npc.3 Gardien Sauvage) -> quest.7 (fetch item.7 Champignon)",
+    "  quest.8 (defeat npc.4 Critique Supreme) -> quest.9 (fetch item.8 Recette du Wellington)",
+    "",
+    "Fields:",
+    "  id          stable identifier sent to the clients (QUEST, QUESTS)",
+    "  type        fetch | defeat",
+    "  giver       NPC id",
+    "  description text sent to the player",
+    "  target      item id (fetch) or enemy NPC id (defeat)",
+    "  reward      name (text sent to the player), max_hp (added to max HP and current HP), attack (added to attack);",
+    "              max_hp and attack are optional numbers"
+  ],
+  "quests": [
+    {
+      "id": "quest.1",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 1 (Pizza Margherita) : Allez a l'ouest du HUB sur l'ile 1 et rapportez la Tomate au Chef Gusto.",
+      "target": "item.2",
+      "reward": {
+        "name": "Plat debloque : Pizza Margherita",
+        "max_hp": 10,
+        "attack": 2
+      }
+    },
+    {
+      "id": "quest.2",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 2 (Tourte a la viande) : Allez au nord du HUB sur l'ile 2 et rapportez le Boeuf au Chef Gusto.",
+      "target": "item.3",
+      "reward": {
+        "name": "Plat debloque : Tourte au Boeuf",
+        "max_hp": 10,
+        "attack": 2
+      }
+    },
+    {
+      "id": "quest.3",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 3 (Burger du Chef) : Montez sur l'ile 3 au nord de l'ile 2 et rapportez le Fromage au Chef Gusto.",
+      "target": "item.4",
+      "reward": {
+        "name": "Plat debloque : Burger du Chef",
+        "max_hp": 15,
+        "attack": 2
+      }
+    },
+    {
+      "id": "quest.4",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 4 (Poutine & Moussaka) : Allez sur l'ile 4 (entre l'ile 1 et l'ile 5) et rapportez la Pomme de terre au Chef Gusto.",
+      "target": "item.5",
+      "reward": {
+        "name": "Plat debloque : Poutine Canadienne",
+        "max_hp": 15,
+        "attack": 2
+      }
+    },
+    {
+      "id": "quest.5",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 5 (Empanadas) : Allez tout au nord-ouest sur l'ile 5 et rapportez l'Oeuf au Chef Gusto.",
+      "target": "item.6",
+      "reward": {
+        "name": "Plat debloque : Empanadas",
+        "max_hp": 15,
+        "attack": 3
+      }
+    },
+    {
+      "id": "quest.6",
+      "type": "defeat",
+      "giver": "npc.2",
+      "description": "Ile 6 (Securiser les Champignons) : Allez a l'est sur l'ile 6 et battez le Gardien Sauvage.",
+      "target": "npc.3",
+      "reward": {
+        "name": "Acces aux Champignons de Kuggis",
+        "max_hp": 20,
+        "attack": 4
+      }
+    },
+    {
+      "id": "quest.7",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 6 (Boeuf Bourguignon) : Rapportez le Champignon de l'ile 6 au Chef Gusto.",
+      "target": "item.7",
+      "reward": {
+        "name": "Plat debloque : Boeuf Bourguignon",
+        "max_hp": 20,
+        "attack": 4
+      }
+    },
+    {
+      "id": "quest.8",
+      "type": "defeat",
+      "giver": "npc.2",
+      "description": "Ile 7 - END (Le Boss Final) : Allez a l'est du HUB sur l'ile 7 et battez le Critique Supreme qui garde le coffre.",
+      "target": "npc.4",
+      "reward": {
+        "name": "Cle du Coffre de Fugoumitak",
+        "max_hp": 30,
+        "attack": 5
+      }
+    },
+    {
+      "id": "quest.9",
+      "type": "fetch",
+      "giver": "npc.2",
+      "description": "Ile 7 - END (Le Graal de la Cuisine) : Prenez la Recette du Wellington dans le coffre de l'ile 7 et rapportez-la au Chef Gusto.",
+      "target": "item.8",
+      "reward": {
+        "name": "Graal Culinaire : Le Boeuf Wellington Legendaire",
+        "max_hp": 50,
+        "attack": 10
+      }
+    }
+  ]
+}
