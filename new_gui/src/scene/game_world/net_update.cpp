@@ -11,7 +11,7 @@ void GameWorld::server_alive(std::vector<std::string> msg_split) {
         this->alive_timer = 0.0;
     }
     if (!msg_split.empty()) {
-        if (/*msg_split[0] == "OK" &&*/ msg_split[1] == "Alive") {
+        if (/*msg_split[0] == "OK" &&*/ msg_split[0] == "Alive") {
             this->alive_nb_fail = 0;
         }
         else {

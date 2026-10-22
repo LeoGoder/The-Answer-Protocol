@@ -60,12 +60,13 @@ static bool is_connection_approved(std::vector<std::string> msg) {
 void GameWorld::net_update() {
     std::vector<std::string> msg_split;
     std::string msg_copy;
-    std::string buffer = receiv_msg(this->fd);
+    std::string buffer;
+    if (this->fd >= 0)
+        buffer = receiv_msg(this->fd);
     if (buffer != "") {
         kill_return_line(buffer);
         msg_copy = buffer;
         msg_split = split(buffer, ' ', 1);
-        // std::cout << msg_split[0];
     }
     switch (this->intern_scene) {
         case connection:
