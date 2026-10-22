@@ -61,8 +61,13 @@ void GameWorld::net_update() {
     std::vector<std::string> msg_split;
     std::string msg_copy;
     std::string buffer;
-    if (this->fd >= 0)
+    if (this->fd > 0)
         buffer = receiv_msg(this->fd);
+    if (this->fd == 0) {
+        close(fd);
+        this->fd = -1;
+        this->intern_scene = connection_error;
+    }
     if (buffer != "") {
         kill_return_line(buffer);
         msg_copy = buffer;

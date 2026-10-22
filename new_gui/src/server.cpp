@@ -23,6 +23,7 @@ std::string receiv_msg(int fd) {
     }
     else if (msg_get == 0) {
         printf("[INFO] Connection close\n");
+        return "CLOSE";
     }
     else if (errno != EAGAIN && errno != EWOULDBLOCK){
         printf("[INFO] Erreur with recv: %ld\n", msg_get);
