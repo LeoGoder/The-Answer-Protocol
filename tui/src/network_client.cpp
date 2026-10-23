@@ -175,7 +175,7 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                             for (const auto& line : formatted) {
                                 state.addMessage("", line, false);
                             }
-                            if (!room.name.empty() || !room.id.empty()) {
+                            if (!room.id.empty() || !room.name.empty()) {
                                 state.setMapImage(
                                     resolveMapPath(room.id, room.name));
                             }
@@ -248,7 +248,7 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                         for (const auto& line : formatted) {
                             state.addMessage("", line, false);
                         }
-                        if (!room.name.empty() || !room.id.empty()) {
+                        if (!room.id.empty() || !room.name.empty()) {
                             state.setMapImage(
                                 resolveMapPath(room.id, room.name));
                         }
