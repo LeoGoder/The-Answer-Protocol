@@ -43,6 +43,8 @@ SRC = src/main.cpp \
 	 src/scene/game_world/net_update.cpp \
 	 src/scene/game_world/map.cpp \
 	 src/scene/game_world/player.cpp \
+	 src/scene/game_world/draw_hud.cpp \
+	 src/scene/game_world/event.cpp \
 
 OBJ_DIR = obj
 
@@ -89,6 +91,7 @@ fclean: clean
 re: fclean build-raylib $(NAME)
 
 lint:
-	cpplint --filter=-legal/copyright --recursive .
+	cd src/ && cpplint --filter=-legal/copyright --recursive .
+	cd inc/ && cpplint --filter=-legal/copyright --recursive .
 
 .PHONY: all clean fclean re

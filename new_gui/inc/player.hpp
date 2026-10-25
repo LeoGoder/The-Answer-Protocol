@@ -13,6 +13,7 @@ class Player {
         std::string name;
         Texture2D *sprite;
         Texture2D *font;
+        Camera2D cam;
 
         Player(Texture2D *font, std::string name, Texture2D *sprite);
         Player();

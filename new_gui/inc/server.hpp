@@ -11,6 +11,11 @@ struct NetCommand {
     std::string ALIVE = "ALIVE\n";
 };
 
+struct EvtCommand {
+    std::string ROOM_ENTER = "ROOM PRESENCE ENTER ";
+    std::string ROOM_LEAVE = "ROOM PRESENCE LEAVE ";
+};
+
 struct Exits {
     std::string north;
     std::string east;

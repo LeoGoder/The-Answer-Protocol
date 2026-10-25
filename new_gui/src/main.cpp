@@ -2,9 +2,7 @@
 #include "helper.hpp"
 #include "raylib.h"
 
-int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
+int main(void) {
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "The Answer Protocol");

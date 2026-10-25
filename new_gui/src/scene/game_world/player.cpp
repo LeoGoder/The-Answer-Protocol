@@ -19,7 +19,7 @@ Player::~Player() {
 
 void Player::draw_player(std::string player_name) {
     DrawFontText(*this->font, player_name, this->player_pos.x, this->player_pos.y - 20);
-    DrawRectangle(this->player_pos.x, this->player_pos.y, 20, 20, WHITE);
+    DrawTexture(*this->sprite, this->player_pos.x, this->player_pos.y, WHITE);
 }
 
 void Player::input_player(float dt) {
@@ -36,7 +36,7 @@ void Player::input_player(float dt) {
         this->player_pos.y += speed * dt;
     }
     if (IsKeyPressed(KEY_E)) {
-        // 
+        //
     }
     if (IsKeyPressed(KEY_ESCAPE)) {
         // Pause menu enable

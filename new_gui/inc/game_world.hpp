@@ -3,8 +3,8 @@
 #include "game_state.hpp"
 #include "raylib.h"
 #include "server.hpp"
-#include <netinet/in.h>
 #include "player.hpp"
+#include <netinet/in.h>
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 4242
@@ -17,6 +17,17 @@ enum GameWorldScene {
     in_game = 3,
 };
 
+enum Maps {
+    hub = 0,
+    fugoumitak = 1,
+    fejka = 2,
+    jeetomal = 3,
+    komolexos = 4,
+    kuggis = 5,
+    smycka = 6,
+    vinterfint = 7,
+};
+
 class GameWorld : public GameScene {
     public:
         int fd;
@@ -26,6 +37,7 @@ class GameWorld : public GameScene {
         std::string player_name;
         std::string error_log;
         NetCommand command;
+        EvtCommand event;
         struct sockaddr_in server;
         GameWorldScene intern_scene;
         GameState *game_state;
@@ -33,15 +45,19 @@ class GameWorld : public GameScene {
         Texture2D player_sprite;
         Room room;
         Player player;
-    
+        Maps map;
+
         GameWorld(GameState *game_state);
         ~GameWorld();
-    
+
         void update() override;
         void server_alive(std::vector<std::string> msg_split);
         void net_update();
+        void room_presence_enter(std::string new_player);
+        void room_presence_leave(std::string delete_player);
         void draw() override;
         void draw_loading_screen();
         void draw_connection_error();
         void draw_game();
+        void draw_hud();
 };

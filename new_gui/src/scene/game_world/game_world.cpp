@@ -31,10 +31,16 @@ GameWorld::GameWorld(GameState *game_state){
     this->alive_timer = 0.0;
     this->alive_nb_fail = 0;
     this->player = Player(&this->font, "", &this->player_sprite);
+    this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
+    this->player.cam.rotation = 0.0;
+    this->player.cam.target = this->player.player_pos;
+    this->player.cam.zoom = 1.0;
+    this->map = hub;
 }
 
 GameWorld::~GameWorld() {
     UnloadTexture(this->font);
+    UnloadTexture(this->player_sprite);
     if (this->fd >= 0) {
         close(this->fd);
         this->fd = -1;
@@ -105,6 +111,16 @@ void GameWorld::net_update() {
                 if (msg_split[0] == "OK" && msg_split[1].front() == '{') {
                     parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
                 }
+                if (msg_split[0] == "EVT") {
+                    if (msg_split[1].rfind(this->event.ROOM_ENTER, 0) == 0) {
+                        std::string new_player = split(msg_split[1], ' ')[3];
+                        GameWorld::room_presence_enter(new_player);
+                    }
+                    if (msg_split[1].rfind(this->event.ROOM_ENTER, 0) != 0) {
+                        std::string del_player = split(msg_split[1], ' ')[3];
+                        GameWorld::room_presence_leave(del_player);
+                    }
+                }
             }
             break;
     }
@@ -163,7 +179,11 @@ void GameWorld::draw() {
             draw_connection_error();
             break;
         case in_game:
-            draw_game();
+            BeginMode2D(this->player.cam);
+                this->player.cam.target = this->player.player_pos;
+                draw_game();
+            EndMode2D();
+            draw_hud();
             break;
     }
     GameWorld::net_update();
