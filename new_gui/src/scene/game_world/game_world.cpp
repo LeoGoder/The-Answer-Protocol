@@ -1,4 +1,5 @@
 #include "game_world.hpp"
+#include "map_parse.hpp"
 #include "helper.hpp"
 #include "player.hpp"
 #include "raylib.h"
@@ -36,6 +37,7 @@ GameWorld::GameWorld(GameState *game_state){
     this->player.cam.target = this->player.player_pos;
     this->player.cam.zoom = 1.0;
     this->map = hub;
+    parse_map(this->map_data);
 }
 
 GameWorld::~GameWorld() {

@@ -18,6 +18,7 @@ std::vector<std::string> split(std::string &str, char limiter, int nb_split = -1
 std::string extract_value(const std::string &src, std::string key);
 std::string extract_sub_tab(const std::string &src, std::string key);
 std::vector<std::string> extract_vector(const std::string &src, std::string key);
+std::vector<std::vector<int>> extract_layers(const std::string &src);
 void kill_return_line(std::string &str);
 void DrawFontText(const Texture2D &font, const std::string &text, float x, float y, Color color = WHITE, float scale = 1.0f);
 float GetFontTextWidth(const std::string &text, float scale = 1.0f);

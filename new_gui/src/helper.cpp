@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 std::string GetAssetPath(const std::string &path) {
     if (FileExists(path.c_str())) return path;
@@ -98,6 +99,39 @@ std::vector<std::string> extract_vector(const std::string &src, std::string key)
         cursor = v_end + 1;
     }
     return vector_r;
+}
+
+std::vector<std::vector<int>> extract_layers(const std::string &src) {
+    std::vector<std::vector<int>> all_layers;
+        std::size_t pos = 0;
+
+        while (true) {
+            std::size_t pos_data = src.find("\"data\"", pos);
+            if (pos_data == std::string::npos) {
+                break;
+            }
+
+            std::size_t start = src.find('[', pos_data);
+            if (start == std::string::npos) break;
+            start++;
+
+            std::size_t end = src.find(']', start);
+            if (end == std::string::npos) break;
+
+            std::string data = src.substr(start, end - start);
+            std::stringstream ss(data);
+            std::vector<int> current_layer;
+
+            int id = 0;
+            char comma = 0;
+            while (ss >> id) {
+                current_layer.push_back(id);
+                ss >> comma;
+            }
+            all_layers.push_back(current_layer);
+            pos = end + 1;
+        }
+        return all_layers;
 }
 
 float GetFontTextWidth(const std::string &text, float scale) {

@@ -23,6 +23,7 @@ INC = inc/button.hpp \
 	 inc/parsing_command_response.hpp \
 	 inc/map.hpp \
 	 inc/player.hpp \
+	 inc/map_parse.hpp \
 
 SRC = src/main.cpp \
 	 src/helper.cpp \
@@ -45,6 +46,7 @@ SRC = src/main.cpp \
 	 src/scene/game_world/player.cpp \
 	 src/scene/game_world/draw_hud.cpp \
 	 src/scene/game_world/event.cpp \
+	 src/scene/game_world/map_parse.cpp \
 
 OBJ_DIR = obj
 

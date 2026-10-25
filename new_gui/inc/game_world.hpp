@@ -1,6 +1,7 @@
 #pragma once
 #include "game_scene.hpp"
 #include "game_state.hpp"
+#include "map_parse.hpp"
 #include "raylib.h"
 #include "server.hpp"
 #include "player.hpp"
@@ -46,6 +47,7 @@ class GameWorld : public GameScene {
         Room room;
         Player player;
         Maps map;
+        MapData map_data;
 
         GameWorld(GameState *game_state);
         ~GameWorld();
