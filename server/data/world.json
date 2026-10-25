@@ -1,7 +1,68 @@
 {
+  "_README": [
+    "HOW TO READ THIS FILE",
+    "Keys starting with '_' are comments: the server ignores them (Go json.Unmarshal skips unknown keys).",
+    "JSON has no // or /* */ comments: never add any, the server would refuse to start.",
+    "",
+    "Tags used in the comments:",
+    "  [SUBJECT] mandatory in en.subject.pdf. NOT checked by the server: check it yourself.",
+    "  [RFC]     required by rfc/protocol-rfc.html.",
+    "  [SERVER]  checked when the server starts: if it is wrong, the server prints world_load_failed and exits.",
+    "  [TEAM]    our own rules, to keep the clients working.",
+    "",
+    "[TEAM] IDs (room.1, item.2, npc.3, quest.1) are what LOOK / INVENTORY send to the clients:",
+    "       the GUI and CLI map them to images and texts. Change names, descriptions and dialogue freely,",
+    "       add new IDs freely, but tell the client devs before renaming or removing an existing ID.",
+    "",
+    "[TEAM] After every change, test it: cd server && go run ./cmd/server",
+    "       It must print server_listening (not world_load_failed). Then play the quests with nc localhost 4242.",
+    "",
+    "MINIMUM CHECKLIST [SUBJECT] (the server does not check these):",
+    "  [ ] at least 8 rooms, all interconnected",
+    "  [ ] at least one loop: a circuit you can walk around and come back (no line-only map)",
+    "  [ ] at least one optional branch (a side path you do not need to go through)",
+    "  [ ] at least 3 distinct NPC roles: dialogue, quest-giver, enemy",
+    "  [ ] at least 4 distinct items, at least 2 of them obtainable in the world (placed in a room)",
+    "  [ ] at least 2 quests (e.g. fetch an item, defeat an NPC, deliver an item)",
+    "  [ ] a coherent map (names, descriptions and exits make sense together)",
+    "  [ ] the README 'World Design' section describes: layout, room connections, NPC roles, item distribution"
+  ],
+
+  "_comment_start_room": "[SERVER] must be an existing room id. Every player appears here after CONNECT.",
   "start_room": "room.1",
+
+  "_comment_respawn_room": [
+    "[SUBJECT] a player at 0 HP respawns at a safe location with reduced health (here: half of max HP).",
+    "[SERVER] must be an existing room id and must NOT contain an enemy (hostile NPC).",
+    "Can be the same room as start_room. If omitted, start_room is used."
+  ],
   "respawn_room": "room.1",
 
+  "_comment_rooms": [
+    "[SUBJECT] at least 8 rooms, interconnected, forming one or more loops, plus at least one optional branch.",
+    "[SUBJECT] movement must allow a full circuit (no line-only map).",
+    "[SERVER] id: not empty, unique.",
+    "[SERVER] exits: only north / south / east / west, and each one must lead to an existing room id.",
+    "[SERVER] items / npcs: must exist below; an item or an NPC can be placed in ONE room only.",
+    "[TEAM] make every exit two-way: if A has east -> B, then B must have west -> A (not checked by the server).",
+    "[TEAM] every room must be reachable from start_room (not checked by the server).",
+    "",
+    "Fields:",
+    "  id          stable identifier sent to the clients, e.g. room.9",
+    "  name        title shown to the players (LOOK)",
+    "  description one or two sentences shown to the players (LOOK)",
+    "  exits       { direction: room id }",
+    "  items       item ids lying on the floor when the server starts (changes with TAKE / DROP)",
+    "  npcs        ids of the NPCs standing in this room",
+    "",
+    "Current map (placeholder, to redesign):",
+    "  room.2 --- room.3 --- room.4",
+    "    |          |          |",
+    "  room.1 --- room.5 --- room.6",
+    "  (start)               |",
+    "                      room.7 --- room.8   (optional branch)",
+    "  Loops: 1-2-3-5 and 3-4-6-5. Branch: 6-7-8."
+  ],
   "rooms": [
     {
       "id": "room.1",
@@ -69,6 +130,22 @@
     }
   ],
 
+  "_comment_items": [
+    "[SUBJECT] at least 4 distinct items; at least 2 must be obtainable in-world (= listed in a room's items).",
+    "[SUBJECT] items are unique instances: TAKE removes it from the room, DROP puts it back for the others.",
+    "[SUBJECT][RFC] items can be referenced by ID or by display name; multi-word names are supported.",
+    "[SERVER] id: not empty, unique. name: required.",
+    "[SERVER] name must be unique among ALL items AND NPCs (case-insensitive), so 'TAKE <name>' is never ambiguous.",
+    "[TEAM] an item placed in no room can never be obtained: place every item somewhere.",
+    "",
+    "Fields:",
+    "  id          stable identifier sent to the clients (INVENTORY, LOOK)",
+    "  name        what players can type: TAKE Healing Potion",
+    "  description not sent by the server today (LOOK only gives ids): for us and the clients",
+    "  heal        optional. > 0: USE <item> heals this many HP (never above max HP);",
+    "              the item is used up and comes back in the room where it spawns.",
+    "              0 or missing: a normal item (USE answers ERR 408 ITEM_NOT_USABLE)."
+  ],
   "items": [
     { "id": "item.1", "name": "Object 1", "description": "Object 1", "heal": 20 },
     { "id": "item.2", "name": "Object 2", "description": "Object 2", "heal": 40 },
@@ -76,6 +153,30 @@
     { "id": "item.4", "name": "Object 4", "description": "Object 4" }
   ],
 
+  "_comment_npcs": [
+    "[SUBJECT] at least 3 distinct NPC roles (e.g. dialogue, quest-giver, enemy).",
+    "[SUBJECT] enemy NPCs have varying HP based on their type and difficulty: if you add enemies, give them different hp.",
+    "",
+    "How each role is made in this file:",
+    "  dialogue NPC   name + dialogue. Players use TALK <npc>.",
+    "  quest-giver    any NPC used as 'giver' in a quest below. Players use QUEST <npc>.",
+    "  enemy          \"hostile\": true + hp + attack (+ defense). Players use ATTACK <npc>.",
+    "",
+    "[SERVER] id: not empty, unique. name: required, unique among ALL items AND NPCs (case-insensitive).",
+    "[SERVER] dialogue: at least one line (TALK goes through the lines one after the other, in a loop).",
+    "[SERVER] hostile: needs hp > 0 and attack > 0, and cannot be placed in respawn_room.",
+    "[TEAM] keep quest-givers non-hostile: a defeated enemy disappears for 30 seconds.",
+    "",
+    "Combat numbers, to balance enemies:",
+    "  player at start: 100 HP, attack 10, defense 2",
+    "  damage of one hit = attack + random(0..4) - defense of the one hit (minimum 1)",
+    "  one ATTACK = the player hits, then the enemy hits back if still alive",
+    "  a defeated enemy comes back with full HP after 30 seconds",
+    "  example: npc.3 (80 HP, attack 18, defense 1) takes about 7 hits and deals about 18 per hit:",
+    "           a fresh player loses, unless they heal (USE) or get rewards first. Easy to change below.",
+    "",
+    "Fields: id, name, description (not sent by the server today), dialogue, hostile, hp, attack, defense"
+  ],
   "npcs": [
     {
       "id": "npc.1",
@@ -101,6 +202,37 @@
     }
   ],
 
+  "_comment_quests": [
+    "[SUBJECT] at least 2 simple quests (e.g. fetch item, defeat NPC, deliver item).",
+    "[SUBJECT] progression, completion and rewards are our own design: they must be explained in the README 'Quest System' section.",
+    "[RFC] players use QUEST <npc> and QUESTS. ERR 406 NO_QUEST_AVAILABLE when the NPC has nothing more to give.",
+    "",
+    "How quests work in our server:",
+    "  - QUEST <giver> gives the next quest of this NPC, shows its progress, or completes it when the goal is done.",
+    "  - Quests of the same giver are a chain, in the order of this list: the next one is given only after",
+    "    the previous one is completed.",
+    "  - Progress is automatic, completion is manual: the player must go back to the giver and type QUEST <giver>.",
+    "",
+    "Types:",
+    "  fetch   target = an item id. The player must have it in their inventory when they report to the giver.",
+    "          The item is then taken and goes back to the room where it spawns (other players can do the quest).",
+    "          A 'deliver' quest is a fetch quest where the item is far from the giver.",
+    "  defeat  target = a hostile NPC id. The quest must be accepted BEFORE the kill.",
+    "          Group members in the same room who also have the quest get the credit too.",
+    "",
+    "[SERVER] giver: existing NPC. type: only fetch or defeat.",
+    "[SERVER] fetch: target must be an item placed in a room. defeat: target must be a hostile NPC.",
+    "[SERVER] description and reward.name are required.",
+    "",
+    "Fields:",
+    "  id          stable identifier sent to the clients (QUEST, QUESTS)",
+    "  type        fetch | defeat",
+    "  giver       NPC id",
+    "  description text sent to the player",
+    "  target      item id (fetch) or enemy NPC id (defeat)",
+    "  reward      name (text sent to the player), max_hp (added to max HP and current HP), attack (added to attack);",
+    "              max_hp and attack are optional numbers"
+  ],
   "quests": [
     {
       "id": "quest.1",
