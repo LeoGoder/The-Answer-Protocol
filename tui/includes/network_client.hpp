@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -20,6 +21,8 @@ class NetworkClient {
                          std::string& error_message);
     void disconnect();
     bool isConnected() const;
+    bool isConnectionLost() const;
+    void setUserQuit(bool val);
 
     // Send line to server
     bool sendLine(const std::string& line);
@@ -34,4 +37,6 @@ class NetworkClient {
     int socket_fd_;
     std::mutex send_mutex_;
     std::unique_ptr<std::thread> listener_thread_;
+    std::atomic<bool> connection_lost_{false};
+    std::atomic<bool> user_quit_{false};
 };

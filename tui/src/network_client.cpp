@@ -17,7 +17,8 @@
 #include "../includes/map_resolver.hpp"
 #include "../includes/protocol.hpp"
 
-NetworkClient::NetworkClient() : socket_fd_(-1) {}
+NetworkClient::NetworkClient()
+    : socket_fd_(-1), connection_lost_(false), user_quit_(false) {}
 
 NetworkClient::~NetworkClient() {
     disconnect();
@@ -25,6 +26,10 @@ NetworkClient::~NetworkClient() {
 
 bool NetworkClient::connectToServer(const ConnectionConfig& config,
                                     std::string& error_message) {
+    disconnect();
+    connection_lost_.store(false);
+    user_quit_.store(false);
+
     int port = -1;
     try {
         port = std::stoi(config.port);
@@ -119,6 +124,14 @@ bool NetworkClient::isConnected() const {
     return socket_fd_ >= 0;
 }
 
+bool NetworkClient::isConnectionLost() const {
+    return connection_lost_.load();
+}
+
+void NetworkClient::setUserQuit(bool val) {
+    user_quit_.store(val);
+}
+
 bool NetworkClient::sendLine(const std::string& line) {
     std::lock_guard<std::mutex> lock(send_mutex_);
     if (socket_fd_ < 0) return false;
@@ -207,6 +220,54 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                     }
                     state.setPendingCommand(CMD_INVENTORY_AUTO);
                     sendLine("INVENTORY");
+                    continue;
+                }
+            }
+
+            if (cmd == CMD_USE) {
+                if (ligne.rfind("ERR", 0) == 0) {
+                    state.setPendingCommand(CMD_NONE);
+                    state.addMessage("Serveur", ligne, false);
+                    continue;
+                }
+                if (ligne.rfind("OK", 0) == 0) {
+                    UseInfo use_info;
+                    if (parseUseResponse(ligne, use_info)) {
+                        auto formatted = formatUseInfo(use_info);
+                        for (const auto& line : formatted) {
+                            state.addMessage("", line, false);
+                        }
+                    } else {
+                        state.addMessage("Serveur", ligne, false);
+                    }
+                    state.setPendingCommand(CMD_INVENTORY_AUTO);
+                    sendLine("INVENTORY");
+                    continue;
+                }
+            }
+
+            if (cmd == CMD_ATTACK) {
+                if (ligne.rfind("ERR", 0) == 0) {
+                    state.setPendingCommand(CMD_NONE);
+                    state.addMessage("Serveur", ligne, false);
+                    continue;
+                }
+                if (ligne.rfind("OK", 0) == 0) {
+                    CombatInfo combat_info;
+                    if (parseCombatResponse(ligne, combat_info)) {
+                        auto formatted = formatCombatInfo(combat_info);
+                        for (const auto& line : formatted) {
+                            state.addMessage("", line, false);
+                        }
+                        if (combat_info.status == "defeated") {
+                            state.setPendingCommand(CMD_LOOK);
+                            sendLine("LOOK");
+                            continue;
+                        }
+                    } else {
+                        state.addMessage("Serveur", ligne, false);
+                    }
+                    state.setPendingCommand(CMD_NONE);
                     continue;
                 }
             }
@@ -329,7 +390,18 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
             std::string evt_rest;
             if (ligne.substr(0, 4) == "EVT ") {
                 std::string after_evt = ligne.substr(4);
-                if (after_evt.substr(0, 10) == "ROOM CHAT ") {
+                if (after_evt.substr(0, 12) == "ROOM COMBAT ") {
+                    CombatInfo combat_info;
+                    if (parseCombatResponse(ligne, combat_info)) {
+                        std::string att = combat_info.attacker.empty() ? "Someone" : combat_info.attacker;
+                        std::string tgt = combat_info.target;
+                        if (!tgt.empty()) tgt[0] = static_cast<char>(std::toupper(tgt[0]));
+                        state.addMessage("", "[Combat] " + att + " attacked " + tgt +
+                                         " (" + std::to_string(combat_info.damage) + " dmg, " +
+                                         tgt + " HP: " + std::to_string(combat_info.target_hp) + ")", false);
+                        continue;
+                    }
+                } else if (after_evt.substr(0, 10) == "ROOM CHAT ") {
                     channel = "ROOM";
                     evt_rest = after_evt.substr(10);
                 } else if (after_evt.substr(0, 12) == "GLOBAL CHAT ") {
@@ -363,8 +435,8 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
         screen.PostEvent(ftxui::Event::Custom);
     }
 
-    if (state.isInterfaceActive()) {
-        state.addMessage("", "*** Connexion avec le serveur perdue ***", false);
-        screen.PostEvent(ftxui::Event::Custom);
+    if (state.isInterfaceActive() && !user_quit_.load()) {
+        connection_lost_.store(true);
+        screen.Exit();
     }
 }

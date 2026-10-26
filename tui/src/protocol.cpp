@@ -335,6 +335,77 @@ bool parseInventoryResponse(const std::string& raw_response,
     }
 }
 
+bool parseUseResponse(const std::string& raw_response, UseInfo& out) {
+    const std::string prefix = "OK ";
+    if (raw_response.substr(0, prefix.size()) != prefix) {
+        return false;
+    }
+
+    std::string json_str = raw_response.substr(prefix.size());
+
+    try {
+        json j = json::parse(json_str);
+
+        if (!j.is_object()) return false;
+
+        if (j.contains("used") && j["used"].is_string()) {
+            out.used = j["used"].get<std::string>();
+        } else {
+            return false;
+        }
+
+        if (j.contains("hp") && j["hp"].is_number())
+            out.hp = j["hp"].get<int>();
+        if (j.contains("max_hp") && j["max_hp"].is_number())
+            out.max_hp = j["max_hp"].get<int>();
+        if (j.contains("attack") && j["attack"].is_number())
+            out.attack = j["attack"].get<int>();
+        if (j.contains("received") && j["received"].is_string())
+            out.received = j["received"].get<std::string>();
+
+        return true;
+    } catch (const json::exception&) {
+        return false;
+    }
+}
+
+bool parseCombatResponse(const std::string& raw_response, CombatInfo& out) {
+    std::string json_str;
+    if (raw_response.rfind("OK ", 0) == 0) {
+        json_str = raw_response.substr(3);
+    } else if (raw_response.rfind("EVT ROOM COMBAT ", 0) == 0) {
+        json_str = raw_response.substr(16);
+    } else {
+        return false;
+    }
+
+    try {
+        json j = json::parse(json_str);
+        if (!j.is_object()) return false;
+
+        if (j.contains("attacker") && j["attacker"].is_string())
+            out.attacker = j["attacker"].get<std::string>();
+        if (j.contains("target") && j["target"].is_string())
+            out.target = j["target"].get<std::string>();
+        if (j.contains("attacker_hp") && j["attacker_hp"].is_number())
+            out.attacker_hp = j["attacker_hp"].get<int>();
+        if (j.contains("target_hp") && j["target_hp"].is_number())
+            out.target_hp = j["target_hp"].get<int>();
+        if (j.contains("damage") && j["damage"].is_number())
+            out.damage = j["damage"].get<int>();
+        if (j.contains("damage_taken") && j["damage_taken"].is_number())
+            out.damage_taken = j["damage_taken"].get<int>();
+        if (j.contains("status") && j["status"].is_string())
+            out.status = j["status"].get<std::string>();
+        if (j.contains("room") && j["room"].is_string())
+            out.room = j["room"].get<std::string>();
+
+        return true;
+    } catch (const json::exception&) {
+        return false;
+    }
+}
+
 static void formatJsonValue(const json& j, const std::string& prefix,
                             std::vector<std::string>& lines) {
     if (j.is_object()) {
@@ -408,6 +479,63 @@ std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
         lines.push_back("Reward: " + info.reward);
     if (!info.status.empty())
         lines.push_back("Status: " + info.status);
+    return lines;
+}
+
+std::vector<std::string> formatUseInfo(const UseInfo& info) {
+    std::vector<std::string> lines;
+    std::string item_name = info.used;
+    if (!item_name.empty()) {
+        item_name[0] = static_cast<char>(std::toupper(item_name[0]));
+    }
+    lines.push_back("Used: " + item_name);
+
+    if (info.max_hp > 0) {
+        lines.push_back("HP: " + std::to_string(info.hp) + "/" +
+                        std::to_string(info.max_hp));
+    } else if (info.hp > 0) {
+        lines.push_back("HP: " + std::to_string(info.hp));
+    }
+
+    if (info.attack > 0) {
+        lines.push_back("Attack: " + std::to_string(info.attack));
+    }
+
+    if (!info.received.empty()) {
+        std::string rec = info.received;
+        if (!rec.empty()) {
+            rec[0] = static_cast<char>(std::toupper(rec[0]));
+        }
+        lines.push_back("Received: " + rec);
+    }
+
+    return lines;
+}
+
+std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
+    std::vector<std::string> lines;
+    std::string target_name = info.target;
+    if (!target_name.empty()) {
+        target_name[0] = static_cast<char>(std::toupper(target_name[0]));
+    }
+
+    lines.push_back("Combat vs " + target_name + ":");
+    lines.push_back("  Damage dealt: " + std::to_string(info.damage) +
+                    " (" + target_name + " HP: " + std::to_string(info.target_hp) + ")");
+
+    if (info.status == "victory") {
+        lines.push_back("  Status: Victory! " + target_name + " defeated.");
+    } else {
+        lines.push_back("  Damage taken: " + std::to_string(info.damage_taken) +
+                        " (Your HP: " + std::to_string(info.attacker_hp) + ")");
+        if (info.status == "defeated") {
+            std::string respawn = info.room.empty() ? "respawn point" : info.room;
+            lines.push_back("  Status: Defeated! You respawned in " + respawn + ".");
+        } else {
+            lines.push_back("  Status: In combat");
+        }
+    }
+
     return lines;
 }
 

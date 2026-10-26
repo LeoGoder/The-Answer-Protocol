@@ -40,6 +40,25 @@ struct QuestInfo {
     std::string target_npc;
 };
 
+struct UseInfo {
+    std::string used;
+    int hp = 0;
+    int max_hp = 0;
+    int attack = 0;
+    std::string received;
+};
+
+struct CombatInfo {
+    std::string attacker;
+    std::string target;
+    int attacker_hp = 0;
+    int target_hp = 0;
+    int damage = 0;
+    int damage_taken = 0;
+    std::string status;
+    std::string room;
+};
+
 enum PendingCommand {
     CMD_NONE,
     CMD_LOOK,
@@ -50,7 +69,9 @@ enum PendingCommand {
     CMD_TAKE,
     CMD_DROP,
     CMD_MOVE,
-    CMD_OTHER_JSON
+    CMD_OTHER_JSON,
+    CMD_USE,
+    CMD_ATTACK
 };
 
 struct PendingChat {

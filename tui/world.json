@@ -59,7 +59,7 @@
     "  [vinterfint (Island 4)] - [jeetomal (Island 2)] - [kuggis (Island 6)]",
     "         |                        |",
     "  [komolexos (Island 1)] -- [hub (HUB)] --------- [fugoumitak (END / Island 7)]",
-    "  (start/respawn)",
+    "                           (start/respawn)",
     "",
     "  Loops: hub-komolexos-vinterfint-jeetomal-hub, vinterfint-fejka-smycka-jeetomal-vinterfint, jeetomal-smycka-kuggis-jeetomal, and outer circuit komolexos-vinterfint-fejka-smycka-kuggis-jeetomal-hub.",
     "  Optional branch: hub -> fugoumitak (Fugoumitak Sanctuary / Final Boss)."
@@ -68,7 +68,7 @@
     {
       "id": "hub",
       "name": "Hub - The Restaurant and Farm",
-      "description": "The heart of the archipelago. Your restaurant awaits fresh ingredients from the neighboring islands. Bridges lead west to Island 1, north to Island 2, and east to the final sanctuary (Island 7).",
+      "description": "The heart of the archipelago. Your restaurant awaits fresh ingredients from the neighboring islands. Bridges lead west to Komolexos, north to Jeetomal, and east to Fugoumitak Sanctuary.",
       "exits": {
         "west": "komolexos",
         "north": "jeetomal",
@@ -79,13 +79,13 @@
       ],
       "npcs": [
         "waiter",
-        "chef_gusto"
+        "chef"
       ]
     },
     {
       "id": "komolexos",
-      "name": "Island 1 - Komolexos",
-      "description": "The southwestern island of the archipelago. Its sunny hills offer a breathtaking view of the ocean. A bridge leads to the Hub to the east and a passage connects to Island 4 to the north.",
+      "name": "Komolexos",
+      "description": "The southwestern island of the archipelago. Its sunny hills offer a breathtaking view of the ocean. A bridge leads to the Hub to the east and a passage connects to Vinterfint to the north.",
       "exits": {
         "east": "hub",
         "north": "vinterfint"
@@ -95,8 +95,8 @@
     },
     {
       "id": "jeetomal",
-      "name": "Island 2 - Jeetomal",
-      "description": "The large central mountainous island where quality cattle are raised. Four bridges lead south to the Hub, west to Island 4, north to Island 3, and east to Island 6.",
+      "name": "Jeetomal",
+      "description": "The large central mountainous island where quality cattle are raised, guarded by the Queen Of Cows. Four bridges lead south to the Hub, west to Vinterfint, north to Smycka, and east to Kuggis.",
       "exits": {
         "south": "hub",
         "west": "vinterfint",
@@ -106,12 +106,15 @@
       "items": [
         "beef"
       ],
-      "npcs": []
+      "npcs": [
+        "queen",
+        "butcher"
+      ]
     },
     {
       "id": "smycka",
-      "name": "Island 3 - Smycka",
-      "description": "A rugged island in the north of the archipelago swept by sea breezes. Bridges connect west to Island 5, south to Island 2, and east to Island 6.",
+      "name": "Smycka",
+      "description": "A rugged island in the north of the archipelago swept by sea breezes. Bridges connect west to Fejka, south to Jeetomal, and east to Kuggis.",
       "exits": {
         "south": "jeetomal",
         "west": "fejka",
@@ -122,8 +125,8 @@
     },
     {
       "id": "vinterfint",
-      "name": "Island 4 - Vinterfint",
-      "description": "A rocky, mysterious island to the west of the archipelago. It connects south to Island 1, east to Island 2, and north to Island 5.",
+      "name": "Vinterfint",
+      "description": "A rocky, mysterious island to the west of the archipelago. It connects south to Komolexos, east to Jeetomal, and north to Fejka.",
       "exits": {
         "south": "komolexos",
         "east": "jeetomal",
@@ -134,8 +137,8 @@
     },
     {
       "id": "fejka",
-      "name": "Island 5 - Fejka",
-      "description": "The northwestern island of the archipelago where fresh eggs are gathered. Bridges lead south to Island 4 and east to Island 3.",
+      "name": "Fejka",
+      "description": "The northwestern island of the archipelago where fresh eggs are gathered. Bridges lead south to Vinterfint and east to Smycka.",
       "exits": {
         "south": "vinterfint",
         "east": "smycka"
@@ -147,8 +150,8 @@
     },
     {
       "id": "kuggis",
-      "name": "Island 6 - Kuggis",
-      "description": "A vast wooded island in the east teeming with rare wild mushrooms, but guarded by the Wild Guardian. Bridges lead west to Island 2 and north to Island 3.",
+      "name": "Kuggis",
+      "description": "A vast wooded island in the east teeming with rare wild mushrooms, but guarded by the Wild Guardian. Bridges lead west to Jeetomal and north to Smycka.",
       "exits": {
         "west": "jeetomal",
         "north": "smycka"
@@ -157,21 +160,21 @@
         "mushroom"
       ],
       "npcs": [
-        "wild_guardian"
+        "guardian"
       ]
     },
     {
       "id": "fugoumitak",
-      "name": "Island 7 (END) - Fugoumitak Sanctuary",
-      "description": "The final island to the east of the Hub. Amidst ancient stone slabs rests the chest containing the Wellington recipe, guarded by the Supreme Critic.",
+      "name": "Fugoumitak Sanctuary",
+      "description": "The final island to the east of the Hub. Amidst ancient stone slabs rests the ancient chest, guarded by the Supreme Critic.",
       "exits": {
         "west": "hub"
       },
       "items": [
-        "recipe"
+        "chest"
       ],
       "npcs": [
-        "supreme_critic"
+        "critic"
       ]
     }
   ],
@@ -185,39 +188,52 @@
     "",
     "Fields:",
     "  id          stable identifier sent to the clients (INVENTORY, LOOK)",
-    "  name        what players can type: TAKE Flour, TAKE Beef, TAKE flour",
+    "  name        what players can type: TAKE Flour, TAKE Beef, TAKE Beef Wellington",
     "  description not sent by the server today (LOOK only gives ids): for us and the clients",
     "  heal        optional. > 0: USE <item> heals this many HP (never above max HP);",
     "              the item is used up and comes back in the room where it spawns.",
     "              0 or missing: a normal item (USE answers ERR 408 ITEM_NOT_USABLE).",
-    "              Consumables here: egg (heal 25)."
+    "              Consumables here: egg (heal 25), beef_wellington (heal 100), chest (heal 25, contains toque)."
   ],
   "items": [
     {
       "id": "flour",
       "name": "Flour",
-      "description": "Bag of flour available at the Hub. Essential base for savory pies and Wellington pastry."
+      "description": "Bag of flour available at the Hub. Essential base for savory pastry and the Beef Wellington."
     },
     {
       "id": "beef",
       "name": "Beef",
-      "description": "Prime cut of beef from Island 2 (Jeetomal). Used to prepare meat pie and Beef Wellington."
+      "description": "Prime cut of beef from Jeetomal, guarded by the Queen of Cows. Heart of the Beef Wellington."
     },
     {
       "id": "egg",
       "name": "Egg",
-      "description": "Fresh egg from Island 5 (Fejka). Essential for recipes and glazing the Beef Wellington.",
+      "description": "Fresh egg from Fejka. Essential for glazing and assembling the Beef Wellington.",
       "heal": 25
     },
     {
       "id": "mushroom",
       "name": "Mushroom",
-      "description": "Wild mushroom from Island 6 (Kuggis). Essential for Boeuf Bourguignon and Wellington duxelles."
+      "description": "Wild mushroom from Kuggis, guarded by the Wild Guardian. Essential for the Wellington duxelles."
     },
     {
-      "id": "recipe",
-      "name": "Wellington Recipe",
-      "description": "The ultimate parchment locked in the chest on Island 7 (END). Combines Flour, Beef, Egg, and Mushroom to create the legendary Beef Wellington."
+      "id": "beef_wellington",
+      "name": "Beef Wellington",
+      "description": "The culinary masterpiece prepared by Chef Gusto combining Flour, Beef, Egg, and Mushroom. Consuming it (USE Beef Wellington) fully restores your vitality (+100 HP) to defeat the Supreme Critic!",
+      "heal": 100
+    },
+    {
+      "id": "chest",
+      "name": "Chest",
+      "description": "An ancient treasure chest resting on the altar of Fugoumitak. Using it (USE Chest) grants its content: the legendary Chef's Hat!",
+      "heal": 25,
+      "contains": "toque"
+    },
+    {
+      "id": "toque",
+      "name": "Chef Hat",
+      "description": "The prestigious Chef's Hat from the Sanctuary Chest. Symbol of absolute culinary mastery!"
     }
   ],
   "_comment_npcs": [
@@ -227,7 +243,7 @@
     "How each role is made in this file:",
     "  dialogue NPC   name + dialogue. Players use TALK <npc> (here: waiter - Apprentice Waiter).",
     "  quest-giver    any NPC used as 'giver' in a quest below. Players use QUEST <npc> (here: chef_gusto - Chef Gusto).",
-    "  enemy          \"hostile\": true + hp + attack (+ defense). Players use ATTACK <npc> (here: wild_guardian and supreme_critic).",
+    "  enemy          \"hostile\": true + hp + attack (+ defense). Players use ATTACK <npc> (here: cow_queen, wild_guardian and supreme_critic).",
     "",
     "[SERVER] id: not empty, unique. name: required, unique among ALL items AND NPCs (case-insensitive).",
     "[SERVER] dialogue: at least one line (TALK goes through the lines one after the other, in a loop).",
@@ -240,9 +256,9 @@
     "  one ATTACK = the player hits, then the enemy hits back if still alive",
     "  a defeated enemy comes back with full HP after 30 seconds",
     "  examples with current data:",
+    "    - cow_queen The Queen Of Cows (42 HP, attack 12, defense 4): guarding beef on jeetomal.",
     "    - wild_guardian Wild Guardian (60 HP, attack 12, defense 1): guarding mushroom on kuggis.",
-    "      Player deals ~10 dmg/hit (6 hits to kill), takes ~12 dmg/hit (~70 HP lost without healing).",
-    "    - supreme_critic Supreme Critic (110 HP, attack 18, defense 2): boss guarding recipe on fugoumitak (END).",
+    "    - supreme_critic Supreme Critic (110 HP, attack 18, defense 2): boss guarding chest on fugoumitak (END).",
     "      Deals ~18 dmg/hit. A fresh player without quest rewards or healing will lose.",
     "",
     "Fields: id, name, description (not sent by the server today), dialogue, hostile, hp, attack, defense"
@@ -253,26 +269,50 @@
       "name": "Apprentice Waiter",
       "description": "The restaurant waiter at the Hub.",
       "dialogue": [
-        "Welcome to the Hub! We only have Flour here.",
-        "Start by heading north to Island 2 to fetch Beef, then explore the neighboring islands.",
-        "Do not head east to Island 7 (END) yet: the Supreme Critic guarding the chest is formidable!"
+        "Welcome to the Hub! We have Flour right here in the restaurant.",
+        "Talk to Chef Gusto to begin your culinary journey across the archipelago.",
+        "Do not challenge the Supreme Critic on Fugoumitak without consuming a Beef Wellington first!"
       ]
     },
     {
-      "id": "chef_gusto",
+      "id": "chef",
       "name": "Chef Gusto",
       "description": "The head chef of the restaurant who provides progression quests.",
       "dialogue": [
-        "Explore the archipelago to recover our essential ingredients and expand our menu.",
-        "Once you have gathered our ingredients and grown stronger, go open the chest on Island 7 to the east of the Hub!"
+        "Welcome! We need fresh ingredients from across the archipelago to prepare our signature dishes.",
+        "North in Jeetomal lies prime beef, northwest in Fejka fresh eggs, and east in Kuggis wild mushrooms.",
+        "Once you bring me all the ingredients, we will craft the legendary Beef Wellington!",
+        "Eating the Beef Wellington will give you the strength to defeat the Supreme Critic on Fugoumitak and open the ancient chest!"
       ]
     },
     {
-      "id": "wild_guardian",
-      "name": "Wild Guardian",
-      "description": "A fierce creature guarding the mushrooms on Island 6.",
+      "id": "butcher",
+      "name": "Butcher",
+      "description": "A depressed butcher on Jeetomal island who lost his job when The Queen Of Cows seized control of the pastures.",
       "dialogue": [
-        "Grrr... The mushrooms of Island 6 are mine!"
+        "Sigh... Look at my rusty cleaver. Ever since The Queen Of Cows took power on Jeetomal, my butcher shop has been completely empty.",
+        "Sheoverthrew my pastures, rallied the cattle, and forbade anyone from touching the prime beef.",
+        "I just want my job back... Please, ask me for a QUEST and defeat The Queen Of Cows so I can work again!"
+      ]
+    },
+    {
+      "id": "queen",
+      "name": "The Queen Of Cows",
+      "description": "The Queen of the cows on Jeetomal guarding the legendary beef.",
+      "dialogue": [
+        "If you want the legendary beef of Jeetomal, you will need to pass through me!"
+      ],
+      "hostile": true,
+      "hp": 42,
+      "attack": 12,
+      "defense": 4
+    },
+    {
+      "id": "guardian",
+      "name": "Wild Guardian",
+      "description": "A fierce creature guarding the mushrooms on Kuggis.",
+      "dialogue": [
+        "Grrr... The mushrooms of Kuggis are mine!"
       ],
       "hostile": true,
       "hp": 60,
@@ -280,11 +320,11 @@
       "defense": 1
     },
     {
-      "id": "supreme_critic",
+      "id": "critic",
       "name": "Supreme Critic",
-      "description": "The final boss guarding the chest on Island 7 (END).",
+      "description": "The final boss guarding the chest on Fugoumitak.",
       "dialogue": [
-        "You dare enter the final island to claim the Wellington Recipe?",
+        "You dare enter Fugoumitak? Only one empowered by the legendary Beef Wellington can hope to defeat me!",
         "Prove to me that you are worthy of culinary greatness!"
       ],
       "hostile": true,
@@ -316,9 +356,10 @@
     "[SERVER] description and reward.name are required.",
     "",
     "Current progression chain (giver: chef_gusto):",
-    "  fetch_beef (fetch beef) -> fetch_egg (fetch egg)",
-    "  defeat_guardian (defeat wild_guardian) -> fetch_mushroom (fetch mushroom)",
-    "  defeat_critic (defeat supreme_critic) -> fetch_recipe (fetch recipe)",
+    "  defeat_cow_queen (defeat cow_queen) -> fetch_beef (fetch beef)",
+    "  fetch_egg (fetch egg) -> defeat_guardian (defeat wild_guardian)",
+    "  fetch_mushroom (fetch mushroom) -> craft_wellington (fetch flour)",
+    "  defeat_critic (defeat supreme_critic)",
     "",
     "Fields:",
     "  id          stable identifier sent to the clients (QUEST, QUESTS)",
@@ -331,10 +372,23 @@
   ],
   "quests": [
     {
+      "id": "defeat_cow_queen",
+      "type": "defeat",
+      "giver": "butcher",
+      "description": "Jeetomal Pastures: Go defeat The Queen Of Cows guarding the beef.",
+      "target": "queen",
+      "reward": {
+        "name": "Queen Of Cows Defeated",
+        "item": "beef",
+        "max_hp": 15,
+        "attack": 3
+      }
+    },
+    {
       "id": "fetch_beef",
       "type": "fetch",
-      "giver": "chef_gusto",
-      "description": "Island 2 (Jeetomal Beef): Go north of the Hub to Island 2 and bring the Beef back to Chef Gusto.",
+      "giver": "chef",
+      "description": "Jeetomal Beef: Go north to Jeetomal and bring Beef to Chef Gusto.",
       "target": "beef",
       "reward": {
         "name": "Access to Jeetomal Beef",
@@ -345,8 +399,8 @@
     {
       "id": "fetch_egg",
       "type": "fetch",
-      "giver": "chef_gusto",
-      "description": "Island 5 (Fejka Eggs): Go all the way northwest to Island 5 and bring the Egg back to Chef Gusto.",
+      "giver": "chef",
+      "description": "Fejka Eggs: Journey northwest to Fejka and bring Egg to Chef Gusto.",
       "target": "egg",
       "reward": {
         "name": "Access to Fejka Eggs",
@@ -357,9 +411,9 @@
     {
       "id": "defeat_guardian",
       "type": "defeat",
-      "giver": "chef_gusto",
-      "description": "Island 6 (Secure Kuggis): Go east to Island 6 and defeat the Wild Guardian.",
-      "target": "wild_guardian",
+      "giver": "chef",
+      "description": "Secure Kuggis: Go east to Kuggis and defeat the Wild Guardian.",
+      "target": "guardian",
       "reward": {
         "name": "Access to Kuggis Forest",
         "max_hp": 20,
@@ -369,8 +423,8 @@
     {
       "id": "fetch_mushroom",
       "type": "fetch",
-      "giver": "chef_gusto",
-      "description": "Island 6 (Kuggis Mushrooms): Bring the Mushroom from Island 6 back to Chef Gusto.",
+      "giver": "chef",
+      "description": "Kuggis Mushrooms: Gather from the woods and bring Mushroom to Chef Gusto.",
       "target": "mushroom",
       "reward": {
         "name": "Access to Kuggis Mushrooms",
@@ -379,27 +433,29 @@
       }
     },
     {
-      "id": "defeat_critic",
-      "type": "defeat",
-      "giver": "chef_gusto",
-      "description": "Island 7 - END (The Final Boss): Go east of the Hub to Island 7 and defeat the Supreme Critic guarding the chest.",
-      "target": "supreme_critic",
+      "id": "craft_wellington",
+      "type": "fetch",
+      "giver": "chef",
+      "description": "Bake Wellington: Combine all gathered ingredients and bring Flour to Chef Gusto to prepare the Beef Wellington.",
+      "target": "flour",
       "reward": {
-        "name": "Access to Fugoumitak Chest",
-        "max_hp": 30,
-        "attack": 5
+        "name": "Chef's Masterpiece: Beef Wellington Prepared",
+        "item": "beef_wellington",
+        "max_hp": 40,
+        "attack": 8
       }
     },
     {
-      "id": "fetch_recipe",
-      "type": "fetch",
-      "giver": "chef_gusto",
-      "description": "Island 7 - END (The Culinary Grail): Take the Wellington Recipe from the chest on Island 7 and bring it back to Chef Gusto.",
-      "target": "recipe",
+      "id": "defeat_critic",
+      "type": "defeat",
+      "giver": "chef",
+      "description": "Fugoumitak Boss: Consume your Beef Wellington and defeat the Supreme Critic.",
+      "target": "critic",
       "reward": {
-        "name": "Access to Fugoumitak Beef Wellington",
-        "max_hp": 50,
-        "attack": 10
+        "name": "Master of Fugoumitak: Access to the Chest",
+        "item": "chest",
+        "max_hp": 30,
+        "attack": 5
       }
     }
   ]

@@ -61,6 +61,10 @@ bool showLoginView(ConnectionConfig& config,
             on_connect();
             return true;
         }
+        if (event == Event::Escape) {
+            screen.Exit();
+            return true;
+        }
         return false;
     });
 

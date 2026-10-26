@@ -40,7 +40,7 @@ using ftxui::xframe;
 using ftxui::xflex;
 using ftxui::yframe;
 
-void runGameView(NetworkClient& client,
+bool runGameView(NetworkClient& client,
                  AppState& state,
                  const ConnectionConfig& config) {
     state.setUserPseudo(config.pseudo);
@@ -247,6 +247,7 @@ void runGameView(NetworkClient& client,
         if (event != Event::Return) return false;
 
         if (saisie == "QUIT") {
+            client.setUserQuit(true);
             screen.Exit();
             return true;
         }
@@ -271,7 +272,9 @@ void runGameView(NetworkClient& client,
                 trimmed.pop_back();
             }
 
-            if (trimmed == "QUIT") {
+            if (trimmed == "QUIT" || trimmed == "/QUIT" ||
+                trimmed == "EXIT" || trimmed == "/EXIT") {
+                client.setUserQuit(true);
                 screen.Exit();
                 return true;
             }
@@ -297,6 +300,12 @@ void runGameView(NetworkClient& client,
             } else if (cmd_upper == "DROP" ||
                        cmd_upper.rfind("DROP ", 0) == 0) {
                 state.setPendingCommand(CMD_DROP);
+            } else if (cmd_upper == "USE" ||
+                       cmd_upper.rfind("USE ", 0) == 0) {
+                state.setPendingCommand(CMD_USE);
+            } else if (cmd_upper == "ATTACK" ||
+                       cmd_upper.rfind("ATTACK ", 0) == 0) {
+                state.setPendingCommand(CMD_ATTACK);
             } else if (cmd_upper == "INVENTORY") {
                 state.setPendingCommand(CMD_INVENTORY);
             } else if (cmd_upper == "STATUS" ||
@@ -323,4 +332,6 @@ void runGameView(NetworkClient& client,
 
     state.setInterfaceActive(false);
     client.disconnect();
+
+    return client.isConnectionLost();
 }

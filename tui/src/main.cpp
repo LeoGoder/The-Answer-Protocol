@@ -13,21 +13,32 @@ int main() {
 
     ConnectionConfig config;
     std::string error_message;
-    NetworkClient client;
 
     while (true) {
-        if (!showLoginView(config, error_message)) {
-            std::cout << "Connexion annulée.\n";
-            return 0;
+        NetworkClient client;
+
+        while (true) {
+            if (!showLoginView(config, error_message)) {
+                std::cout << "Connexion annulée.\n";
+                return 0;
+            }
+
+            if (client.connectToServer(config, error_message)) {
+                error_message.clear();
+                break;
+            }
         }
 
-        if (client.connectToServer(config, error_message)) {
+        AppState state;
+        bool connection_lost = runGameView(client, state, config);
+
+        if (connection_lost) {
+            std::cout << "connection lost" << std::endl;
+            error_message = "Connection lost";
+        } else {
             break;
         }
     }
-
-    AppState state;
-    runGameView(client, state, config);
 
     return 0;
 }
