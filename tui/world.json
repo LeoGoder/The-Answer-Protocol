@@ -10,9 +10,9 @@
     "  [SERVER]  checked when the server starts: if it is wrong, the server prints world_load_failed and exits.",
     "  [TEAM]    our own rules, to keep the clients working.",
     "",
-    "[TEAM] IDs (room.hub, room.1, item.1, npc.1, quest.1) are what LOOK / INVENTORY send to the clients:",
+    "[TEAM] IDs (hub, komolexos, flour, chef_gusto, fetch_beef) are what LOOK / INVENTORY send to the clients:",
     "       the GUI and CLI map them to images and texts. Change names, descriptions and dialogue freely,",
-    "       add new IDs freely, but tell the client devs before renaming or removing an existing ID.",
+    "       add new IDs freely, but coordinate with client devs before renaming or removing an existing ID.",
     "",
     "[TEAM] After every change, test it: cd server && go run ./cmd/server",
     "       It must print server_listening (not world_load_failed). Then play the quests with nc localhost 4242.",
@@ -27,15 +27,15 @@
     "  [x] a coherent map (names, descriptions and exits make sense together)",
     "  [ ] the README 'World Design' section describes: layout, room connections, NPC roles, item distribution"
   ],
-  "_comment_start_room": "[SERVER] must be an existing room id. Every player appears here after CONNECT (here: room.hub).",
-  "start_room": "room.hub",
+  "_comment_start_room": "[SERVER] must be an existing room id. Every player appears here after CONNECT (here: hub).",
+  "start_room": "hub",
   "_comment_respawn_room": [
     "[SUBJECT] a player at 0 HP respawns at a safe location with reduced health (here: half of max HP).",
     "[SERVER] must be an existing room id and must NOT contain an enemy (hostile NPC).",
     "Can be the same room as start_room. If omitted, start_room is used.",
-    "Here: room.hub (safe restaurant hub with npc.1 and npc.2, no hostile enemies)."
+    "Here: hub (safe restaurant hub with waiter and chef_gusto, no hostile enemies)."
   ],
-  "respawn_room": "room.hub",
+  "respawn_room": "hub",
   "_comment_rooms": [
     "[SUBJECT] at least 8 rooms, interconnected, forming one or more loops, plus at least one optional branch.",
     "[SUBJECT] movement must allow a full circuit (no line-only map).",
@@ -46,138 +46,132 @@
     "[TEAM] every room must be reachable from start_room (not checked by the server).",
     "",
     "Fields:",
-    "  id          stable identifier sent to the clients, e.g. room.hub, room.1",
+    "  id          stable identifier sent to the clients, e.g. hub, komolexos",
     "  name        title shown to the players (LOOK)",
     "  description one or two sentences shown to the players (LOOK)",
     "  exits       { direction: room id }",
     "  items       item ids lying on the floor when the server starts (changes with TAKE / DROP)",
     "  npcs        ids of the NPCs standing in this room",
     "",
-    "Current map (Archipel Culinaire):",
-    "  [room.5 (Ile 5)] ----- [room.3 (Ile 3)] ----------+",
-    "         |                      |                   |",
-    "  [room.4 (Ile 4)] ----- [room.2 (Ile 2)] ----- [room.6 (Ile 6)]",
-    "         |                      |",
-    "  [room.1 (Ile 1)] ----- [room.hub (HUB)] ----- [room.7 (END / Ile 7)]",
+    "Current map (Culinary Archipelago):",
+    "  [fejka (Island 5)] ----- [smycka (Island 3)] ----------+",
+    "         |                        |                      |",
+    "  [vinterfint (Island 4)] - [jeetomal (Island 2)] - [kuggis (Island 6)]",
+    "         |                        |",
+    "  [komolexos (Island 1)] -- [hub (HUB)] --------- [fugoumitak (END / Island 7)]",
     "  (start/respawn)",
     "",
-    "  Loops: hub-1-4-2-hub, 4-5-3-2-4, 2-3-6-2, and outer circuit 1-4-5-3-6-2-hub.",
-    "  Optional branch: room.hub -> room.7 (Sanctuaire de Fugoumitak / Boss Final)."
+    "  Loops: hub-komolexos-vinterfint-jeetomal-hub, vinterfint-fejka-smycka-jeetomal-vinterfint, jeetomal-smycka-kuggis-jeetomal, and outer circuit komolexos-vinterfint-fejka-smycka-kuggis-jeetomal-hub.",
+    "  Optional branch: hub -> fugoumitak (Fugoumitak Sanctuary / Final Boss)."
   ],
   "rooms": [
     {
-      "id": "room.hub",
-      "name": "HUB - Le Restaurant et la Ferme",
-      "description": "Le coeur de l'archipel. Votre restaurant attend les ingredients des iles voisines. Des ponts partent vers l'ile 1 a l'ouest, l'ile 2 au nord et l'ile finale (END) a l'est.",
+      "id": "hub",
+      "name": "Hub - The Restaurant and Farm",
+      "description": "The heart of the archipelago. Your restaurant awaits fresh ingredients from the neighboring islands. Bridges lead west to Island 1, north to Island 2, and east to the final sanctuary (Island 7).",
       "exits": {
-        "west": "room.1",
-        "north": "room.2",
-        "east": "room.7"
+        "west": "komolexos",
+        "north": "jeetomal",
+        "east": "fugoumitak"
       },
       "items": [
-        "item.1"
+        "flour"
       ],
       "npcs": [
-        "npc.1",
-        "npc.2"
+        "waiter",
+        "chef_gusto"
       ]
     },
     {
-      "id": "room.1",
-      "name": "Ile 1 - Komolexos",
-      "description": "L'ile au sud-ouest de l'archipel. Ses terres ensoleillees produisent des tomates fraiches. Un pont mene au HUB a l'est et un passage relie l'ile 4 au nord.",
+      "id": "komolexos",
+      "name": "Island 1 - Komolexos",
+      "description": "The southwestern island of the archipelago. Its sunny hills offer a breathtaking view of the ocean. A bridge leads to the Hub to the east and a passage connects to Island 4 to the north.",
       "exits": {
-        "east": "room.hub",
-        "north": "room.4"
+        "east": "hub",
+        "north": "vinterfint"
+      },
+      "items": [],
+      "npcs": []
+    },
+    {
+      "id": "jeetomal",
+      "name": "Island 2 - Jeetomal",
+      "description": "The large central mountainous island where quality cattle are raised. Four bridges lead south to the Hub, west to Island 4, north to Island 3, and east to Island 6.",
+      "exits": {
+        "south": "hub",
+        "west": "vinterfint",
+        "north": "smycka",
+        "east": "kuggis"
       },
       "items": [
-        "item.2"
+        "beef"
       ],
       "npcs": []
     },
     {
-      "id": "room.2",
-      "name": "Ile 2 - Jeetomal",
-      "description": "La grande ile centrale montagneuse. On y eleve du boeuf de qualite. Ses quatre ponts menent au HUB au sud, a l'ile 4 a l'ouest, a l'ile 3 au nord et a l'ile 6 a l'est.",
+      "id": "smycka",
+      "name": "Island 3 - Smycka",
+      "description": "A rugged island in the north of the archipelago swept by sea breezes. Bridges connect west to Island 5, south to Island 2, and east to Island 6.",
       "exits": {
-        "south": "room.hub",
-        "west": "room.4",
-        "north": "room.3",
-        "east": "room.6"
+        "south": "jeetomal",
+        "west": "fejka",
+        "east": "kuggis"
+      },
+      "items": [],
+      "npcs": []
+    },
+    {
+      "id": "vinterfint",
+      "name": "Island 4 - Vinterfint",
+      "description": "A rocky, mysterious island to the west of the archipelago. It connects south to Island 1, east to Island 2, and north to Island 5.",
+      "exits": {
+        "south": "komolexos",
+        "east": "jeetomal",
+        "north": "fejka"
+      },
+      "items": [],
+      "npcs": []
+    },
+    {
+      "id": "fejka",
+      "name": "Island 5 - Fejka",
+      "description": "The northwestern island of the archipelago where fresh eggs are gathered. Bridges lead south to Island 4 and east to Island 3.",
+      "exits": {
+        "south": "vinterfint",
+        "east": "smycka"
       },
       "items": [
-        "item.3"
+        "egg"
       ],
       "npcs": []
     },
     {
-      "id": "room.3",
-      "name": "Ile 3 - Smycka",
-      "description": "Une ile escarpee au nord de l'archipel, reputee pour son fromage affine. Des ponts rejoignent l'ile 5 a l'ouest, l'ile 2 au sud et l'ile 6 a l'est.",
+      "id": "kuggis",
+      "name": "Island 6 - Kuggis",
+      "description": "A vast wooded island in the east teeming with rare wild mushrooms, but guarded by the Wild Guardian. Bridges lead west to Island 2 and north to Island 3.",
       "exits": {
-        "south": "room.2",
-        "west": "room.5",
-        "east": "room.6"
+        "west": "jeetomal",
+        "north": "smycka"
       },
       "items": [
-        "item.4"
-      ],
-      "npcs": []
-    },
-    {
-      "id": "room.4",
-      "name": "Ile 4 - Vinterfint",
-      "description": "Une ile rocheuse a l'ouest ou poussent des pommes de terre robustes. Elle est reliee a l'ile 1 au sud, l'ile 2 a l'est et l'ile 5 au nord.",
-      "exits": {
-        "south": "room.1",
-        "east": "room.2",
-        "north": "room.5"
-      },
-      "items": [
-        "item.5"
-      ],
-      "npcs": []
-    },
-    {
-      "id": "room.5",
-      "name": "Ile 5 - Fejka",
-      "description": "L'ile au nord-ouest de la carte. On y recolte des oeufs frais. Des ponts menent vers l'ile 4 au sud et l'ile 3 a l'est.",
-      "exits": {
-        "south": "room.4",
-        "east": "room.3"
-      },
-      "items": [
-        "item.6"
-      ],
-      "npcs": []
-    },
-    {
-      "id": "room.6",
-      "name": "Ile 6 - Kuggis",
-      "description": "Une vaste ile boisee a l'est regorgeant de champignons rares, mais protegee par le Gardien Sauvage. Des ponts menent a l'ile 2 a l'ouest et l'ile 3 au nord.",
-      "exits": {
-        "west": "room.2",
-        "north": "room.3"
-      },
-      "items": [
-        "item.7"
+        "mushroom"
       ],
       "npcs": [
-        "npc.3"
+        "wild_guardian"
       ]
     },
     {
-      "id": "room.7",
-      "name": "Ile 7 (END) - Sanctuaire de Fugoumitak",
-      "description": "L'ile finale a l'est du HUB. Au milieu des dalles antiques se trouve le coffre contenant la recette du Graal culinaire, garde par le Critique Supreme.",
+      "id": "fugoumitak",
+      "name": "Island 7 (END) - Fugoumitak Sanctuary",
+      "description": "The final island to the east of the Hub. Amidst ancient stone slabs rests the chest containing the Wellington recipe, guarded by the Supreme Critic.",
       "exits": {
-        "west": "room.hub"
+        "west": "hub"
       },
       "items": [
-        "item.8"
+        "recipe"
       ],
       "npcs": [
-        "npc.4"
+        "supreme_critic"
       ]
     }
   ],
@@ -191,56 +185,39 @@
     "",
     "Fields:",
     "  id          stable identifier sent to the clients (INVENTORY, LOOK)",
-    "  name        what players can type: TAKE Farine, TAKE Tomate, TAKE item.1",
+    "  name        what players can type: TAKE Flour, TAKE Beef, TAKE flour",
     "  description not sent by the server today (LOOK only gives ids): for us and the clients",
     "  heal        optional. > 0: USE <item> heals this many HP (never above max HP);",
     "              the item is used up and comes back in the room where it spawns.",
     "              0 or missing: a normal item (USE answers ERR 408 ITEM_NOT_USABLE).",
-    "              Consumables here: item.2 (Tomate, heal 20), item.4 (Fromage, heal 35), item.6 (Oeuf, heal 25)."
+    "              Consumables here: egg (heal 25)."
   ],
   "items": [
     {
-      "id": "item.1",
-      "name": "Farine",
-      "description": "Sac de farine disponible sur le HUB. Base de la pizza, de la tourte et de la pate feuilletee du Wellington."
+      "id": "flour",
+      "name": "Flour",
+      "description": "Bag of flour available at the Hub. Essential base for savory pies and Wellington pastry."
     },
     {
-      "id": "item.2",
-      "name": "Tomate",
-      "description": "Tomate fraiche de l'ile 1 (Komolexos). Permet de cuisiner la Pizza Margherita avec la Farine.",
-      "heal": 20
+      "id": "beef",
+      "name": "Beef",
+      "description": "Prime cut of beef from Island 2 (Jeetomal). Used to prepare meat pie and Beef Wellington."
     },
     {
-      "id": "item.3",
-      "name": "Boeuf",
-      "description": "Piece de boeuf de l'ile 2 (Jeetomal). Permet de cuisiner la Tourte a la viande, la Bolognaise et le Boeuf Wellington."
-    },
-    {
-      "id": "item.4",
-      "name": "Fromage",
-      "description": "Fromage affine de l'ile 3 (Smycka). Permet de preparer le Burger du Chef avec la Farine, la Tomate et le Boeuf.",
-      "heal": 35
-    },
-    {
-      "id": "item.5",
-      "name": "Pomme de terre",
-      "description": "Pommes de terre de l'ile 4 (Vinterfint). Permettent de cuisiner la Poutine et la Moussaka."
-    },
-    {
-      "id": "item.6",
-      "name": "Oeuf",
-      "description": "Oeufs frais de l'ile 5 (Fejka). Indispensables pour les Empanadas et la dorure du Boeuf Wellington.",
+      "id": "egg",
+      "name": "Egg",
+      "description": "Fresh egg from Island 5 (Fejka). Essential for recipes and glazing the Beef Wellington.",
       "heal": 25
     },
     {
-      "id": "item.7",
-      "name": "Champignon",
-      "description": "Champignons sauvages de l'ile 6 (Kuggis). Essentiels pour le Boeuf Bourguignon et la duxelles du Boeuf Wellington."
+      "id": "mushroom",
+      "name": "Mushroom",
+      "description": "Wild mushroom from Island 6 (Kuggis). Essential for Boeuf Bourguignon and Wellington duxelles."
     },
     {
-      "id": "item.8",
-      "name": "Recette du Wellington",
-      "description": "Le parchemin ultime enferme dans le coffre de l'ile 7 (END). Permet d'assembler Farine, Boeuf, Oeuf et Champignon pour creer le Boeuf Wellington."
+      "id": "recipe",
+      "name": "Wellington Recipe",
+      "description": "The ultimate parchment locked in the chest on Island 7 (END). Combines Flour, Beef, Egg, and Mushroom to create the legendary Beef Wellington."
     }
   ],
   "_comment_npcs": [
@@ -248,9 +225,9 @@
     "[SUBJECT] enemy NPCs have varying HP based on their type and difficulty: if you add enemies, give them different hp.",
     "",
     "How each role is made in this file:",
-    "  dialogue NPC   name + dialogue. Players use TALK <npc> (here: npc.1 Apprenti Serveur).",
-    "  quest-giver    any NPC used as 'giver' in a quest below. Players use QUEST <npc> (here: npc.2 Chef Gusto).",
-    "  enemy          \"hostile\": true + hp + attack (+ defense). Players use ATTACK <npc> (here: npc.3 and npc.4).",
+    "  dialogue NPC   name + dialogue. Players use TALK <npc> (here: waiter - Apprentice Waiter).",
+    "  quest-giver    any NPC used as 'giver' in a quest below. Players use QUEST <npc> (here: chef_gusto - Chef Gusto).",
+    "  enemy          \"hostile\": true + hp + attack (+ defense). Players use ATTACK <npc> (here: wild_guardian and supreme_critic).",
     "",
     "[SERVER] id: not empty, unique. name: required, unique among ALL items AND NPCs (case-insensitive).",
     "[SERVER] dialogue: at least one line (TALK goes through the lines one after the other, in a loop).",
@@ -263,39 +240,39 @@
     "  one ATTACK = the player hits, then the enemy hits back if still alive",
     "  a defeated enemy comes back with full HP after 30 seconds",
     "  examples with current data:",
-    "    - npc.3 Gardien Sauvage (60 HP, attack 12, defense 1): guarding item.7 (Champignon) on room.6.",
+    "    - wild_guardian Wild Guardian (60 HP, attack 12, defense 1): guarding mushroom on kuggis.",
     "      Player deals ~10 dmg/hit (6 hits to kill), takes ~12 dmg/hit (~70 HP lost without healing).",
-    "    - npc.4 Critique Supreme (110 HP, attack 18, defense 2): boss guarding item.8 on room.7 (END).",
+    "    - supreme_critic Supreme Critic (110 HP, attack 18, defense 2): boss guarding recipe on fugoumitak (END).",
     "      Deals ~18 dmg/hit. A fresh player without quest rewards or healing will lose.",
     "",
     "Fields: id, name, description (not sent by the server today), dialogue, hostile, hp, attack, defense"
   ],
   "npcs": [
     {
-      "id": "npc.1",
-      "name": "Apprenti Serveur",
-      "description": "Le serveur du restaurant sur le HUB.",
+      "id": "waiter",
+      "name": "Apprentice Waiter",
+      "description": "The restaurant waiter at the Hub.",
       "dialogue": [
-        "Bienvenue au HUB ! Nous n'avons que de la Farine ici.",
-        "Commencez par aller a l'ouest sur l'ile 1 pour chercher la Tomate, puis au nord sur l'ile 2 pour le Boeuf.",
-        "N'allez pas tout de suite a l'est vers l'ile 7 (END) : le Critique Supreme qui garde le coffre est redoutable !"
+        "Welcome to the Hub! We only have Flour here.",
+        "Start by heading north to Island 2 to fetch Beef, then explore the neighboring islands.",
+        "Do not head east to Island 7 (END) yet: the Supreme Critic guarding the chest is formidable!"
       ]
     },
     {
-      "id": "npc.2",
+      "id": "chef_gusto",
       "name": "Chef Gusto",
-      "description": "Le chef du restaurant qui donne les quetes de progression.",
+      "description": "The head chef of the restaurant who provides progression quests.",
       "dialogue": [
-        "Chaque ile de 1 a 6 possede un ingredient unique pour enrichir notre carte.",
-        "Une fois que vous aurez recolte nos produits et pris des forces, allez ouvrir le coffre sur l'ile 7 a l'est du HUB !"
+        "Explore the archipelago to recover our essential ingredients and expand our menu.",
+        "Once you have gathered our ingredients and grown stronger, go open the chest on Island 7 to the east of the Hub!"
       ]
     },
     {
-      "id": "npc.3",
-      "name": "Gardien Sauvage",
-      "description": "Une creature qui garde les champignons sur l'ile 6.",
+      "id": "wild_guardian",
+      "name": "Wild Guardian",
+      "description": "A fierce creature guarding the mushrooms on Island 6.",
       "dialogue": [
-        "Grrr... Les champignons de l'ile 6 sont a moi !"
+        "Grrr... The mushrooms of Island 6 are mine!"
       ],
       "hostile": true,
       "hp": 60,
@@ -303,12 +280,12 @@
       "defense": 1
     },
     {
-      "id": "npc.4",
-      "name": "Critique Supreme",
-      "description": "Le boss final qui garde le coffre sur l'ile 7 (END).",
+      "id": "supreme_critic",
+      "name": "Supreme Critic",
+      "description": "The final boss guarding the chest on Island 7 (END).",
       "dialogue": [
-        "Vous osez entrer sur l'ile finale pour reclamer la Recette du Wellington ?",
-        "Prouvez-moi que vous etes digne du Graal de la cuisine !"
+        "You dare enter the final island to claim the Wellington Recipe?",
+        "Prove to me that you are worthy of culinary greatness!"
       ],
       "hostile": true,
       "hp": 110,
@@ -338,10 +315,10 @@
     "[SERVER] fetch: target must be an item placed in a room. defeat: target must be a hostile NPC.",
     "[SERVER] description and reward.name are required.",
     "",
-    "Current progression chain (giver: npc.2 Chef Gusto):",
-    "  quest.1 -> quest.2 -> quest.3 -> quest.4 -> quest.5 (fetch ingredients from islands 1 to 5)",
-    "  quest.6 (defeat npc.3 Gardien Sauvage) -> quest.7 (fetch item.7 Champignon)",
-    "  quest.8 (defeat npc.4 Critique Supreme) -> quest.9 (fetch item.8 Recette du Wellington)",
+    "Current progression chain (giver: chef_gusto):",
+    "  fetch_beef (fetch beef) -> fetch_egg (fetch egg)",
+    "  defeat_guardian (defeat wild_guardian) -> fetch_mushroom (fetch mushroom)",
+    "  defeat_critic (defeat supreme_critic) -> fetch_recipe (fetch recipe)",
     "",
     "Fields:",
     "  id          stable identifier sent to the clients (QUEST, QUESTS)",
@@ -354,109 +331,73 @@
   ],
   "quests": [
     {
-      "id": "quest.1",
+      "id": "fetch_beef",
       "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 1 (Pizza Margherita) : Allez a l'ouest du HUB sur l'ile 1 et rapportez la Tomate au Chef Gusto.",
-      "target": "item.2",
+      "giver": "chef_gusto",
+      "description": "Island 2 (Jeetomal Beef): Go north of the Hub to Island 2 and bring the Beef back to Chef Gusto.",
+      "target": "beef",
       "reward": {
-        "name": "Plat debloque : Pizza Margherita",
+        "name": "Access to Jeetomal Beef",
         "max_hp": 10,
         "attack": 2
       }
     },
     {
-      "id": "quest.2",
+      "id": "fetch_egg",
       "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 2 (Tourte a la viande) : Allez au nord du HUB sur l'ile 2 et rapportez le Boeuf au Chef Gusto.",
-      "target": "item.3",
+      "giver": "chef_gusto",
+      "description": "Island 5 (Fejka Eggs): Go all the way northwest to Island 5 and bring the Egg back to Chef Gusto.",
+      "target": "egg",
       "reward": {
-        "name": "Plat debloque : Tourte au Boeuf",
-        "max_hp": 10,
-        "attack": 2
-      }
-    },
-    {
-      "id": "quest.3",
-      "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 3 (Burger du Chef) : Montez sur l'ile 3 au nord de l'ile 2 et rapportez le Fromage au Chef Gusto.",
-      "target": "item.4",
-      "reward": {
-        "name": "Plat debloque : Burger du Chef",
-        "max_hp": 15,
-        "attack": 2
-      }
-    },
-    {
-      "id": "quest.4",
-      "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 4 (Poutine & Moussaka) : Allez sur l'ile 4 (entre l'ile 1 et l'ile 5) et rapportez la Pomme de terre au Chef Gusto.",
-      "target": "item.5",
-      "reward": {
-        "name": "Plat debloque : Poutine Canadienne",
-        "max_hp": 15,
-        "attack": 2
-      }
-    },
-    {
-      "id": "quest.5",
-      "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 5 (Empanadas) : Allez tout au nord-ouest sur l'ile 5 et rapportez l'Oeuf au Chef Gusto.",
-      "target": "item.6",
-      "reward": {
-        "name": "Plat debloque : Empanadas",
+        "name": "Access to Fejka Eggs",
         "max_hp": 15,
         "attack": 3
       }
     },
     {
-      "id": "quest.6",
+      "id": "defeat_guardian",
       "type": "defeat",
-      "giver": "npc.2",
-      "description": "Ile 6 (Securiser les Champignons) : Allez a l'est sur l'ile 6 et battez le Gardien Sauvage.",
-      "target": "npc.3",
+      "giver": "chef_gusto",
+      "description": "Island 6 (Secure Kuggis): Go east to Island 6 and defeat the Wild Guardian.",
+      "target": "wild_guardian",
       "reward": {
-        "name": "Acces aux Champignons de Kuggis",
+        "name": "Access to Kuggis Forest",
         "max_hp": 20,
         "attack": 4
       }
     },
     {
-      "id": "quest.7",
+      "id": "fetch_mushroom",
       "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 6 (Boeuf Bourguignon) : Rapportez le Champignon de l'ile 6 au Chef Gusto.",
-      "target": "item.7",
+      "giver": "chef_gusto",
+      "description": "Island 6 (Kuggis Mushrooms): Bring the Mushroom from Island 6 back to Chef Gusto.",
+      "target": "mushroom",
       "reward": {
-        "name": "Plat debloque : Boeuf Bourguignon",
+        "name": "Access to Kuggis Mushrooms",
         "max_hp": 20,
         "attack": 4
       }
     },
     {
-      "id": "quest.8",
+      "id": "defeat_critic",
       "type": "defeat",
-      "giver": "npc.2",
-      "description": "Ile 7 - END (Le Boss Final) : Allez a l'est du HUB sur l'ile 7 et battez le Critique Supreme qui garde le coffre.",
-      "target": "npc.4",
+      "giver": "chef_gusto",
+      "description": "Island 7 - END (The Final Boss): Go east of the Hub to Island 7 and defeat the Supreme Critic guarding the chest.",
+      "target": "supreme_critic",
       "reward": {
-        "name": "Cle du Coffre de Fugoumitak",
+        "name": "Access to Fugoumitak Chest",
         "max_hp": 30,
         "attack": 5
       }
     },
     {
-      "id": "quest.9",
+      "id": "fetch_recipe",
       "type": "fetch",
-      "giver": "npc.2",
-      "description": "Ile 7 - END (Le Graal de la Cuisine) : Prenez la Recette du Wellington dans le coffre de l'ile 7 et rapportez-la au Chef Gusto.",
-      "target": "item.8",
+      "giver": "chef_gusto",
+      "description": "Island 7 - END (The Culinary Grail): Take the Wellington Recipe from the chest on Island 7 and bring it back to Chef Gusto.",
+      "target": "recipe",
       "reward": {
-        "name": "Graal Culinaire : Le Boeuf Wellington Legendaire",
+        "name": "Access to Fugoumitak Beef Wellington",
         "max_hp": 50,
         "attack": 10
       }
