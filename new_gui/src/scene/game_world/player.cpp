@@ -18,9 +18,11 @@ Player::~Player() {
 }
 
 void Player::draw_player(std::string player_name) {
-    float player_center = (float(this->sprite->width));
-    float text_len = float(GetFontTextWidth(player_name) / 2) + (player_center / 2);
+    float player_center = (float(this->sprite->width) / 2.0f);
+    float text_len_full = float(GetFontTextWidth(player_name));
+    float text_len = float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
 
+    DrawRectangle(this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4), this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
     DrawFontText(*this->font, player_name, this->player_pos.x - text_len + player_center, this->player_pos.y - 20);
     DrawTexture(*this->sprite, this->player_pos.x, this->player_pos.y, WHITE);
 }
