@@ -521,7 +521,8 @@ std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
 
     lines.push_back("Combat vs " + target_name + ":");
     lines.push_back("  Damage dealt: " + std::to_string(info.damage) +
-                    " (" + target_name + " HP: " + std::to_string(info.target_hp) + ")");
+                    " (" + target_name + " HP: " +
+                    std::to_string(info.target_hp) + ")");
 
     if (info.status == "victory") {
         lines.push_back("  Status: Victory! " + target_name + " defeated.");
@@ -529,8 +530,10 @@ std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
         lines.push_back("  Damage taken: " + std::to_string(info.damage_taken) +
                         " (Your HP: " + std::to_string(info.attacker_hp) + ")");
         if (info.status == "defeated") {
-            std::string respawn = info.room.empty() ? "respawn point" : info.room;
-            lines.push_back("  Status: Defeated! You respawned in " + respawn + ".");
+            std::string respawn =
+                info.room.empty() ? "respawn point" : info.room;
+            lines.push_back("  Status: Defeated! You respawned in " +
+                            respawn + ".");
         } else {
             lines.push_back("  Status: In combat");
         }

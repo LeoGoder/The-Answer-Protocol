@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <utility>
 #include <vector>
 
 AppState::AppState()
@@ -56,7 +57,9 @@ static void mergeQuestInfo(QuestInfo& target, const QuestInfo& source) {
     if (target.objective.empty()) target.objective = source.objective;
     if (target.target_item.empty()) target.target_item = source.target_item;
     if (target.target_npc.empty()) target.target_npc = source.target_npc;
-    if (target.required_items == 0) target.required_items = source.required_items;
+    if (target.required_items == 0) {
+        target.required_items = source.required_items;
+    }
     if (target.progress.empty()) target.progress = source.progress;
     if (target.status.empty()) target.status = source.status;
 }
@@ -72,10 +75,11 @@ void AppState::setActiveQuests(const std::vector<QuestInfo>& quests) {
             mergeQuestInfo(q, it_cache->second);
         }
 
-        auto it_active = std::find_if(active_quests_.begin(), active_quests_.end(),
-                                      [&](const QuestInfo& existing) {
-                                          return existing.quest_id == q.quest_id;
-                                      });
+        auto it_active = std::find_if(
+            active_quests_.begin(), active_quests_.end(),
+            [&](const QuestInfo& existing) {
+                return existing.quest_id == q.quest_id;
+            });
         if (it_active != active_quests_.end()) {
             mergeQuestInfo(q, *it_active);
         }

@@ -393,12 +393,21 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                 if (after_evt.substr(0, 12) == "ROOM COMBAT ") {
                     CombatInfo combat_info;
                     if (parseCombatResponse(ligne, combat_info)) {
-                        std::string att = combat_info.attacker.empty() ? "Someone" : combat_info.attacker;
+                        std::string att = combat_info.attacker.empty()
+                                              ? "Someone"
+                                              : combat_info.attacker;
                         std::string tgt = combat_info.target;
-                        if (!tgt.empty()) tgt[0] = static_cast<char>(std::toupper(tgt[0]));
-                        state.addMessage("", "[Combat] " + att + " attacked " + tgt +
-                                         " (" + std::to_string(combat_info.damage) + " dmg, " +
-                                         tgt + " HP: " + std::to_string(combat_info.target_hp) + ")", false);
+                        if (!tgt.empty()) {
+                            tgt[0] = static_cast<char>(std::toupper(tgt[0]));
+                        }
+                        std::string dmg_str =
+                            std::to_string(combat_info.damage);
+                        std::string hp_str =
+                            std::to_string(combat_info.target_hp);
+                        std::string msg = "[Combat] " + att + " attacked " +
+                                          tgt + " (" + dmg_str + " dmg, " +
+                                          tgt + " HP: " + hp_str + ")";
+                        state.addMessage("", msg, false);
                         continue;
                     }
                 } else if (after_evt.substr(0, 10) == "ROOM CHAT ") {

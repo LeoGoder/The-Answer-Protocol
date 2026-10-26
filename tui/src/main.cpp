@@ -33,7 +33,6 @@ int main() {
         bool connection_lost = runGameView(client, state, config);
 
         if (connection_lost) {
-            std::cout << "connection lost" << std::endl;
             error_message = "Connection lost";
         } else {
             break;
