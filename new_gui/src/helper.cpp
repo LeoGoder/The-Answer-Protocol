@@ -34,8 +34,6 @@ std::vector<std::string> split(std::string &str, char limiter, int nb_split) {
         }
         std::string sub_str = str.substr(start, end - start);
 
-        // if (sub_str.back() == '\n')
-            // sub_str.pop_back();
         tokens.push_back(sub_str);
         start = end + 1;
         nb_split--;

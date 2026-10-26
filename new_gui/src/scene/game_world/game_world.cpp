@@ -20,6 +20,14 @@
 GameWorld::GameWorld(GameState *game_state){
     this->font = LoadTexture(GetAssetPath("test_font.png").c_str());
     this->player_sprite = LoadTexture(GetAssetPath("player.png").c_str());
+    this->ground = LoadTexture(GetAssetPath("Map.png").c_str());
+    this->fox = LoadTexture(GetAssetPath("Fox_Idle_with_shadow.png").c_str());
+    this->hare = LoadTexture(GetAssetPath("Hare_Idle_with_shadow.png").c_str());
+    this->sheep = LoadTexture(GetAssetPath("Sheep_animation_with_shadow.png").c_str());
+    this->calf = LoadTexture(GetAssetPath("Calf_animation_with_shadow.png").c_str());
+    this->trees = LoadTexture(GetAssetPath("trees.png").c_str());
+    this->rock_flowers = LoadTexture(GetAssetPath("rock_and_flowers.png").c_str());
+    this->exterior = LoadTexture(GetAssetPath("exterior.png").c_str());
     this->game_state = game_state;
     this->intern_scene = connection;
     memset(&this->server, 0, sizeof(this->server));
@@ -181,8 +189,11 @@ void GameWorld::draw() {
             draw_connection_error();
             break;
         case in_game:
+            float player_center = (float(this->player_sprite.width) / 2);
+
+            this->player.cam.target.x = this->player.player_pos.x + player_center;
+            this->player.cam.target.y = this->player.player_pos.y;
             BeginMode2D(this->player.cam);
-                this->player.cam.target = this->player.player_pos;
                 draw_game();
             EndMode2D();
             draw_hud();

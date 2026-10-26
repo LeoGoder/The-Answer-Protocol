@@ -18,7 +18,10 @@ Player::~Player() {
 }
 
 void Player::draw_player(std::string player_name) {
-    DrawFontText(*this->font, player_name, this->player_pos.x, this->player_pos.y - 20);
+    float player_center = (float(this->sprite->width) / 2) / 2;
+    float text_len = float(GetFontTextWidth(player_name) / 2);
+
+    DrawFontText(*this->font, player_name, this->player_pos.x - text_len + player_center, this->player_pos.y - 20);
     DrawTexture(*this->sprite, this->player_pos.x, this->player_pos.y, WHITE);
 }
 

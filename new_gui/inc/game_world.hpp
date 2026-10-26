@@ -44,6 +44,14 @@ class GameWorld : public GameScene {
         GameState *game_state;
         Texture2D font;
         Texture2D player_sprite;
+        Texture2D ground;
+        Texture2D exterior;
+        Texture2D calf;
+        Texture2D fox;
+        Texture2D rock_flowers;
+        Texture2D sheep;
+        Texture2D trees;
+        Texture2D hare;
         Room room;
         Player player;
         Maps map;
@@ -62,4 +70,5 @@ class GameWorld : public GameScene {
         void draw_connection_error();
         void draw_game();
         void draw_hud();
+        void draw_island(MapData &island);
 };
