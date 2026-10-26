@@ -4,7 +4,7 @@
   "rooms": [
     {
       "id": "hub",
-      "name": "HUB - Le Restaurant et la Ferme",
+      "name": "Le Restaurant et la Ferme",
       "description": "Le coeur de l'archipel. Votre restaurant attend les ingredients des iles voisines. Des ponts partent vers l'ile 1 a l'ouest, l'ile 2 au nord et l'ile finale (END) a l'est.",
       "exits": {
         "west": "room1",
@@ -21,7 +21,7 @@
     },
     {
       "id": "room1",
-      "name": "Ile 1 - Komolexos",
+      "name": "Komolexos",
       "description": "L'ile au sud-ouest de l'archipel. Ses terres ensoleillees produisent des tomates fraiches. Un pont mene au HUB a l'est et un passage relie l'ile 4 au nord.",
       "exits": {
         "east": "hub",
@@ -34,7 +34,7 @@
     },
     {
       "id": "room2",
-      "name": "Ile 2 - Jeetomal",
+      "name": "Jeetomal",
       "description": "La grande ile centrale montagneuse. On y eleve du boeuf de qualite. Ses quatre ponts menent au HUB au sud, a l'ile 4 a l'ouest, a l'ile 3 au nord et a l'ile 6 a l'est.",
       "exits": {
         "south": "hub",
@@ -49,7 +49,7 @@
     },
     {
       "id": "room3",
-      "name": "Ile 3 - Smycka",
+      "name": "Smycka",
       "description": "Une ile escarpee au nord de l'archipel, reputee pour son fromage affine. Des ponts rejoignent l'ile 5 a l'ouest, l'ile 2 au sud et l'ile 6 a l'est.",
       "exits": {
         "south": "room2",
@@ -63,7 +63,7 @@
     },
     {
       "id": "room4",
-      "name": "Ile 4 - Vinterfint",
+      "name": "Vinterfint",
       "description": "Une ile rocheuse a l'ouest ou poussent des pommes de terre robustes. Elle est reliee a l'ile 1 au sud, l'ile 2 a l'est et l'ile 5 au nord.",
       "exits": {
         "south": "room1",
@@ -77,7 +77,7 @@
     },
     {
       "id": "room5",
-      "name": "Ile 5 - Fejka",
+      "name": "Fejka",
       "description": "L'ile au nord-ouest de la carte. On y recolte des oeufs frais. Des ponts menent vers l'ile 4 au sud et l'ile 3 a l'est.",
       "exits": {
         "south": "room4",
@@ -90,7 +90,7 @@
     },
     {
       "id": "room6",
-      "name": "Ile 6 - Kuggis",
+      "name": "Kuggis",
       "description": "Une vaste ile boisee a l'est regorgeant de champignons rares, mais protegee par le Gardien Sauvage. Des ponts menent a l'ile 2 a l'ouest et l'ile 3 au nord.",
       "exits": {
         "west": "room2",
@@ -105,7 +105,7 @@
     },
     {
       "id": "room7",
-      "name": "Ile 7 (END) - Sanctuaire de Fugoumitak",
+      "name": "Sanctuaire de Fugoumitak",
       "description": "L'ile finale a l'est du HUB. Au milieu des dalles antiques se trouve le coffre contenant la recette du Graal culinaire, garde par le Critique Supreme.",
       "exits": {
         "west": "hub"
