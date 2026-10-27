@@ -2,6 +2,7 @@
 #include "server.hpp"
 #include <cstdio>
 #include <unistd.h>
+#include <iostream>
 
 void GameWorld::server_alive(std::vector<std::string> msg_split) {
     if (this->alive_timer > this->alive_check_timer) {
@@ -11,7 +12,8 @@ void GameWorld::server_alive(std::vector<std::string> msg_split) {
         this->alive_timer = 0.0;
     }
     if (!msg_split.empty()) {
-        if (/*msg_split[0] == "OK" &&*/ msg_split[0] == "Alive") {
+        std::cout << msg_split[0] << msg_split[1] + '\n';
+        if (msg_split[0].rfind("OK") == 0 && msg_split[1].rfind("Alive") == 0) {
             this->alive_nb_fail = 0;
         }
         else {
