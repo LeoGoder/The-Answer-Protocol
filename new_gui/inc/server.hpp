@@ -10,6 +10,7 @@ struct NetCommand {
     std::string LOOK = "LOOK\n";
     std::string ALIVE = "ALIVE\n";
     std::string MOVE = "MOVE\n";
+    std::string POSITION = "POSITION ";
 };
 
 struct EvtCommand {

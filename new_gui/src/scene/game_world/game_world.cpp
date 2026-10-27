@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <string>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -118,13 +119,13 @@ void GameWorld::net_update() {
             break;
         case in_game:
             if (!msg_split.empty()) {
-                if (msg_split[0] == "OK" && msg_split[1].front() == '{') {
+                if (msg_split[0].rfind("OK", 0) == 0 && msg_split[1].front() == '{') {
                     parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
                 }
-                if (msg_split[0] == "OK" && msg_split[1].rfind("room=", 0) == 0) {
+                if (msg_split[0].rfind("OK", 0) == 0 && msg_split[1].rfind("room=", 0) == 0) {
                     parse_move_response(msg_split, this->room, this->command, this->fd);
                 }
-                if (msg_split[0] == "EVT") {
+                if (msg_split[0].rfind("EVT", 0) == 0) {
                     if (msg_split[1].rfind(this->event.ROOM_ENTER, 0) == 0) {
                         std::string new_player = split(msg_split[1], ' ')[3];
                         GameWorld::room_presence_enter(new_player);
@@ -135,8 +136,14 @@ void GameWorld::net_update() {
                     }
                 }
             }
+            std::string p_pos = "";
+            p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
+            std::cout << this->command.POSITION + p_pos;
+            if (int(this->alive_timer) % 24 == 0)
+                send_message(this->command.POSITION, p_pos, this->fd);
             break;
     }
+
     GameWorld::server_alive(msg_split);
     this->alive_timer += this->game_state->dt;
 }

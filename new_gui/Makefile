@@ -42,7 +42,6 @@ SRC = src/main.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \
 	 src/scene/splash_screen/error_screen.cpp \
 	 src/scene/game_world/net_update.cpp \
-	 src/scene/game_world/map.cpp \
 	 src/scene/game_world/player.cpp \
 	 src/scene/game_world/draw_hud.cpp \
 	 src/scene/game_world/event.cpp \

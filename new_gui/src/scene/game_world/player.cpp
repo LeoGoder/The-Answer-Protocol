@@ -7,7 +7,7 @@
 #include <iostream>
 
 Player::Player(Texture2D *font, std::string name, Texture2D *sprite) {
-    this->player_pos = {30.0, 30.0};
+    this->player_pos = {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT};
     this->font = font;
     this->name = name;
     this->sprite = sprite;
