@@ -11,7 +11,7 @@ void GameWorld::draw_island(MapData &island) {
     int index = 0;
     Vector2 tile_size = {TILE_WIDTH, TILE_HEIGHT};
 
-    for (size_t i = 0; i < island.hub.size(); i++) {
+    for (size_t i = 0; i < island.hub.size() - 2; i++) {
         for (int y = 0; y < MAP_HEIGHT; y ++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
                 int tile_id = island.hub[i][y * MAP_WIDTH + x];

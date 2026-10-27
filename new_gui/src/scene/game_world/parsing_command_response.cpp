@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "server.hpp"
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,4 +28,14 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
     for (size_t i = 0; i < players_extract.size(); i++) {
         room.player.push_back(std::make_unique<Player>(font, players_extract[i], sprite));
     }
+}
+
+void parse_move_response(std::vector<std::string> &response, Room &room, NetCommand &command, int fd) {
+    (void) response;
+    (void) room;
+    (void) command;
+    (void) fd;
+    // faire un check si la room existe bien
+    std::cout << "move response\n";
+    // send_message(command.LOOK, "", fd);
 }

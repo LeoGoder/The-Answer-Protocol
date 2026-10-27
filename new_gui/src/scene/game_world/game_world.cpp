@@ -63,7 +63,7 @@ void GameWorld::update() {
         game_state->set_actual_scene(splash_screen);
     }
     if (this->intern_scene == in_game) {
-        this->player.input_player(this->game_state->dt);
+        this->player.input_player(this->game_state->dt, this->map, this->map_data);
     }
 }
 
@@ -120,6 +120,9 @@ void GameWorld::net_update() {
             if (!msg_split.empty()) {
                 if (msg_split[0] == "OK" && msg_split[1].front() == '{') {
                     parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
+                }
+                if (msg_split[0] == "OK" && msg_split[1].rfind("room=", 0) == 0) {
+                    parse_move_response(msg_split, this->room, this->command, this->fd);
                 }
                 if (msg_split[0] == "EVT") {
                     if (msg_split[1].rfind(this->event.ROOM_ENTER, 0) == 0) {

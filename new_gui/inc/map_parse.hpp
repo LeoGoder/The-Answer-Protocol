@@ -16,4 +16,14 @@ struct MapData {
     std::vector<std::vector<int>> vinterfint;
 };
 
+enum Maps {
+    hub = 0,
+    fugoumitak = 1,
+    fejka = 2,
+    jeetomal = 3,
+    komolexos = 4,
+    kuggis = 5,
+    smycka = 6,
+    vinterfint = 7,
+};
 void parse_map(MapData &data);

@@ -1,6 +1,10 @@
 #include "player.hpp"
+#include "game_world.hpp"
 #include "helper.hpp"
+#include "map_parse.hpp"
 #include "raylib.h"
+#include <cstddef>
+#include <iostream>
 
 Player::Player(Texture2D *font, std::string name, Texture2D *sprite) {
     this->player_pos = {30.0, 30.0};
@@ -27,18 +31,76 @@ void Player::draw_player(std::string player_name) {
     DrawTexture(*this->sprite, this->player_pos.x, this->player_pos.y, WHITE);
 }
 
-void Player::input_player(float dt) {
+bool player_overlap(MapData &data, Vector2 player_pos) {
+    if (data.hub.empty()) return false;
+
+    int max_x = TILE_WIDTH * MAP_WIDTH;
+    size_t layer = data.hub.size() - 2;
+    Vector2 tile_pos = {0.0, 0.0};
+
+    for (size_t y = 0; y < data.hub[layer].size(); y++) {
+        if (tile_pos.x >= max_x) {
+            tile_pos.x = 0.0;
+            tile_pos.y += TILE_HEIGHT;
+        }
+        if (data.hub[layer][y] != 0) {
+            if ((player_pos.x + TILE_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
+                (player_pos.y + TILE_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
+                return true;
+            }
+        }
+        tile_pos.x += TILE_WIDTH;
+    }
+    return false;
+}
+
+bool can_move(MapData &data, Maps &map, Vector2 player_pos) {
+    switch (map) {
+        case hub:
+            return !player_overlap(data, player_pos);
+        case fejka:
+            break;
+        case jeetomal:
+            break;
+        case komolexos:
+            break;
+        case kuggis:
+            break;
+        case smycka:
+            break;
+        case vinterfint:
+            break;
+        case fugoumitak:
+            break;
+    }
+
+    return false;
+}
+
+void Player::input_player(float dt, Maps &map, MapData &map_data) {
     if (IsKeyDown(KEY_A)) {
-        this->player_pos.x -= speed * dt;
+        Vector2 next_pos = this->player_pos;
+        next_pos.x -= speed * dt;
+        if (can_move(map_data, map, next_pos))
+            this->player_pos.x = next_pos.x;
     }
     if (IsKeyDown(KEY_D)) {
-        this->player_pos.x += speed * dt;
+        Vector2 next_pos = this->player_pos;
+        next_pos.x += speed * dt;
+        if (can_move(map_data, map, next_pos))
+            this->player_pos.x = next_pos.x;
     }
     if (IsKeyDown(KEY_W)) {
-        this->player_pos.y -= speed * dt;
+        Vector2 next_pos = this->player_pos;
+        next_pos.y -= speed * dt;
+        if (can_move(map_data, map, next_pos))
+            this->player_pos.y = next_pos.y;
     }
     if (IsKeyDown(KEY_S)) {
-        this->player_pos.y += speed * dt;
+        Vector2 next_pos = this->player_pos;
+        next_pos.y += speed * dt;
+        if (can_move(map_data, map, next_pos))
+            this->player_pos.y = next_pos.y;
     }
     if (IsKeyPressed(KEY_E)) {
         //

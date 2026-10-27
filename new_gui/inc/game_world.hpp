@@ -18,17 +18,6 @@ enum GameWorldScene {
     in_game = 3,
 };
 
-enum Maps {
-    hub = 0,
-    fugoumitak = 1,
-    fejka = 2,
-    jeetomal = 3,
-    komolexos = 4,
-    kuggis = 5,
-    smycka = 6,
-    vinterfint = 7,
-};
-
 class GameWorld : public GameScene {
     public:
         int fd;
