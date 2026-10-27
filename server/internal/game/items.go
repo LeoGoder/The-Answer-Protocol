@@ -25,7 +25,7 @@ func (s *State) take(player *Player, typed string) Result {
 		return reply(protocol.ErrItemNotFound)
 	}
 
-	room.Items, _ = removeString(room.Items, id)
+	room.Items = removeString(room.Items, id)
 	player.Inventory = append(player.Inventory, id)
 
 	logger.Info("item_taken", logger.Fields{
@@ -43,7 +43,7 @@ func (s *State) drop(player *Player, typed string) Result {
 
 	room := s.world.rooms[player.Room]
 
-	player.Inventory, _ = removeString(player.Inventory, id)
+	player.Inventory = removeString(player.Inventory, id)
 	room.Items = append(room.Items, id)
 
 	logger.Info("item_dropped", logger.Fields{
@@ -53,8 +53,8 @@ func (s *State) drop(player *Player, typed string) Result {
 	return reply("OK dropped=" + id)
 }
 
-func (s *State) inventory(player *Player) string {
-	return okJSON(player.Inventory)
+func (s *State) inventory(player *Player) Result {
+	return reply(okJSON(player.Inventory))
 }
 
 type useResponse struct {
@@ -97,12 +97,18 @@ func (s *State) use(player *Player, typed string) Result {
 	return result
 }
 
-// consumeItem puts a used or delivered item back where it spawns.
+// consumeItem takes a used or delivered item from the player and puts it back where it spawns.
 func (s *State) consumeItem(player *Player, id string) {
-	player.Inventory, _ = removeString(player.Inventory, id)
+	player.Inventory = removeString(player.Inventory, id)
+	room := s.respawnItem(id)
 
+	logger.Info("item_respawned", logger.Fields{"item": id, "room": room})
+}
+
+// respawnItem puts an item back in the room where it spawns (USE, quest, disconnect).
+func (s *State) respawnItem(id string) string {
 	origin := s.world.rooms[s.world.itemRoom[id]]
 	origin.Items = append(origin.Items, id)
 
-	logger.Info("item_respawned", logger.Fields{"item": id, "room": origin.ID})
+	return origin.ID
 }

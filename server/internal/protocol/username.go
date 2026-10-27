@@ -9,92 +9,40 @@ import (
 
 const MaxUsernameLength = 32
 
-// Add new allowed special characters here later.
-var AllowedUsernameSpecialChars = []rune{
-	'_',
-}
-
-// Add forbidden words here after team discussion.
-var ForbiddenUsernameParts = []string{
-	"admin",
-}
-
+// ValidateUsername: 1 to 32 Unicode letters, digits or '_' (RFC 9.2),
+// at most 3 identical characters in a row, and no "admin" inside.
 func ValidateUsername(username string) error {
 	if username == "" {
 		return fmt.Errorf("username cannot be empty")
 	}
 
 	if utf8.RuneCountInString(username) > MaxUsernameLength {
-		return fmt.Errorf(
-			"username cannot exceed %d characters",
-			MaxUsernameLength,
-		)
+		return fmt.Errorf("username cannot exceed %d characters", MaxUsernameLength)
 	}
+
+	var previous rune
+	repeated := 0
 
 	for _, char := range username {
-		if !isAlphaNumeric(char) &&
-			!isAllowedSpecialChar(char) {
-			return fmt.Errorf(
-				"username contains invalid character: %q",
-				char,
-			)
+		if !unicode.IsLetter(char) && !unicode.IsDigit(char) && char != '_' {
+			return fmt.Errorf("username contains invalid character: %q", char)
+		}
+
+		if char == previous {
+			repeated++
+		} else {
+			previous = char
+			repeated = 1
+		}
+
+		if repeated > 3 {
+			return fmt.Errorf("username cannot contain more than 3 identical consecutive characters")
 		}
 	}
 
-	if hasTooManyRepeatedCharacters(username) {
-		return fmt.Errorf(
-			"username cannot contain more than 3 identical consecutive characters",
-		)
-	}
-
-	lowerUsername := strings.ToLower(username)
-
-	for _, forbidden := range ForbiddenUsernameParts {
-		if strings.Contains(
-			lowerUsername,
-			strings.ToLower(forbidden),
-		) {
-			return fmt.Errorf(
-				"username contains forbidden word: %s",
-				forbidden,
-			)
-		}
+	if strings.Contains(strings.ToLower(username), "admin") {
+		return fmt.Errorf("username contains forbidden word: admin")
 	}
 
 	return nil
-}
-
-// Unicode letters and digits are accepted (RFC 9.2).
-func isAlphaNumeric(char rune) bool {
-	return unicode.IsLetter(char) || unicode.IsDigit(char)
-}
-
-func isAllowedSpecialChar(char rune) bool {
-	for _, allowed := range AllowedUsernameSpecialChars {
-		if char == allowed {
-			return true
-		}
-	}
-
-	return false
-}
-
-func hasTooManyRepeatedCharacters(username string) bool {
-	var previous rune
-	repeatCount := 0
-
-	for _, char := range username {
-		if char == previous {
-			repeatCount++
-		} else {
-			previous = char
-			repeatCount = 1
-		}
-
-		if repeatCount > 3 {
-			return true
-		}
-	}
-
-	return false
 }
