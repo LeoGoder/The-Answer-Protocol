@@ -119,29 +119,26 @@ void GameWorld::net_update() {
             break;
         case in_game:
             if (!msg_split.empty()) {
-                if (msg_split[0].rfind("OK", 0) == 0 && msg_split[1].front() == '{') {
+                if (msg_copy.rfind(R"(OK {"room")") == 0) {
                     parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
                 }
-                if (msg_split[0].rfind("OK", 0) == 0 && msg_split[1].rfind("room=", 0) == 0) {
+                if (msg_copy.rfind(R"(OK room=)") == 0) {
                     parse_move_response(msg_split, this->room, this->command, this->fd);
                 }
-                if (msg_split[0].rfind("EVT", 0) == 0) {
-                    if (msg_split[1].rfind(this->event.ROOM_ENTER, 0) == 0) {
-                        std::string new_player = split(msg_split[1], ' ')[3];
-                        GameWorld::room_presence_enter(new_player);
-                    }
-                    if (msg_split[1].rfind(this->event.ROOM_ENTER, 0) != 0) {
-                        std::string del_player = split(msg_split[1], ' ')[3];
-                        GameWorld::room_presence_leave(del_player);
-                    }
+                if (msg_copy.rfind(R"(OK )" + this->event.ROOM_ENTER) == 0) {
+                    std::string new_player = split(msg_split[1], ' ')[3];
+                    GameWorld::room_presence_enter(new_player);
+                if (msg_copy.rfind(R"(OK )" + this->event.ROOM_LEAVE) == 0) {
+                    std::string del_player = split(msg_split[1], ' ')[3];
+                    GameWorld::room_presence_leave(del_player);
                 }
             }
             std::string p_pos = "";
             p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
-            std::cout << this->command.POSITION + p_pos;
             if (int(this->alive_timer) % 24 == 0)
                 send_message(this->command.POSITION, p_pos, this->fd);
             break;
+            }
     }
 
     GameWorld::server_alive(msg_split);
