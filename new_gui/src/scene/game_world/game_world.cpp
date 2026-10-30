@@ -39,7 +39,8 @@ GameWorld::GameWorld(GameState *game_state){
     this->player_name = this->game_state->player_name;
     this->alive_check_timer = 15;
     this->alive_timer = 0.0;
-    this->alive_nb_fail = 0;
+    this->alive_last_time = 0.0;
+    this->timer = 0.0;
     this->player = Player(&this->font, "", &this->player_sprite);
     this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
     this->player.cam.rotation = 0.0;
@@ -141,19 +142,21 @@ void GameWorld::net_update() {
                     if (parts.size() >= 5)
                         GameWorld::room_presence_leave(parts[4]);
                 }
-                if (msg_copy.rfind("OK EVT ROOM POSITION {", 0) == 0) {
+                if (msg_copy.find("EVT ROOM POSITION {") != std::string::npos) {
                     update_player_pos(this->room.player, msg_copy);
                 }
             }
-            std::string p_pos = "";
-            p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
-            if (int(this->alive_timer) % 24 == 0)
+            this->timer += this->game_state->dt;
+            if (this->timer >= 1.0 / 24.0) {
+                std::string p_pos = "";
+                p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
                 send_message(this->command.POSITION, p_pos, this->fd);
+            }
             break;
             }
 
-    // GameWorld::server_alive(msg_split);
-    // this->alive_timer += this->game_state->dt;
+    GameWorld::server_alive(msg_split);
+    this->alive_timer += this->game_state->dt;
 }
 
 void GameWorld::draw() {
