@@ -119,18 +119,30 @@ void GameWorld::net_update() {
             break;
         case in_game:
             if (!msg_split.empty()) {
-                if (msg_copy.rfind(R"(OK {"room")") == 0) {
+                if (msg_copy.rfind(R"(OK {"room")", 0) == 0) {
                     parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
                 }
-                if (msg_copy.rfind(R"(OK room=)") == 0) {
+                if (msg_copy.rfind(R"(OK room=)", 0) == 0) {
                     parse_move_response(msg_split, this->room, this->command, this->fd);
                 }
-                if (msg_copy.rfind(R"(OK )" + this->event.ROOM_ENTER) == 0) {
-                    std::string new_player = split(msg_split[1], ' ')[3];
-                    GameWorld::room_presence_enter(new_player);
-                if (msg_copy.rfind(R"(OK )" + this->event.ROOM_LEAVE) == 0) {
-                    std::string del_player = split(msg_split[1], ' ')[3];
-                    GameWorld::room_presence_leave(del_player);
+                size_t enter_pos = msg_copy.find("EVT ROOM PRESENCE ENTER ");
+                if (enter_pos != std::string::npos) {
+                    std::string rest = msg_copy.substr(enter_pos);
+                    std::vector<std::string> parts = split(rest, ' ');
+
+                    if (parts.size() >= 5)
+                        GameWorld::room_presence_enter(parts[4]);
+                }
+                size_t leave_pos = msg_copy.find("EVT ROOM PRESENCE LEAVE ");
+                if (leave_pos != std::string::npos) {
+                    std::string rest = msg_copy.substr(leave_pos);
+                    std::vector<std::string> parts = split(rest, ' ');
+
+                    if (parts.size() >= 5)
+                        GameWorld::room_presence_leave(parts[4]);
+                }
+                if (msg_copy.rfind("OK EVT ROOM POSITION {", 0) == 0) {
+                    update_player_pos(this->room.player, msg_copy);
                 }
             }
             std::string p_pos = "";
@@ -139,10 +151,9 @@ void GameWorld::net_update() {
                 send_message(this->command.POSITION, p_pos, this->fd);
             break;
             }
-    }
 
-    GameWorld::server_alive(msg_split);
-    this->alive_timer += this->game_state->dt;
+    // GameWorld::server_alive(msg_split);
+    // this->alive_timer += this->game_state->dt;
 }
 
 void GameWorld::draw() {

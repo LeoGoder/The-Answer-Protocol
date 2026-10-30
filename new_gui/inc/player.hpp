@@ -1,6 +1,7 @@
 #pragma once
 #include "map_parse.hpp"
 #include "raylib.h"
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,3 +24,5 @@ class Player {
         void draw_player(std::string player_name);
         void input_player(float dt, Maps &map, MapData &map_data);
 };
+
+void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::string event);

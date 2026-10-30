@@ -25,3 +25,4 @@ float GetFontTextWidth(const std::string &text, float scale = 1.0f);
 Vector2 get_virtual_mouse_position();
 void draw_sprite_sheet(Texture2D &spritesheet, int frame, int nb_col, Vector2 pos, Vector2 sprite_size, int scale);
 void input_hint(Texture2D &font, Texture2D &spritesheet, std::string text);
+std::string extract_position(const std::string &src, std::string player_name);

@@ -72,6 +72,20 @@ std::string extract_sub_tab(const std::string &src, std::string key) {
     return src.substr(start, end - start);
 }
 
+std::string extract_position(const std::string &src, std::string player_name) {
+    std::string new_pos;
+    std::string pattern = "\"" + player_name + "\":[";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return "";
+    start += pattern.length();
+
+    size_t end = src.find("]", start);
+    if (start == std::string::npos) return "";
+
+    return src.substr(start, end - start);
+}
+
 std::vector<std::string> extract_vector(const std::string &src, std::string key) {
     std::vector<std::string> vector_r;
     std::string pattern = "\"" + key + "\":[";

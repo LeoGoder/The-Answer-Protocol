@@ -4,7 +4,23 @@
 #include "map_parse.hpp"
 #include "raylib.h"
 #include <cstddef>
-#include <iostream>
+#include <cstdio>
+#include <memory>
+#include <string>
+#include <vector>
+
+void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::string event) {
+    for (size_t i = 0; i < vect_players.size(); i++) {
+        std::string new_position = extract_position(event, vect_players[i]->name);
+        std::vector<std::string> position_split;
+
+        if (new_position == "")
+            continue;
+        position_split = split(new_position, ',');
+        vect_players[i]->player_pos.x = std::stof(position_split[0]);
+        vect_players[i]->player_pos.y = std::stof(position_split[1]);
+    }
+}
 
 Player::Player(Texture2D *font, std::string name, Texture2D *sprite) {
     this->player_pos = {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT};
