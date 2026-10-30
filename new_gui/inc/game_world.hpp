@@ -9,7 +9,8 @@
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 4242
-#define ALIVE_MAX_TIME 60
+#define ALIVE_MAX_TIME 35
+#define ALIVE_CHECK_TIMER 10
 
 enum GameWorldScene {
     connection = 0,
@@ -22,7 +23,6 @@ class GameWorld : public GameScene {
     public:
         int fd;
         float alive_last_time;
-        float alive_check_timer;
         float alive_timer;
         float timer;
         std::string player_name;

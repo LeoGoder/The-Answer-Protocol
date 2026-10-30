@@ -37,7 +37,6 @@ GameWorld::GameWorld(GameState *game_state){
     this->server.sin_addr.s_addr = inet_addr(SERVER_IP);
     this->fd = socket(AF_INET, SOCK_STREAM, 0);
     this->player_name = this->game_state->player_name;
-    this->alive_check_timer = 15;
     this->alive_timer = 0.0;
     this->alive_last_time = 0.0;
     this->timer = 0.0;
@@ -148,6 +147,7 @@ void GameWorld::net_update() {
             }
             this->timer += this->game_state->dt;
             if (this->timer >= 1.0 / 24.0) {
+                this->timer = 0.0;
                 std::string p_pos = "";
                 p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
                 send_message(this->command.POSITION, p_pos, this->fd);
