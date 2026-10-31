@@ -48,19 +48,19 @@ void Player::draw_player(std::string player_name) {
     DrawTexture(*this->sprite, this->player_pos.x, this->player_pos.y, WHITE);
 }
 
-bool player_overlap(MapData &data, Vector2 player_pos) {
-    if (data.hub.empty()) return false;
+bool player_overlap(std::vector<std::vector<int>> &data, Vector2 player_pos) {
+    if (data.empty()) return false;
 
     int max_x = TILE_WIDTH * MAP_WIDTH;
-    size_t layer = data.hub.size() - 2;
+    size_t layer = data.size() - 2;
     Vector2 tile_pos = {0.0, 0.0};
 
-    for (size_t y = 0; y < data.hub[layer].size(); y++) {
+    for (size_t y = 0; y < data[layer].size(); y++) {
         if (tile_pos.x >= max_x) {
             tile_pos.x = 0.0;
             tile_pos.y += TILE_HEIGHT;
         }
-        if (data.hub[layer][y] != 0) {
+        if (data[layer][y] != 0) {
             if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
                 (player_pos.y + PLAYER_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
                 return true;
@@ -74,20 +74,27 @@ bool player_overlap(MapData &data, Vector2 player_pos) {
 bool can_move(MapData &data, Maps &map, Vector2 player_pos) {
     switch (map) {
         case hub:
-            return !player_overlap(data, player_pos);
+            return !player_overlap(data.hub, player_pos);
         case fejka:
+            return !player_overlap(data.fejka, player_pos);
             break;
         case jeetomal:
+            return !player_overlap(data.jeetomal, player_pos);
             break;
         case komolexos:
+            return !player_overlap(data.komolexos, player_pos);
             break;
         case kuggis:
+            return !player_overlap(data.kuggis, player_pos);
             break;
         case smycka:
+            return !player_overlap(data.smycka, player_pos);
             break;
         case vinterfint:
+            return !player_overlap(data.vinterfint, player_pos);
             break;
         case fugoumitak:
+            return !player_overlap(data.fugoumitak, player_pos);
             break;
     }
 

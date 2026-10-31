@@ -1,4 +1,5 @@
 #pragma once
+
 #include "game_scene.hpp"
 #include "game_state.hpp"
 #include "map_parse.hpp"
@@ -60,5 +61,5 @@ class GameWorld : public GameScene {
         void draw_connection_error();
         void draw_game();
         void draw_hud();
-        void draw_island(MapData &island);
+        void draw_island(std::vector<std::vector<int>> &island);
 };

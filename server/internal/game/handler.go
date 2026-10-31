@@ -151,7 +151,7 @@ func (s *State) move(player *Player, direction string) Result {
 
 // Positions inside a room, shared with the clients: 0..PosMax on both axes,
 // (0, 0) being the north-west corner of the floor.
-const PosMax = 1000
+const PosMax = 100000
 
 // position stores where the player stands in their room (POSITION <x> <y>).
 func (s *State) position(player *Player, args []string) Result {

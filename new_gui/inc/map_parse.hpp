@@ -1,5 +1,7 @@
 #pragma once
+
 #include <vector>
+
 #define MAP_WIDTH 60
 #define MAP_HEIGHT 40
 #define TILE_WIDTH 32

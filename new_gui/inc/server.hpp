@@ -1,8 +1,10 @@
 #pragma once
+
 #include "player.hpp"
 #include <memory>
 #include <string>
 #include <vector>
+
 #define MAX_DATA 1024
 
 struct NetCommand {

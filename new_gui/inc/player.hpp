@@ -1,13 +1,16 @@
 #pragma once
+
 #include "map_parse.hpp"
 #include "raylib.h"
 #include <memory>
 #include <string>
 #include <vector>
+
 #define NORTH 74
 #define EAST 90
 #define SOUTH 1
 #define WEAST 88
+
 #define PLAYER_WIDTH 28
 #define PLAYER_HEIGHT 28
 

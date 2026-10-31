@@ -121,9 +121,10 @@ void GameWorld::net_update() {
         case in_game:
             if (!msg_split.empty()) {
                 if (msg_copy.rfind(R"(OK {"room")", 0) == 0) {
-                    parse_look_response(msg_split, this->room, &this->font, &this->player_sprite);
+                    parse_look_response(msg_split, this->room, &this->font, &this->player_sprite, this->map);
                 }
-                if (msg_copy.rfind(R"(OK room=)", 0) == 0) {
+                size_t move = msg_copy.find("OK room=");
+                if (move != std::string::npos) {
                     parse_move_response(msg_split, this->room, this->command, this->fd);
                 }
                 size_t enter_pos = msg_copy.find("EVT ROOM PRESENCE ENTER ");

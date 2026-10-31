@@ -5,16 +5,17 @@
 #include "raylib.h"
 #include <cstddef>
 #include <cstdio>
+#include <iostream>
+#include <vector>
 
-void GameWorld::draw_island(MapData &island) {
-    (void)island;
+void GameWorld::draw_island(std::vector<std::vector<int>> &island) {
     int index = 0;
     Vector2 tile_size = {TILE_WIDTH, TILE_HEIGHT};
 
-    for (size_t i = 0; i < island.hub.size() - 2; i++) {
+    for (size_t i = 0; i < island.size() - 2; i++) {
         for (int y = 0; y < MAP_HEIGHT; y ++) {
             for (int x = 0; x < MAP_WIDTH; x++) {
-                int tile_id = island.hub[i][y * MAP_WIDTH + x];
+                int tile_id = island[i][y * MAP_WIDTH + x];
                 if (tile_id <= 0)
                     continue;
                 Vector2 position;
@@ -45,21 +46,28 @@ void GameWorld::draw_island(MapData &island) {
 void GameWorld::draw_game() {
     switch (this->map) {
         case hub:
-            draw_island(this->map_data);
+            draw_island(this->map_data.hub);
             break;
         case komolexos:
+            draw_island(this->map_data.komolexos);
             break;
         case fugoumitak:
+            draw_island(this->map_data.fugoumitak);
             break;
         case fejka:
+            draw_island(this->map_data.fejka);
             break;
         case jeetomal:
+            draw_island(this->map_data.jeetomal);
             break;
         case kuggis:
+            draw_island(this->map_data.kuggis);
             break;
         case smycka:
+            draw_island(this->map_data.smycka);
             break;
         case vinterfint:
+            draw_island(this->map_data.vinterfint);
             break;
     }
     player.draw_player(this->player_name);
