@@ -36,6 +36,5 @@ void parse_move_response(std::vector<std::string> &response, Room &room, NetComm
     (void) command;
     (void) fd;
     // faire un check si la room existe bien
-    std::cout << "move response\n";
     // send_message(command.LOOK, "", fd);
 }

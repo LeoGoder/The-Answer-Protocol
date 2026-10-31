@@ -1,12 +1,10 @@
 #include "game_world.hpp"
 #include "server.hpp"
 #include <cstdio>
-#include <iostream>
 #include <unistd.h>
 
 void GameWorld::server_alive(std::vector<std::string> msg_split) {
     if (this->alive_timer > ALIVE_CHECK_TIMER) {
-        std::cout << "TAAAAAAAAAAA MERRRRRRREEEEEEEEEEEEEEE\n";
         if (send_message(command.ALIVE, "", this->fd) < 0) {
             printf("Error while send_message");
         }

@@ -64,7 +64,7 @@ void GameWorld::update() {
         game_state->set_actual_scene(splash_screen);
     }
     if (this->intern_scene == in_game) {
-        this->player.input_player(this->game_state->dt, this->map, this->map_data);
+        this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
     }
 }
 
@@ -83,6 +83,7 @@ void GameWorld::net_update() {
     std::vector<std::string> msg_split;
     std::string msg_copy;
     std::string buffer;
+
     if (this->fd > 0)
         buffer = receiv_msg(this->fd);
     if (this->fd == 0) {
@@ -149,6 +150,7 @@ void GameWorld::net_update() {
             if (this->timer >= 1.0 / 24.0) {
                 this->timer = 0.0;
                 std::string p_pos = "";
+
                 p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
                 send_message(this->command.POSITION, p_pos, this->fd);
             }

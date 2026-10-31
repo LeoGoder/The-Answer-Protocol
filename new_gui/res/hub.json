@@ -725,35 +725,35 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"..\/assets\/tsx\/Map.tsx"
+         "source":"tsx\/Map.tsx"
         }, 
         {
          "firstgid":145,
-         "source":"..\/assets\/tsx\/exterior.tsx"
+         "source":"tsx\/exterior.tsx"
         }, 
         {
          "firstgid":320,
-         "source":"..\/assets\/tsx\/Sheep_with_shadow.tsx"
+         "source":"tsx\/Sheep_with_shadow.tsx"
         }, 
         {
          "firstgid":368,
-         "source":"..\/assets\/tsx\/Cow_with_shadow.tsx"
+         "source":"tsx\/Cow_with_shadow.tsx"
         }, 
         {
          "firstgid":560,
-         "source":"..\/assets\/tsx\/trees.tsx"
+         "source":"tsx\/trees.tsx"
         }, 
         {
          "firstgid":735,
-         "source":"..\/assets\/tsx\/rock and flowers.tsx"
+         "source":"tsx\/rock and flowers.tsx"
         }, 
         {
          "firstgid":910,
-         "source":"..\/assets\/tsx\/Fox_with_shadow.tsx"
+         "source":"tsx\/Fox_with_shadow.tsx"
         }, 
         {
          "firstgid":926,
-         "source":"..\/assets\/tsx\/Hare_Idle_with_shadow.tsx"
+         "source":"tsx\/Hare_Idle_with_shadow.tsx"
         }],
  "tilewidth":32,
  "type":"map",

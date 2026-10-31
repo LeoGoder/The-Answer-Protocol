@@ -1,10 +1,11 @@
 #include "player.hpp"
-#include "game_world.hpp"
 #include "helper.hpp"
 #include "map_parse.hpp"
 #include "raylib.h"
+#include "server.hpp"
 #include <cstddef>
 #include <cstdio>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -60,8 +61,8 @@ bool player_overlap(MapData &data, Vector2 player_pos) {
             tile_pos.y += TILE_HEIGHT;
         }
         if (data.hub[layer][y] != 0) {
-            if ((player_pos.x + TILE_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
-                (player_pos.y + TILE_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
+            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
+                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
                 return true;
             }
         }
@@ -93,33 +94,75 @@ bool can_move(MapData &data, Maps &map, Vector2 player_pos) {
     return false;
 }
 
-void Player::input_player(float dt, Maps &map, MapData &map_data) {
+std::string player_change_room(MapData &data, Vector2 player_pos) {
+    if (data.hub.empty()) return "";
+
+    int max_x = TILE_WIDTH * MAP_WIDTH;
+    size_t layer = data.hub.size() - 1;
+    Vector2 tile_pos = {0.0, 0.0};
+
+    for (size_t y = 0; y < data.hub[layer].size(); y++) {
+        int tile = data.hub[layer][y];
+
+        if (tile_pos.x >= max_x) {
+            tile_pos.x = 0.0;
+            tile_pos.y += TILE_HEIGHT;
+        }
+        if (tile != 0) {
+            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
+                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
+                if (tile == NORTH)
+                    return "NORTH";
+                if (tile == SOUTH)
+                    return "SOUTH";
+                if (tile == EAST)
+                    return "EAST";
+                if (tile == WEAST)
+                    return "WEAST";
+            }
+        }
+        tile_pos.x += TILE_WIDTH;
+    }
+    return "";
+}
+
+void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
     if (IsKeyDown(KEY_A)) {
         Vector2 next_pos = this->player_pos;
+
         next_pos.x -= speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.x = next_pos.x;
     }
     if (IsKeyDown(KEY_D)) {
         Vector2 next_pos = this->player_pos;
+
         next_pos.x += speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.x = next_pos.x;
     }
     if (IsKeyDown(KEY_W)) {
         Vector2 next_pos = this->player_pos;
+
         next_pos.y -= speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.y = next_pos.y;
     }
     if (IsKeyDown(KEY_S)) {
         Vector2 next_pos = this->player_pos;
+
         next_pos.y += speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.y = next_pos.y;
     }
     if (IsKeyPressed(KEY_E)) {
-        //
+        std::string new_room = player_change_room(map_data, this->player_pos);
+
+        if (new_room != "") {
+            std::string command = "MOVE " + new_room + '\n';
+
+            send_message(command, "", fd);
+        }
     }
     if (IsKeyPressed(KEY_ESCAPE)) {
         // Pause menu enable

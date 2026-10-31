@@ -1,0 +1,48 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "/Map.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Cow_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Fox_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Hare_Idle_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Map.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Sheep_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/exterior.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/rock and flowers.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/trees.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/Cow_with_shadow.tsx": {
+            "scaleInEditor": 1
+        },
+        "tsx/exterior.tsx": {
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/res",
+    "openFiles": [
+    ],
+    "project": "maps.tiled-project",
+    "recentFiles": [
+        "tsx/exterior.tsx",
+        "tsx/Cow_with_shadow.tsx"
+    ]
+}
