@@ -125,7 +125,7 @@ void GameWorld::net_update() {
                 }
                 size_t move = msg_copy.find("OK room=");
                 if (move != std::string::npos) {
-                    parse_move_response(msg_split, this->room, this->command, this->fd);
+                    parse_move_response(this->player_name, this->room, this->command, this->fd);
                 }
                 size_t enter_pos = msg_copy.find("EVT ROOM PRESENCE ENTER ");
                 if (enter_pos != std::string::npos) {

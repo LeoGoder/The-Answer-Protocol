@@ -4,7 +4,7 @@
 #include "raylib.h"
 #include "server.hpp"
 #include <cstddef>
-#include <iostream>
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +15,8 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
     std::vector<std::string> players_extract = extract_vector(response[1], "players");
     std::vector<std::string> items_extract = extract_vector(response[1], "items");
     std::vector<std::string> npcs_extract = extract_vector(response[1], "npcs");
+
+    room.player.clear();
 
     room.exists.east = extract_value(response[1], "east");
     room.exists.north = extract_value(response[1], "north");
@@ -46,12 +48,9 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
         map = hub;
 }
 
-void parse_move_response(std::vector<std::string> &response, Room &room, NetCommand &command, int fd) {
-    (void) response;
+void parse_move_response(std::string &player_name, Room &room, NetCommand &command, int fd) {
     (void) room;
-    (void) command;
-    (void) fd;
-    // faire un check si la room existe bien
-    std::cout << "JE MOOOOOOOOOOOOOOOOOVE\n";
+    (void) player_name;
+
     send_message(command.LOOK, "", fd);
 }
