@@ -7,8 +7,7 @@ import (
 	"tap/server/internal/protocol"
 )
 
-// Everything about NPCs: finding them, TALK, ATTACK and STATUS.
-// One ATTACK = one round: player hits, then the enemy hits back; MOVE leaves the fight.
+// NPCs: finding them, TALK, ATTACK (one round: player hits, enemy hits back; MOVE leaves the fight), STATUS.
 
 const EnemyRespawnDelay = 30 * time.Second
 
@@ -189,7 +188,7 @@ func (s *State) enemyTurn(player *Player, npc *npcState) (int, bool, []Event) {
 	return damage, true, s.changeRoom(player, s.world.respawnRoom)
 }
 
-// defeatNPC credits the killer and their group members in the same room.
+// defeatNPC credits the killer and their group members in the same room (quest progress and drop).
 func (s *State) defeatNPC(killer *Player, npc *npcState) {
 	npc.RespawnAt = time.Now().Add(EnemyRespawnDelay)
 
@@ -205,6 +204,10 @@ func (s *State) defeatNPC(killer *Player, npc *npcState) {
 		sameGroup := killer.Group != "" && player.Group == killer.Group
 		if player == killer || (sameGroup && player.Room == killer.Room) {
 			s.creditDefeat(player, npc.Def.ID)
+
+			if npc.Def.Drops != "" {
+				s.grant(player, npc.Def.Drops)
+			}
 		}
 	}
 }

@@ -9,7 +9,6 @@ import (
 )
 
 // JOIN needs an invitation; an empty group is deleted.
-
 func (s *State) group(player *Player, args []string) Result {
 	switch strings.ToUpper(args[0]) {
 	case "CREATE":
@@ -115,7 +114,7 @@ func (s *State) joinGroup(player *Player, name string) Result {
 func (s *State) leaveGroup(player *Player) []Event {
 	group := s.groups[player.Group]
 
-	group.Members = removeString(group.Members, player.Username)
+	group.Members = remove(group.Members, player.Username)
 	player.Group = ""
 
 	logger.Info("group_left", logger.Fields{"player": player.Username, "group": group.ID})

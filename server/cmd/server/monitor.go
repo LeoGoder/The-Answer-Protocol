@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	FloodLimit  = 20
+	FloodLimit  = 60
 	FloodWindow = time.Second
 
 	RapidLimit  = 5

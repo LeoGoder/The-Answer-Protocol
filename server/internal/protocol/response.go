@@ -30,5 +30,6 @@ const (
 	ErrPlayerNotFound   = "ERR 404 PLAYER_NOT_FOUND"
 	ErrNotInvited       = "ERR 403 NOT_INVITED"
 	ErrItemNotUsable    = "ERR 408 ITEM_NOT_USABLE"
+	ErrAlreadyHaveItem  = "ERR 409 ALREADY_HAVE_ITEM"
 	ErrInternal         = "ERR 500 INTERNAL_ERROR"
 )

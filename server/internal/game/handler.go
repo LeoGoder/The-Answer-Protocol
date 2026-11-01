@@ -3,7 +3,7 @@ package game
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
+	"sort"
 	"strings"
 
 	"tap/server/internal/logger"
@@ -30,6 +30,13 @@ func (s *State) Handle(username string, cmd protocol.Command) Result {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	result := s.handle(username, cmd)
+	result.Events = append(result.Events, s.flush()...)
+
+	return result
+}
+
+func (s *State) handle(username string, cmd protocol.Command) Result {
 	player, exists := s.players[username]
 	if !exists {
 		return reply(protocol.ErrNotAuthenticated)
@@ -54,7 +61,7 @@ func (s *State) Handle(username string, cmd protocol.Command) Result {
 	case "DROP":
 		return s.drop(player, target)
 	case "INVENTORY":
-		return s.inventory(player)
+		return reply(okJSON(inventoryIDs(player)))
 	case "USE":
 		return s.use(player, target)
 	case "TALK":
@@ -93,12 +100,17 @@ func okJSON(value interface{}) string {
 func (s *State) look(player *Player) Result {
 	room := s.world.rooms[player.Room]
 	npcs := s.aliveNPCsIn(room.ID)
+	items := s.floorIDs(room.ID)
 
-	// The RFC only sends IDs: names let the clients show "Chef Gusto" instead of "npc2".
+	// The RFC only sends IDs: names let the clients show "Chef Gusto" instead of "chef".
 	names := make(map[string]string)
 
-	for _, id := range room.Items {
+	for _, id := range items {
 		names[id] = s.world.items[id].Name
+	}
+
+	for _, item := range player.Inventory {
+		names[item.ID] = s.world.items[item.ID].Name
 	}
 
 	for _, id := range npcs {
@@ -117,10 +129,24 @@ func (s *State) look(player *Player) Result {
 			Exits:       room.Exits,
 		},
 		Players: s.playersIn(room.ID),
-		Items:   room.Items,
+		Items:   items,
 		NPCs:    npcs,
 		Names:   names,
 	}))
+}
+
+func (s *State) playersIn(roomID string) []string {
+	names := make([]string, 0)
+
+	for _, player := range s.players {
+		if player.Room == roomID {
+			names = append(names, player.Username)
+		}
+	}
+
+	sort.Strings(names)
+
+	return names
 }
 
 func (s *State) move(player *Player, direction string) Result {
@@ -147,64 +173,6 @@ func (s *State) move(player *Player, direction string) Result {
 	})
 
 	return result
-}
-
-// Positions inside a room, shared with the clients: 0..PosMax on both axes,
-// (0, 0) being the north-west corner of the floor.
-const PosMax = 1000
-
-// position stores where the player stands in their room (POSITION <x> <y>).
-func (s *State) position(player *Player, args []string) Result {
-	x, errX := strconv.Atoi(args[0])
-	y, errY := strconv.Atoi(args[1])
-
-	if errX != nil || errY != nil || x < 0 || x > PosMax || y < 0 || y > PosMax {
-		return reply(protocol.ErrBadRequest)
-	}
-
-	player.X = x
-	player.Y = y
-	player.PosOK = true
-	player.WantsPositions = true
-
-	return reply(protocol.OK)
-}
-
-// PositionEvents builds one "EVT ROOM POSITION {...}" per room, sent only to the players
-// of that room who sent POSITION at least once (GUI clients). Called PositionRate times per second.
-func (s *State) PositionEvents() []Event {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	positions := make(map[string]map[string][2]int) // room id -> username -> [x, y]
-	listeners := make(map[string][]string)          // room id -> who receives the event
-
-	for _, player := range s.players {
-		if positions[player.Room] == nil {
-			positions[player.Room] = make(map[string][2]int)
-		}
-
-		if player.PosOK {
-			positions[player.Room][player.Username] = [2]int{player.X, player.Y}
-		}
-
-		if player.WantsPositions {
-			listeners[player.Room] = append(listeners[player.Room], player.Username)
-		}
-	}
-
-	events := make([]Event, 0, len(listeners))
-
-	for roomID, to := range listeners {
-		data, err := json.Marshal(positions[roomID])
-		if err != nil {
-			continue
-		}
-
-		events = append(events, Event{To: to, Line: "EVT ROOM POSITION " + string(data)})
-	}
-
-	return events
 }
 
 // changeRoom returns the LEAVE / ENTER events for the others.

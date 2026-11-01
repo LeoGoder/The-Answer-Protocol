@@ -9,8 +9,7 @@ import (
 
 const MaxUsernameLength = 32
 
-// ValidateUsername: 1 to 32 Unicode letters, digits or '_' (RFC 9.2),
-// at most 3 identical characters in a row, and no "admin" inside.
+// ValidateUsername: 1-32 Unicode letters, digits or '_' (RFC 9.2), at most 3 identical characters in a row, no "admin".
 func ValidateUsername(username string) error {
 	if username == "" {
 		return fmt.Errorf("username cannot be empty")
