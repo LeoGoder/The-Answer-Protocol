@@ -31,7 +31,9 @@ struct Room {
     std::string id;
     std::string name;
     std::string description;
+
     Exits exists;
+
     std::vector<std::unique_ptr<Player>> player;
     std::vector<std::string> items;
     std::vector<std::string> npcs;

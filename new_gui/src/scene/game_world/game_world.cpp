@@ -20,6 +20,7 @@
 
 GameWorld::GameWorld(GameState *game_state){
     this->font = LoadTexture(GetAssetPath("test_font.png").c_str());
+    SetTextureFilter(this->font, TEXTURE_FILTER_POINT);
     this->player_sprite = LoadTexture(GetAssetPath("player.png").c_str());
     this->ground = LoadTexture(GetAssetPath("Map.png").c_str());
     this->fox = LoadTexture(GetAssetPath("Fox_Idle_with_shadow.png").c_str());
@@ -145,6 +146,13 @@ void GameWorld::net_update() {
                 }
                 if (msg_copy.find("EVT ROOM POSITION {") != std::string::npos) {
                     update_player_pos(this->room.player, msg_copy);
+                }
+                size_t global_msg = msg_copy.find("EVT GLOBAL CHAT ");
+                if (global_msg != std::string::npos) {
+                    std::string prefix = "EVT GLOBAL CHAT ";
+                    std::string sub_string = msg_copy.substr(global_msg + prefix.length());
+
+                    this->player.chat.add_global_msg(sub_string);
                 }
             }
             this->timer += this->game_state->dt;

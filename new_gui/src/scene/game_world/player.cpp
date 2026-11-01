@@ -1,11 +1,11 @@
 #include "player.hpp"
+#include "chat.hpp"
 #include "helper.hpp"
 #include "map_parse.hpp"
 #include "raylib.h"
 #include "server.hpp"
 #include <cstddef>
 #include <cstdio>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -23,15 +23,16 @@ void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::
     }
 }
 
-Player::Player(Texture2D *font, std::string name, Texture2D *sprite) {
+Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat(font) {
     this->player_pos = {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT};
     this->font = font;
     this->name = name;
     this->sprite = sprite;
+    this->show_chat = false;
 }
 
-Player::Player() {
-
+Player::Player() : chat(nullptr) {
+    (void)font;
 }
 
 Player::~Player() {
@@ -134,35 +135,35 @@ std::string player_change_room(MapData &data, Vector2 player_pos) {
 }
 
 void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
-    if (IsKeyDown(KEY_A)) {
+    if (IsKeyDown(KEY_A) && this->show_chat == false) {
         Vector2 next_pos = this->player_pos;
 
         next_pos.x -= speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.x = next_pos.x;
     }
-    if (IsKeyDown(KEY_D)) {
+    if (IsKeyDown(KEY_D) && this->show_chat == false) {
         Vector2 next_pos = this->player_pos;
 
         next_pos.x += speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.x = next_pos.x;
     }
-    if (IsKeyDown(KEY_W)) {
+    if (IsKeyDown(KEY_W) && this->show_chat == false) {
         Vector2 next_pos = this->player_pos;
 
         next_pos.y -= speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.y = next_pos.y;
     }
-    if (IsKeyDown(KEY_S)) {
+    if (IsKeyDown(KEY_S) && this->show_chat == false) {
         Vector2 next_pos = this->player_pos;
 
         next_pos.y += speed * dt;
         if (can_move(map_data, map, next_pos))
             this->player_pos.y = next_pos.y;
     }
-    if (IsKeyPressed(KEY_E)) {
+    if (IsKeyPressed(KEY_E) && this->show_chat == false) {
         std::string new_room = player_change_room(map_data, this->player_pos);
 
         if (new_room != "") {
@@ -171,6 +172,16 @@ void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
             send_message(command, "", fd);
         }
     }
+
+    if (this->show_chat == true)
+        this->chat.chat_input(fd);
+    if (IsKeyPressed(KEY_SLASH)) {
+        if (this->show_chat == false)
+            this->show_chat = true;
+        else
+            this->show_chat = false;
+    }
+
     if (IsKeyPressed(KEY_ESCAPE)) {
         // Pause menu enable
     }

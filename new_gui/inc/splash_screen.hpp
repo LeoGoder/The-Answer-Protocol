@@ -34,6 +34,7 @@ private:
     std::vector<std::unique_ptr<Button>> button_list;
     std::vector<std::unique_ptr<Button>> btn_save;
     std::vector<std::unique_ptr<GameData>> save_lst;
+
     int selected_id;
     int save_slot_choice;
 

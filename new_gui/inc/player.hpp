@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chat.hpp"
 #include "map_parse.hpp"
 #include "raylib.h"
 #include <memory>
@@ -19,12 +20,17 @@ class Player {
         std::vector<std::string> inventory;
 
     public:
+        bool show_chat;
         float speed = 200.0;
         Vector2 player_pos;
+
         std::string name;
+
         Texture2D *sprite;
         Texture2D *font;
+
         Camera2D cam;
+        Chat chat;
 
         Player(Texture2D *font, std::string name, Texture2D *sprite);
         Player();

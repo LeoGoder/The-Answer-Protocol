@@ -23,16 +23,21 @@ enum GameWorldScene {
 class GameWorld : public GameScene {
     public:
         int fd;
+
         float alive_last_time;
         float alive_timer;
         float timer;
+
         std::string player_name;
         std::string error_log;
+
         NetCommand command;
         EvtCommand event;
+
         struct sockaddr_in server;
         GameWorldScene intern_scene;
         GameState *game_state;
+
         Texture2D font;
         Texture2D player_sprite;
         Texture2D ground;
@@ -43,6 +48,7 @@ class GameWorld : public GameScene {
         Texture2D sheep;
         Texture2D trees;
         Texture2D hare;
+
         Room room;
         Player player;
         Maps map;

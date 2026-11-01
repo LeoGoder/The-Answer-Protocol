@@ -28,4 +28,5 @@ enum Maps {
     smycka = 6,
     vinterfint = 7,
 };
+
 void parse_map(MapData &data);
