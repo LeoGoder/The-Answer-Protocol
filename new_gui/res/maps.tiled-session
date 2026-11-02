@@ -1,9 +1,14 @@
 {
-    "activeFile": "",
+    "activeFile": "vinterfint.json",
     "expandedProjectPaths": [
+        "tsx",
+        "."
     ],
     "fileStates": {
         "/Map.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/Downloads/tap texture/tsx/Map.tsx": {
             "scaleInDock": 1
         },
         "/home/azazel/Documents/42proj/Downloads/tap texture/tsx/chests_crates.tsx": {
@@ -34,76 +39,97 @@
             "scaleInDock": 1
         },
         "fejka.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 0,
+            "scale": 0.75,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 960.274812906392,
-                "y": 640.7066617592934
+                "x": 960.6666666666667,
+                "y": 639.3333333333333
             }
         },
         "fugoumitak.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 4,
+            "scale": 1,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 964.9858913016809,
-                "y": 672.8990307937676
+                "x": 1036.5,
+                "y": 669.5
             }
         },
         "hub.json": {
-            "scale": 0.5,
-            "selectedLayer": 0,
+            "scale": 0.75,
+            "selectedLayer": 13,
             "viewCenter": {
-                "x": 935,
-                "y": 681
+                "x": 691.3333333333333,
+                "y": 607.3333333333333
             }
         },
         "jeetomal.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 0,
+            "scale": 0.75,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 960.274812906392,
-                "y": 640.7066617592934
+                "x": 507.33333333333326,
+                "y": 820.6666666666666
             }
         },
         "komolexos.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 960.274812906392,
-                "y": 640.7066617592934
+                "x": 960.5,
+                "y": 640.5
             }
         },
         "kuggis.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 0,
+            "scale": 0.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 960.274812906392,
-                "y": 640.7066617592934
+                "x": 959,
+                "y": 639
             }
         },
         "smycka.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 0,
+            "scale": 0.75,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 960.274812906392,
-                "y": 640.7066617592934
+                "x": 960.6666666666667,
+                "y": 639.3333333333333
             }
         },
         "tsx/Cow_with_shadow.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "tsx/Fox_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/Hare_Idle_with_shadow.tsx": {
+            "scaleInDock": 1
         },
         "tsx/Map.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "tsx/Sheep_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/chests_crates.tsx": {
+            "scaleInDock": 1
         },
         "tsx/exterior.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "tsx/rock and flowers.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/trees.tsx": {
+            "scaleInDock": 1
+        },
         "vinterfint.json": {
-            "scale": 0.6367968749999999,
-            "selectedLayer": 0,
+            "scale": 0.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 960.274812906392,
-                "y": 640.7066617592934
+                "x": 1095,
+                "y": 725
             }
         }
     },
@@ -112,9 +138,25 @@
     "last.imagePath": "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/res",
     "map.lastUsedExportFilter": "All Files (*)",
     "openFiles": [
+        "hub.json",
+        "fugoumitak.json",
+        "fejka.json",
+        "jeetomal.json",
+        "komolexos.json",
+        "kuggis.json",
+        "smycka.json",
+        "vinterfint.json"
     ],
     "project": "maps.tiled-project",
     "recentFiles": [
+        "hub.json",
+        "fugoumitak.json",
+        "fejka.json",
+        "jeetomal.json",
+        "komolexos.json",
+        "kuggis.json",
+        "smycka.json",
+        "vinterfint.json",
         "tsx/Map.tsx",
         "tsx/exterior.tsx",
         "tsx/Cow_with_shadow.tsx"

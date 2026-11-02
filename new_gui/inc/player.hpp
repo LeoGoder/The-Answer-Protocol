@@ -7,13 +7,14 @@
 #include <string>
 #include <vector>
 
-#define NORTH 74
+#define NORTH 86
 #define EAST 90
-#define SOUTH 1
-#define WEAST 88
+#define SOUTH 74
+#define WEST 88
 
 #define PLAYER_WIDTH 28
 #define PLAYER_HEIGHT 28
+#define PLAYER_DEFAULT_POS {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT}
 
 class Player {
     private:

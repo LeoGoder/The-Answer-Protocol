@@ -24,7 +24,7 @@ void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::
 }
 
 Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat(font) {
-    this->player_pos = {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT};
+    this->player_pos = PLAYER_DEFAULT_POS;
     this->font = font;
     this->name = name;
     this->sprite = sprite;
@@ -102,15 +102,15 @@ bool can_move(MapData &data, Maps &map, Vector2 player_pos) {
     return false;
 }
 
-std::string player_change_room(MapData &data, Vector2 player_pos) {
-    if (data.hub.empty()) return "";
+std::string player_change_room(std::vector<std::vector<int>> &data, Vector2 player_pos) {
+    if (data.empty()) return "";
 
     int max_x = TILE_WIDTH * MAP_WIDTH;
-    size_t layer = data.hub.size() - 1;
+    size_t layer = data.size() - 1;
     Vector2 tile_pos = {0.0, 0.0};
 
-    for (size_t y = 0; y < data.hub[layer].size(); y++) {
-        int tile = data.hub[layer][y];
+    for (size_t y = 0; y < data[layer].size(); y++) {
+        int tile = data[layer][y];
 
         if (tile_pos.x >= max_x) {
             tile_pos.x = 0.0;
@@ -125,12 +125,42 @@ std::string player_change_room(MapData &data, Vector2 player_pos) {
                     return "SOUTH";
                 if (tile == EAST)
                     return "EAST";
-                if (tile == WEAST)
-                    return "WEAST";
+                if (tile == WEST)
+                    return "WEST";
             }
         }
         tile_pos.x += TILE_WIDTH;
     }
+    return "";
+}
+
+std::string data_change_room(MapData &data, Maps &map, Vector2 player_pos) {
+    switch (map) {
+        case hub:
+            return player_change_room(data.hub, player_pos);
+        case fejka:
+            return player_change_room(data.fejka, player_pos);
+            break;
+        case jeetomal:
+            return player_change_room(data.jeetomal, player_pos);
+            break;
+        case komolexos:
+            return player_change_room(data.komolexos, player_pos);
+            break;
+        case kuggis:
+            return player_change_room(data.kuggis, player_pos);
+            break;
+        case smycka:
+            return player_change_room(data.smycka, player_pos);
+            break;
+        case vinterfint:
+            return player_change_room(data.vinterfint, player_pos);
+            break;
+        case fugoumitak:
+            return player_change_room(data.fugoumitak, player_pos);
+            break;
+    }
+
     return "";
 }
 
@@ -164,12 +194,13 @@ void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
             this->player_pos.y = next_pos.y;
     }
     if (IsKeyPressed(KEY_E) && this->show_chat == false) {
-        std::string new_room = player_change_room(map_data, this->player_pos);
+        std::string new_room = data_change_room(map_data, map, this->player_pos);
 
         if (new_room != "") {
             std::string command = "MOVE " + new_room + '\n';
 
             send_message(command, "", fd);
+            this->player_pos = PLAYER_DEFAULT_POS;
         }
     }
 

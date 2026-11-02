@@ -45,7 +45,7 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
     if (room.id == "room2")
         map = jeetomal;
     if (room.id == "room1")
-        map = hub;
+        map = komolexos;
 }
 
 void parse_move_response(std::string &player_name, Room &room, NetCommand &command, int fd) {
