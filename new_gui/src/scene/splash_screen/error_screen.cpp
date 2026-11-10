@@ -13,4 +13,3 @@ void SplashScreen::draw_error_screen() {
     input_hint(this->font, this->mouse_keyboard_icons, "back");
 }
 
-

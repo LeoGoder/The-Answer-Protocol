@@ -19,6 +19,12 @@ INC = inc/button.hpp \
 	 inc/save_load.hpp \
 	 inc/splash_screen.hpp \
 	 inc/tap.hpp \
+	 inc/server.hpp \
+	 inc/parsing_command_response.hpp \
+	 inc/map.hpp \
+	 inc/player.hpp \
+	 inc/map_parse.hpp \
+	 inc/chat.hpp \
 
 SRC = src/main.cpp \
 	 src/helper.cpp \
@@ -26,11 +32,22 @@ SRC = src/main.cpp \
 	 src/save_load.cpp \
 	 src/button.cpp \
 	 src/game_state.cpp \
+	 src/server.cpp \
 	 src/scene/game_world/game_world.cpp \
+	 src/scene/game_world/connection_error.cpp \
+	 src/scene/game_world/connection_loading.cpp \
+	 src/scene/game_world/island_1.cpp \
+	 src/scene/game_world/parsing_command_response.cpp \
 	 src/scene/splash_screen/load_game.cpp \
 	 src/scene/splash_screen/new_game.cpp \
 	 src/scene/splash_screen/splash_screen.cpp \
 	 src/scene/splash_screen/error_screen.cpp \
+	 src/scene/game_world/net_update.cpp \
+	 src/scene/game_world/player.cpp \
+	 src/scene/game_world/draw_hud.cpp \
+	 src/scene/game_world/event.cpp \
+	 src/scene/game_world/map_parse.cpp \
+	 src/scene/game_world/chat.cpp \
 
 OBJ_DIR = obj
 
@@ -77,6 +94,7 @@ fclean: clean
 re: fclean build-raylib $(NAME)
 
 lint:
-	cpplint --filter=-legal/copyright --recursive .
+	cd src/ && cpplint --filter=-legal/copyright --recursive .
+	cd inc/ && cpplint --filter=-legal/copyright --recursive .
 
 .PHONY: all clean fclean re

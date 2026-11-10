@@ -8,7 +8,7 @@ import (
 )
 
 // Positions inside a room: 0..PosMax on both axes, (0, 0) is the north-west corner of the floor.
-const PosMax = 1000
+const PosMax = 100000
 
 // position stores where the player stands in their room (POSITION <x> <y>).
 func (s *State) position(player *Player, args []string) Result {

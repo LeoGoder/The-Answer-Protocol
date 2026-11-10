@@ -1,5 +1,10 @@
 #include "helper.hpp"
 #include "raylib.h"
+#include <cstddef>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
 
 std::string GetAssetPath(const std::string &path) {
     if (FileExists(path.c_str())) return path;
@@ -8,6 +13,137 @@ std::string GetAssetPath(const std::string &path) {
     std::string bin = "bin/" + path;
     if (FileExists(bin.c_str())) return bin;
     return path;
+}
+
+void kill_return_line(std::string &str) {
+    for (long unsigned int i = 0; i < str.size(); i++) {
+        if (str[i] == '\n') {
+            str[i] = ' ';
+        }
+    }
+}
+
+std::vector<std::string> split(std::string &str, char limiter, int nb_split) {
+    std::vector<std::string> tokens;
+    size_t start = 0;
+
+    while (nb_split != 0) {
+        size_t end = str.find(limiter, start);
+        if (end == std::string::npos) {
+            break;
+        }
+        std::string sub_str = str.substr(start, end - start);
+
+        tokens.push_back(sub_str);
+        start = end + 1;
+        nb_split--;
+    }
+    if (start <= str.size()) {
+        tokens.push_back(str.substr(start));
+    }
+    return tokens;
+}
+
+std::string extract_value(const std::string &src, std::string key) {
+    std::string pattern = "\"" + key + "\":\"";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return "";
+    start += pattern.length();
+
+    size_t end = src.find("\"", start);
+
+    if (end == std::string::npos) return "";
+
+    return src.substr(start, end - start);
+}
+
+std::string extract_sub_tab(const std::string &src, std::string key) {
+    std::string pattern = "\"" + key + "\":{";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return "";
+    start += pattern.length();
+
+    size_t end = src.find("}", start);
+
+    if (end == std::string::npos) return "";
+
+    return src.substr(start, end - start);
+}
+
+std::string extract_position(const std::string &src, std::string player_name) {
+    std::string new_pos;
+    std::string pattern = "\"" + player_name + "\":[";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return "";
+    start += pattern.length();
+
+    size_t end = src.find("]", start);
+    if (start == std::string::npos) return "";
+
+    return src.substr(start, end - start);
+}
+
+std::vector<std::string> extract_vector(const std::string &src, std::string key) {
+    std::vector<std::string> vector_r;
+    std::string pattern = "\"" + key + "\":[";
+    size_t start = src.find(pattern);
+
+    if (start == std::string::npos) return vector_r;
+    start += pattern.length();
+
+    size_t end = src.find("]", start);
+    if (end == std::string::npos) return vector_r;
+
+    std::string element = src.substr(start, end - start);
+    std::cout << element + '\n';
+    size_t cursor = 0;
+    while (cursor < element.size()) {
+        size_t v_start = element.find('"', cursor);
+        if (v_start == std::string::npos) break;
+
+        size_t v_end = element.find('"', v_start + 1);
+        if (v_end == std::string::npos) break;
+
+        vector_r.push_back(element.substr(v_start + 1, v_end - v_start - 1));
+        cursor = v_end + 1;
+    }
+    return vector_r;
+}
+
+std::vector<std::vector<int>> extract_layers(const std::string &src) {
+    std::vector<std::vector<int>> all_layers;
+        std::size_t pos = 0;
+
+        while (true) {
+            std::size_t pos_data = src.find("\"data\"", pos);
+            if (pos_data == std::string::npos) {
+                break;
+            }
+
+            std::size_t start = src.find('[', pos_data);
+            if (start == std::string::npos) break;
+            start++;
+
+            std::size_t end = src.find(']', start);
+            if (end == std::string::npos) break;
+
+            std::string data = src.substr(start, end - start);
+            std::stringstream ss(data);
+            std::vector<int> current_layer;
+
+            int id = 0;
+            char comma = 0;
+            while (ss >> id) {
+                current_layer.push_back(id);
+                ss >> comma;
+            }
+            all_layers.push_back(current_layer);
+            pos = end + 1;
+        }
+        return all_layers;
 }
 
 float GetFontTextWidth(const std::string &text, float scale) {
