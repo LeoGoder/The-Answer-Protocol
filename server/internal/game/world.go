@@ -44,6 +44,9 @@ const (
 	QuestDefeat = "defeat" // target = enemy to defeat
 )
 
+// The only exit names allowed in world.json.
+var directions = map[string]bool{"north": true, "south": true, "east": true, "west": true}
+
 type QuestDef struct {
 	ID          string `json:"id"`
 	Type        string `json:"type"`
@@ -228,7 +231,7 @@ func (w *world) validateRooms() error {
 
 	for id, room := range w.rooms {
 		for direction, target := range room.Exits {
-			if !isDirection(direction) {
+			if !directions[direction] {
 				return fmt.Errorf("room %s: invalid exit %q", id, direction)
 			}
 
@@ -293,13 +296,4 @@ func (w *world) validateQuests() error {
 	}
 
 	return nil
-}
-
-func isDirection(direction string) bool {
-	switch direction {
-	case "north", "south", "east", "west":
-		return true
-	}
-
-	return false
 }

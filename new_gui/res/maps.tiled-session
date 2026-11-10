@@ -1,0 +1,164 @@
+{
+    "activeFile": "vinterfint.json",
+    "expandedProjectPaths": [
+        "tsx",
+        "."
+    ],
+    "fileStates": {
+        "/Map.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/Downloads/tap texture/tsx/Map.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/Downloads/tap texture/tsx/chests_crates.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Cow_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Fox_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Hare_Idle_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Map.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/Sheep_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/exterior.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/rock and flowers.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/assets/tsx/trees.tsx": {
+            "scaleInDock": 1
+        },
+        "fejka.json": {
+            "scale": 0.75,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 960.6666666666667,
+                "y": 639.3333333333333
+            }
+        },
+        "fugoumitak.json": {
+            "scale": 1,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1036.5,
+                "y": 669.5
+            }
+        },
+        "hub.json": {
+            "scale": 0.75,
+            "selectedLayer": 13,
+            "viewCenter": {
+                "x": 691.3333333333333,
+                "y": 607.3333333333333
+            }
+        },
+        "jeetomal.json": {
+            "scale": 0.75,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 507.33333333333326,
+                "y": 820.6666666666666
+            }
+        },
+        "komolexos.json": {
+            "scale": 1,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 960.5,
+                "y": 640.5
+            }
+        },
+        "kuggis.json": {
+            "scale": 0.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 959,
+                "y": 639
+            }
+        },
+        "smycka.json": {
+            "scale": 0.75,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 960.6666666666667,
+                "y": 639.3333333333333
+            }
+        },
+        "tsx/Cow_with_shadow.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tsx/Fox_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/Hare_Idle_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/Map.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tsx/Sheep_with_shadow.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/chests_crates.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/exterior.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tsx/rock and flowers.tsx": {
+            "scaleInDock": 1
+        },
+        "tsx/trees.tsx": {
+            "scaleInDock": 1
+        },
+        "vinterfint.json": {
+            "scale": 0.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1095,
+                "y": 725
+            }
+        }
+    },
+    "last.exportedFilePath": "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/res",
+    "last.externalTilesetPath": "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/res/tsx",
+    "last.imagePath": "/home/azazel/Documents/42proj/m5/The-Answer-Protocol/new_gui/res",
+    "map.lastUsedExportFilter": "All Files (*)",
+    "openFiles": [
+        "hub.json",
+        "fugoumitak.json",
+        "fejka.json",
+        "jeetomal.json",
+        "komolexos.json",
+        "kuggis.json",
+        "smycka.json",
+        "vinterfint.json"
+    ],
+    "project": "maps.tiled-project",
+    "recentFiles": [
+        "hub.json",
+        "fugoumitak.json",
+        "fejka.json",
+        "jeetomal.json",
+        "komolexos.json",
+        "kuggis.json",
+        "smycka.json",
+        "vinterfint.json",
+        "tsx/Map.tsx",
+        "tsx/exterior.tsx",
+        "tsx/Cow_with_shadow.tsx"
+    ]
+}

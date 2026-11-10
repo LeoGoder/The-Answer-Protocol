@@ -21,10 +21,10 @@ type questLogEntry struct {
 	Progress string `json:"progress,omitempty"`
 }
 
-func (s *State) quest(player *Player, typed string) string {
+func (s *State) quest(player *Player, typed string) Result {
 	npc := s.findNPC(player, typed)
 	if npc == nil {
-		return protocol.ErrNPCNotFound
+		return reply(protocol.ErrNPCNotFound)
 	}
 
 	for _, progress := range player.Quests {
@@ -34,10 +34,10 @@ func (s *State) quest(player *Player, typed string) string {
 		}
 
 		if s.objectiveDone(player, quest, progress) {
-			return s.completeQuest(player, quest, progress)
+			return reply(s.completeQuest(player, quest, progress))
 		}
 
-		return s.questReply(player, quest, progress, "active")
+		return reply(s.questReply(player, quest, progress, "active"))
 	}
 
 	for _, id := range s.world.questOrder {
@@ -53,10 +53,10 @@ func (s *State) quest(player *Player, typed string) string {
 			"player": player.Username, "quest": id, "npc": npc.Def.ID,
 		})
 
-		return s.questReply(player, quest, progress, "active")
+		return reply(s.questReply(player, quest, progress, "active"))
 	}
 
-	return protocol.ErrNoQuestAvailable
+	return reply(protocol.ErrNoQuestAvailable)
 }
 
 func (s *State) completeQuest(player *Player, quest *QuestDef, progress *questProgress) string {
@@ -88,7 +88,7 @@ func (s *State) questReply(player *Player, quest *QuestDef, progress *questProgr
 	})
 }
 
-func (s *State) questLog(player *Player) string {
+func (s *State) questLog(player *Player) Result {
 	entries := make([]questLogEntry, 0, len(player.Quests))
 
 	for _, progress := range player.Quests {
@@ -106,7 +106,7 @@ func (s *State) questLog(player *Player) string {
 		})
 	}
 
-	return okJSON(entries)
+	return reply(okJSON(entries))
 }
 
 // creditDefeat is called by combat when an enemy is defeated.
@@ -130,8 +130,13 @@ func (s *State) creditDefeat(player *Player, npcID string) {
 
 func (s *State) objectiveDone(player *Player, quest *QuestDef, progress *questProgress) bool {
 	if quest.Type == QuestFetch {
-		_, found := indexOf(player.Inventory, quest.Target)
-		return found
+		for _, id := range player.Inventory {
+			if id == quest.Target {
+				return true
+			}
+		}
+
+		return false
 	}
 
 	return progress.Defeated
@@ -153,14 +158,4 @@ func findProgress(player *Player, questID string) *questProgress {
 	}
 
 	return nil
-}
-
-func indexOf(list []string, value string) (int, bool) {
-	for index, current := range list {
-		if current == value {
-			return index, true
-		}
-	}
-
-	return -1, false
 }

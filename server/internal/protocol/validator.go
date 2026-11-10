@@ -21,7 +21,12 @@ func Validate(cmd Command) error {
 			return fmt.Errorf("MOVE requires one argument")
 		}
 
-	case "QUIT", "LOOK", "WHO", "INVENTORY", "STATUS", "QUESTS":
+	case "POSITION":
+		if len(cmd.Args) != 2 {
+			return fmt.Errorf("POSITION requires two arguments")
+		}
+
+	case "QUIT", "LOOK", "WHO", "INVENTORY", "STATUS", "QUESTS", "ALIVE":
 		if len(cmd.Args) != 0 {
 			return fmt.Errorf("%s does not accept arguments", cmd.Name)
 		}

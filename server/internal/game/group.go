@@ -13,7 +13,7 @@ import (
 func (s *State) group(player *Player, args []string) Result {
 	switch strings.ToUpper(args[0]) {
 	case "CREATE":
-		return reply(s.createGroup(player))
+		return s.createGroup(player)
 	case "INVITE":
 		return s.inviteToGroup(player, args[1])
 	case "JOIN":
@@ -29,9 +29,9 @@ func (s *State) group(player *Player, args []string) Result {
 	return reply(protocol.ErrBadRequest)
 }
 
-func (s *State) createGroup(player *Player) string {
+func (s *State) createGroup(player *Player) Result {
 	if player.Group != "" {
-		return protocol.ErrAlreadyInGroup
+		return reply(protocol.ErrAlreadyInGroup)
 	}
 
 	id := fmt.Sprintf("group.%d", s.nextGroupID)
@@ -46,7 +46,7 @@ func (s *State) createGroup(player *Player) string {
 
 	logger.Info("group_created", logger.Fields{"player": player.Username, "group": id})
 
-	return "OK group=" + id
+	return reply("OK group=" + id)
 }
 
 func (s *State) inviteToGroup(player *Player, username string) Result {
@@ -75,29 +75,26 @@ func (s *State) inviteToGroup(player *Player, username string) Result {
 
 	return Result{
 		Reply:  protocol.OK,
-		Events: []Event{s.toPlayer(target.Username, "EVT GROUP INVITE "+player.Username)},
+		Events: []Event{{To: []string{target.Username}, Line: "EVT GROUP INVITE " + player.Username}},
 	}
 }
 
-// joinGroup accepts a username or a group ID ("group.1").
+// joinGroup joins the group of a player (usually the one who sent the invitation).
 func (s *State) joinGroup(player *Player, name string) Result {
 	if player.Group != "" {
 		return reply(protocol.ErrAlreadyInGroup)
 	}
 
-	group, exists := s.groups[name]
-	if !exists {
-		owner, online := s.players[name]
-		if !online {
-			return reply(protocol.ErrPlayerNotFound)
-		}
-
-		if owner.Group == "" {
-			return reply(protocol.ErrNotInGroup)
-		}
-
-		group = s.groups[owner.Group]
+	member, online := s.players[name]
+	if !online {
+		return reply(protocol.ErrPlayerNotFound)
 	}
+
+	if member.Group == "" {
+		return reply(protocol.ErrNotInGroup)
+	}
+
+	group := s.groups[member.Group]
 
 	if !group.Invited[player.Username] {
 		return reply(protocol.ErrNotInvited)
@@ -118,7 +115,7 @@ func (s *State) joinGroup(player *Player, name string) Result {
 func (s *State) leaveGroup(player *Player) []Event {
 	group := s.groups[player.Group]
 
-	group.Members, _ = removeString(group.Members, player.Username)
+	group.Members = removeString(group.Members, player.Username)
 	player.Group = ""
 
 	logger.Info("group_left", logger.Fields{"player": player.Username, "group": group.ID})

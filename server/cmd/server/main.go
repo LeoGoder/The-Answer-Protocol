@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"sync/atomic"
+	"time"
 
 	"tap/server/internal/game"
 	"tap/server/internal/logger"
@@ -44,6 +45,8 @@ func main() {
 	hub := NewClientHub()
 	monitor := newConnectionMonitor()
 
+	go broadcastPositions(state, hub)
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -67,27 +70,36 @@ func main() {
 	}
 }
 
+// client is one connection; username stays empty until a successful CONNECT.
+type client struct {
+	conn     net.Conn
+	ip       string
+	username string
+	state    *game.State
+	hub      *ClientHub
+}
+
+// handleClient runs for the whole life of one connection: greet, read lines, clean up.
 func handleClient(conn net.Conn, state *game.State, hub *ClientHub) {
-	ip := conn.RemoteAddr().String()
-	username := "" // stays empty until a successful CONNECT
+	c := &client{conn: conn, ip: conn.RemoteAddr().String(), state: state, hub: hub}
 
 	// Cleanup, whatever ends the connection.
 	defer func() {
-		if username != "" {
-			hub.Remove(username)
-			hub.Deliver(state.Leave(username))
-			logger.Info("player_disconnected", logger.Fields{"player": username, "ip": ip})
+		if c.username != "" {
+			hub.Remove(c.username)
+			hub.Deliver(state.Leave(c.username))
+			logger.Info("player_disconnected", logger.Fields{"player": c.username, "ip": c.ip})
 		} else {
-			logger.Info("client_disconnected", logger.Fields{"ip": ip})
+			logger.Info("client_disconnected", logger.Fields{"ip": c.ip})
 		}
 
 		conn.Close()
 		atomic.AddInt32(&activeClients, -1)
 	}()
 
-	logger.Info("client_connected", logger.Fields{"ip": ip})
+	logger.Info("client_connected", logger.Fields{"ip": c.ip})
 
-	if !send(conn, "", protocol.OKHello) {
+	if !c.reply(protocol.OKHello) {
 		return
 	}
 
@@ -98,116 +110,107 @@ func handleClient(conn net.Conn, state *game.State, hub *ClientHub) {
 		line, tooLong, err := readLine(reader)
 		if err != nil {
 			logger.Info("connection_closed", logger.Fields{
-				"player": username, "ip": ip, "reason": err.Error(),
+				"player": c.username, "ip": c.ip, "reason": err.Error(),
 			})
 			return
 		}
 
-		flood.record(ip, username)
+		flood.record(c.ip, c.username)
 
-		if tooLong {
-			logger.Warn("line_too_long", logger.Fields{"player": username, "ip": ip})
-
-			if !send(conn, username, protocol.ErrLineTooLong) {
-				return
-			}
-
-			continue
-		}
-
-		if err := protocol.CheckLine(line); err != nil {
-			logger.Warn("invalid_line", logger.Fields{
-				"player": username, "ip": ip, "error": err.Error(),
-			})
-
-			if !send(conn, username, protocol.ErrBadRequest) {
-				return
-			}
-
-			continue
-		}
-
-		cmd := protocol.Parse(line)
-		if cmd.Name == "" {
-			continue // empty line: ignored silently
-		}
-
-		logger.Info("command_received", logger.Fields{
-			"player": username, "ip": ip, "command": cmd.Name, "args": cmd.Args,
-		})
-
-		if err := protocol.Validate(cmd); err != nil {
-			logger.Warn("invalid_command", logger.Fields{
-				"player": username, "ip": ip, "command": cmd.Name, "error": err.Error(),
-			})
-
-			if !send(conn, username, protocol.ErrBadRequest) {
-				return
-			}
-
-			continue
-		}
-
-		switch {
-		case cmd.Name == "QUIT":
-			send(conn, username, protocol.OKBye)
+		if !c.handleLine(line, tooLong) {
 			return
-
-		case cmd.Name == "CONNECT":
-			if username != "" {
-				logger.Warn("connect_rejected", logger.Fields{
-					"player": username, "ip": ip, "reason": "already_authenticated",
-				})
-
-				if !send(conn, username, protocol.ErrBadRequest) {
-					return
-				}
-
-				continue
-			}
-
-			events, ok := state.Join(cmd.Args[0])
-			if !ok {
-				logger.Warn("connect_rejected", logger.Fields{
-					"player": cmd.Args[0], "ip": ip, "reason": "name_in_use",
-				})
-
-				if !send(conn, "", protocol.ErrNameInUse) {
-					return
-				}
-
-				continue
-			}
-
-			username = cmd.Args[0]
-			hub.Add(username, conn)
-
-			logger.Info("player_authenticated", logger.Fields{"player": username, "ip": ip})
-
-			if !send(conn, username, protocol.OKConnected) {
-				return
-			}
-
-			hub.Deliver(events)
-
-		// Single authentication check for every other command.
-		case username == "":
-			logger.Warn("unauthenticated_command", logger.Fields{"ip": ip, "command": cmd.Name})
-
-			if !send(conn, "", protocol.ErrNotAuthenticated) {
-				return
-			}
-
-		default:
-			result := state.Handle(username, cmd)
-
-			if !send(conn, username, result.Reply) {
-				return
-			}
-
-			hub.Deliver(result.Events)
 		}
 	}
+}
+
+// handleLine answers one line, checked from the outside in.
+// It returns false when the connection must end (QUIT or a failed write).
+func (c *client) handleLine(line string, tooLong bool) bool {
+	if tooLong {
+		logger.Warn("line_too_long", logger.Fields{"player": c.username, "ip": c.ip})
+		return c.reply(protocol.ErrLineTooLong)
+	}
+
+	if err := protocol.CheckLine(line); err != nil {
+		logger.Warn("invalid_line", logger.Fields{
+			"player": c.username, "ip": c.ip, "error": err.Error(),
+		})
+		return c.reply(protocol.ErrBadRequest)
+	}
+
+	cmd := protocol.Parse(line)
+	if cmd.Name == "" {
+		return true // empty line: ignored silently
+	}
+
+	logger.Info("command_received", logger.Fields{
+		"player": c.username, "ip": c.ip, "command": cmd.Name, "args": cmd.Args,
+	})
+
+	if err := protocol.Validate(cmd); err != nil {
+		logger.Warn("invalid_command", logger.Fields{
+			"player": c.username, "ip": c.ip, "command": cmd.Name, "error": err.Error(),
+		})
+		return c.reply(protocol.ErrBadRequest)
+	}
+
+	switch {
+	case cmd.Name == "QUIT":
+		c.reply(protocol.OKBye)
+		return false
+
+	case cmd.Name == "CONNECT":
+		return c.connect(cmd.Args[0])
+
+	// Single authentication check for every other command.
+	case c.username == "":
+		logger.Warn("unauthenticated_command", logger.Fields{"ip": c.ip, "command": cmd.Name})
+		return c.reply(protocol.ErrNotAuthenticated)
+
+	default:
+		result := c.state.Handle(c.username, cmd)
+		if !c.reply(result.Reply) {
+			return false
+		}
+
+		c.hub.Deliver(result.Events)
+		return true
+	}
+}
+
+// connect handles CONNECT <name>: once per connection, and the name must be free.
+func (c *client) connect(name string) bool {
+	if c.username != "" {
+		logger.Warn("connect_rejected", logger.Fields{
+			"player": c.username, "ip": c.ip, "reason": "already_authenticated",
+		})
+		return c.reply(protocol.ErrBadRequest)
+	}
+
+	events, ok := c.state.Join(name)
+	if !ok {
+		logger.Warn("connect_rejected", logger.Fields{
+			"player": name, "ip": c.ip, "reason": "name_in_use",
+		})
+		return c.reply(protocol.ErrNameInUse)
+	}
+
+	c.username = name
+	c.hub.Add(name, c.conn)
+
+	logger.Info("player_authenticated", logger.Fields{"player": name, "ip": c.ip})
+
+	if !c.reply(protocol.OKConnected) {
+		return false
+	}
+
+	c.hub.Deliver(events)
+	return true
+}
+
+// reply sends one line to this client; false means the write failed.
+func (c *client) reply(message string) bool {
+	return send(c.conn, c.username, message)
 }
 
 // readLine returns one full line; ErrBufferFull means longer than MaxLineLength.
@@ -230,4 +233,15 @@ func readLine(reader *bufio.Reader) (line string, tooLong bool, err error) {
 	}
 
 	return "", true, nil
+}
+
+const PositionRate = 24
+
+func broadcastPositions(state *game.State, hub *ClientHub) {
+	ticker := time.NewTicker(time.Second / PositionRate)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		hub.Deliver(state.PositionEvents())
+	}
 }

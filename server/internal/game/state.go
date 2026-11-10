@@ -36,16 +36,19 @@ type questProgress struct {
 }
 
 type Player struct {
-	Username  string
-	Room      string
-	HP        int
-	MaxHP     int
-	Attack    int
-	Defense   int
-	Inventory []string
-	Target    string // NPC being fought, "" if none
-	Group     string // "" if none
-	Quests    []*questProgress
+	Username       string
+	Room           string
+	HP             int
+	MaxHP          int
+	Attack         int
+	Defense        int
+	Inventory      []string
+	Target         string // NPC being fought, "" if none
+	Group          string // "" if none
+	Quests         []*questProgress
+	X, Y           int  // position inside the room, 0..PosMax (POSITION)
+	PosOK          bool // X, Y were sent in the current room
+	WantsPositions bool // sent POSITION at least once: receives EVT ROOM POSITION
 }
 
 type npcState struct {
@@ -121,7 +124,7 @@ func (s *State) Join(username string) ([]Event, bool) {
 	return events, true
 }
 
-// Leave removes the player before building the LEAVE events and drops their items.
+// Leave removes the player before building the LEAVE events; their items respawn where they spawn.
 func (s *State) Leave(username string) []Event {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -137,12 +140,13 @@ func (s *State) Leave(username string) []Event {
 		events = append(events, s.leaveGroup(player)...)
 	}
 
-	room := s.world.rooms[player.Room]
-	room.Items = append(room.Items, player.Inventory...)
+	for _, id := range player.Inventory {
+		s.respawnItem(id)
+	}
 
 	if len(player.Inventory) > 0 {
-		logger.Info("items_dropped_on_disconnect", logger.Fields{
-			"player": username, "room": player.Room, "items": player.Inventory,
+		logger.Info("items_respawned_on_disconnect", logger.Fields{
+			"player": username, "items": player.Inventory,
 		})
 	}
 
@@ -196,10 +200,6 @@ func (s *State) toAll(line string, exclude string) Event {
 	return Event{To: to, Line: line}
 }
 
-func (s *State) toPlayer(username string, line string) Event {
-	return Event{To: []string{username}, Line: line}
-}
-
 func (s *State) statsEvent() Event {
 	return s.toAll(fmt.Sprintf("EVT STATS players=%d", len(s.players)), "")
 }
@@ -223,32 +223,20 @@ func normalize(text string) string {
 	return strings.ToLower(strings.Join(strings.Fields(text), " "))
 }
 
-// matches accepts "item.1", "1" or "Object 1", in any case.
+// matches accepts the ID ("item1") or the display name ("Farine"), in any case.
 func matches(typed string, id string, name string) bool {
 	typed = normalize(typed)
-	id = strings.ToLower(id)
 
-	if typed == id || typed == normalize(name) {
-		return true
-	}
-
-	if dot := strings.Index(id, "."); dot >= 0 && typed == id[dot+1:] {
-		return true
-	}
-
-	return false
+	return typed == strings.ToLower(id) || typed == normalize(name)
 }
 
-func targetName(args []string) string {
-	return strings.Join(args, " ")
-}
-
-func removeString(list []string, value string) ([]string, bool) {
+// removeString removes the first value equal to value.
+func removeString(list []string, value string) []string {
 	for index, current := range list {
 		if current == value {
-			return append(list[:index], list[index+1:]...), true
+			return append(list[:index], list[index+1:]...)
 		}
 	}
 
-	return list, false
+	return list
 }
