@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math/rand"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -183,13 +184,12 @@ func (s *State) Leave(username string) []Event {
 	return events
 }
 
-// Recipient helpers: "exclude" is a player left out, or "" for nobody.
-
+// toRoom sends to the players of roomID ("" means every room).
 func (s *State) toRoom(roomID string, line string, exclude string) Event {
 	var to []string
 
 	for _, player := range s.players {
-		if player.Room == roomID && player.Username != exclude {
+		if (roomID == "" || player.Room == roomID) && player.Username != exclude {
 			to = append(to, player.Username)
 		}
 	}
@@ -212,15 +212,7 @@ func (s *State) toGroup(groupID string, line string, exclude string) Event {
 }
 
 func (s *State) toAll(line string, exclude string) Event {
-	var to []string
-
-	for name := range s.players {
-		if name != exclude {
-			to = append(to, name)
-		}
-	}
-
-	return Event{To: to, Line: line}
+	return s.toRoom("", line, exclude)
 }
 
 func (s *State) statsEvent() Event {
@@ -241,10 +233,8 @@ func matches(typed string, id string, name string) bool {
 
 // remove removes the first element equal to value.
 func remove[T comparable](list []T, value T) []T {
-	for index, current := range list {
-		if current == value {
-			return append(list[:index], list[index+1:]...)
-		}
+	if index := slices.Index(list, value); index >= 0 {
+		return slices.Delete(list, index, index+1)
 	}
 
 	return list
