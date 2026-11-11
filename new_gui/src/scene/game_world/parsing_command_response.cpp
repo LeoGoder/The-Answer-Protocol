@@ -32,20 +32,22 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
         room.player.push_back(std::make_unique<Player>(font, players_extract[i], sprite));
     }
     
-    if (room.id == "room7")
-        map = fugoumitak;
-    if (room.id == "room6")
-        map = kuggis;
-    if (room.id == "room5")
-        map = fejka;
-    if (room.id == "room4")
-        map = vinterfint;
-    if (room.id == "room3")
-        map = smycka;
-    if (room.id == "room2")
-        map = jeetomal;
-    if (room.id == "room1")
+    if (room.id == "hub")
+        map = hub;
+    if (room.id == "komolexos")
         map = komolexos;
+    if (room.id == "jeetomal")
+        map = jeetomal;
+    if (room.id == "smycka")
+        map = smycka;
+    if (room.id == "vinterfint")
+        map = vinterfint;
+    if (room.id == "fejka")
+        map = fejka;
+    if (room.id == "kuggis")
+        map = kuggis;
+    if (room.id == "fugoumitak")
+        map = fugoumitak;
 }
 
 void parse_move_response(std::string &player_name, Room &room, NetCommand &command, int fd) {
