@@ -19,7 +19,8 @@ type ItemDef struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Heal        int    `json:"heal"` // > 0: the item can be used (USE)
+	Heal        int    `json:"heal"`     // > 0: the item can be used (USE)
+	Contains    string `json:"contains"` // item ID given to the player when the item is used
 }
 
 type NPCDef struct {
@@ -31,10 +32,12 @@ type NPCDef struct {
 	HP          int      `json:"hp"`
 	Attack      int      `json:"attack"`
 	Defense     int      `json:"defense"`
+	Drops       string   `json:"drops"` // item ID given to the players credited with the defeat
 }
 
 type Reward struct {
 	Name   string `json:"name"`
+	Item   string `json:"item"` // item ID put in the player's inventory when the quest is completed
 	MaxHP  int    `json:"max_hp"`
 	Attack int    `json:"attack"`
 }
@@ -200,6 +203,10 @@ func (w *world) validateNames() error {
 			return fmt.Errorf("item %s has no name", id)
 		}
 
+		if item.Contains != "" && w.items[item.Contains] == nil {
+			return fmt.Errorf("item %s contains unknown item %s", id, item.Contains)
+		}
+
 		// Two equal names would make "TAKE <name>" ambiguous.
 		if other, exists := names[normalize(item.Name)]; exists {
 			return fmt.Errorf("%s and %s have the same name", other, id)
@@ -214,6 +221,10 @@ func (w *world) validateNames() error {
 
 		if npc.Hostile && (npc.HP <= 0 || npc.Attack <= 0) {
 			return fmt.Errorf("enemy %s needs hp and attack above 0", id)
+		}
+
+		if npc.Drops != "" && (!npc.Hostile || w.items[npc.Drops] == nil) {
+			return fmt.Errorf("npc %s: drops %q must be an existing item, and only enemies can drop", id, npc.Drops)
 		}
 
 		if other, exists := names[normalize(npc.Name)]; exists {
@@ -268,6 +279,17 @@ func (w *world) validateRooms() error {
 	return nil
 }
 
+// isDropped tells if an enemy drops the item when it is defeated.
+func (w *world) isDropped(itemID string) bool {
+	for _, npc := range w.npcs {
+		if npc.Drops == itemID {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (w *world) validateQuests() error {
 	for id, quest := range w.quests {
 		if quest.Description == "" || quest.Reward.Name == "" {
@@ -278,10 +300,14 @@ func (w *world) validateQuests() error {
 			return fmt.Errorf("quest %s: unknown giver %s", id, quest.Giver)
 		}
 
+		if quest.Reward.Item != "" && w.items[quest.Reward.Item] == nil {
+			return fmt.Errorf("quest %s: reward item %q does not exist", id, quest.Reward.Item)
+		}
+
 		switch quest.Type {
 		case QuestFetch:
-			if _, placed := w.itemRoom[quest.Target]; !placed {
-				return fmt.Errorf("fetch quest %s: item %q is not placed in any room", id, quest.Target)
+			if _, placed := w.itemRoom[quest.Target]; !placed && !w.isDropped(quest.Target) {
+				return fmt.Errorf("fetch quest %s: item %q is neither placed in a room nor dropped by an enemy", id, quest.Target)
 			}
 
 		case QuestDefeat:

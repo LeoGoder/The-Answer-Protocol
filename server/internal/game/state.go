@@ -3,7 +3,6 @@ package game
 import (
 	"fmt"
 	"math/rand"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -29,6 +28,18 @@ type Result struct {
 	Events []Event
 }
 
+// queue keeps an event raised deep in the game logic; Handle and Tick send it.
+func (s *State) queue(event Event) {
+	s.pending = append(s.pending, event)
+}
+
+func (s *State) flush() []Event {
+	events := s.pending
+	s.pending = nil
+
+	return events
+}
+
 type questProgress struct {
 	QuestID   string
 	Completed bool
@@ -42,9 +53,9 @@ type Player struct {
 	MaxHP          int
 	Attack         int
 	Defense        int
-	Inventory      []string
-	Target         string // NPC being fought, "" if none
-	Group          string // "" if none
+	Inventory      []*Item // at most one item of each ID
+	Target         string  // NPC being fought, "" if none
+	Group          string  // "" if none
 	Quests         []*questProgress
 	X, Y           int  // position inside the room, 0..PosMax (POSITION)
 	PosOK          bool // X, Y were sent in the current room
@@ -70,6 +81,10 @@ type State struct {
 	mutex sync.Mutex
 	world *world
 
+	floor       map[string][]*floorItem // room ID -> items lying there
+	spawns      []*spawnPoint
+	nextSerial  map[string]int // item ID -> serial of its next instance
+	pending     []Event        // raised by the game logic, sent by Handle / Tick
 	npcs        map[string]*npcState
 	players     map[string]*Player
 	groups      map[string]*Group
@@ -80,6 +95,8 @@ type State struct {
 func newState(w *world) *State {
 	state := &State{
 		world:       w,
+		floor:       make(map[string][]*floorItem),
+		nextSerial:  make(map[string]int),
 		npcs:        make(map[string]*npcState),
 		players:     make(map[string]*Player),
 		groups:      make(map[string]*Group),
@@ -88,6 +105,12 @@ func newState(w *world) *State {
 	}
 
 	for _, room := range w.rooms {
+		for _, itemID := range room.Items {
+			point := &spawnPoint{Room: room.ID, ItemID: itemID}
+			state.spawns = append(state.spawns, point)
+			state.fillSpawnPoint(point, "world")
+		}
+
 		for _, npcID := range room.NPCs {
 			def := w.npcs[npcID]
 			state.npcs[npcID] = &npcState{Def: def, Room: room.ID, HP: def.HP}
@@ -113,7 +136,7 @@ func (s *State) Join(username string) ([]Event, bool) {
 		MaxHP:     StartHP,
 		Attack:    StartAttack,
 		Defense:   StartDefense,
-		Inventory: []string{},
+		Inventory: []*Item{},
 	}
 
 	events := []Event{
@@ -124,7 +147,7 @@ func (s *State) Join(username string) ([]Event, bool) {
 	return events, true
 }
 
-// Leave removes the player before building the LEAVE events; their items respawn where they spawn.
+// Leave removes the player before building the LEAVE events; what they carry goes with them.
 func (s *State) Leave(username string) []Event {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -140,14 +163,14 @@ func (s *State) Leave(username string) []Event {
 		events = append(events, s.leaveGroup(player)...)
 	}
 
-	for _, id := range player.Inventory {
-		s.respawnItem(id)
-	}
-
 	if len(player.Inventory) > 0 {
-		logger.Info("items_respawned_on_disconnect", logger.Fields{
-			"player": username, "items": player.Inventory,
+		logger.Info("items_removed_on_disconnect", logger.Fields{
+			"player": username, "items": inventoryIDs(player),
 		})
+
+		for _, item := range player.Inventory {
+			s.deleteItem(item, "owner_disconnected")
+		}
 	}
 
 	delete(s.players, username)
@@ -204,34 +227,20 @@ func (s *State) statsEvent() Event {
 	return s.toAll(fmt.Sprintf("EVT STATS players=%d", len(s.players)), "")
 }
 
-func (s *State) playersIn(roomID string) []string {
-	names := make([]string, 0)
-
-	for _, player := range s.players {
-		if player.Room == roomID {
-			names = append(names, player.Username)
-		}
-	}
-
-	sort.Strings(names)
-
-	return names
-}
-
 // normalize makes "  Object   ONE " equal to "object one".
 func normalize(text string) string {
 	return strings.ToLower(strings.Join(strings.Fields(text), " "))
 }
 
-// matches accepts the ID ("item1") or the display name ("Farine"), in any case.
+// matches accepts the ID ("beef_wellington") or the display name ("Beef Wellington"), in any case.
 func matches(typed string, id string, name string) bool {
 	typed = normalize(typed)
 
 	return typed == strings.ToLower(id) || typed == normalize(name)
 }
 
-// removeString removes the first value equal to value.
-func removeString(list []string, value string) []string {
+// remove removes the first element equal to value.
+func remove[T comparable](list []T, value T) []T {
 	for index, current := range list {
 		if current == value {
 			return append(list[:index], list[index+1:]...)

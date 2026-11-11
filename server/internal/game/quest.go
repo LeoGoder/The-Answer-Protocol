@@ -62,7 +62,7 @@ func (s *State) quest(player *Player, typed string) Result {
 func (s *State) completeQuest(player *Player, quest *QuestDef, progress *questProgress) string {
 	// The fetched item goes back to where it spawns.
 	if quest.Type == QuestFetch {
-		s.consumeItem(player, quest.Target)
+		s.consumeItem(player, quest.Target, "delivered")
 	}
 
 	progress.Completed = true
@@ -70,6 +70,10 @@ func (s *State) completeQuest(player *Player, quest *QuestDef, progress *questPr
 	player.MaxHP += quest.Reward.MaxHP
 	player.HP += quest.Reward.MaxHP
 	player.Attack += quest.Reward.Attack
+
+	if quest.Reward.Item != "" {
+		s.grant(player, quest.Reward.Item)
+	}
 
 	logger.Info("quest_completed", logger.Fields{
 		"player": player.Username, "quest": quest.ID, "reward": quest.Reward.Name,
@@ -130,13 +134,7 @@ func (s *State) creditDefeat(player *Player, npcID string) {
 
 func (s *State) objectiveDone(player *Player, quest *QuestDef, progress *questProgress) bool {
 	if quest.Type == QuestFetch {
-		for _, id := range player.Inventory {
-			if id == quest.Target {
-				return true
-			}
-		}
-
-		return false
+		return holds(player, quest.Target)
 	}
 
 	return progress.Defeated

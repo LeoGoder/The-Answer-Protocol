@@ -88,7 +88,6 @@ func write(out io.Writer, level string, event string, fields Fields) {
 		}
 	}
 	_, _ = out.Write(line)
-	//_, _ = out.Write(buffer.Bytes())
 }
 
 func writeValue(buffer *bytes.Buffer, value interface{}) {
