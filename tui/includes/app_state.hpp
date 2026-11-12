@@ -1,3 +1,8 @@
+/**
+ * @file app_state.hpp
+ * @brief Thread-safe centralized state manager for the TAP TUI client.
+ */
+
 #pragma once
 
 #include <atomic>
@@ -10,63 +15,106 @@
 
 #include "../includes/models.hpp"
 
+/**
+ * @class AppState
+ * @brief Centralized thread-safe storage connecting network listener and UI loop.
+ *
+ * AppState orchestrates synchronized access to terminal logs, chat messages,
+ * inventory items, active quests, room map paths, and command input history
+ * across concurrent threads using mutexes and atomic primitives.
+ */
 class AppState {
  public:
+    // Initializes default state, map path, and interface activity flag
     AppState();
     ~AppState() = default;
 
-    // Terminal messages
+    // Terminal log messages
     void addMessage(const std::string& pseudo,
                     const std::string& content,
                     bool is_local = false);
     std::vector<ChatMessage> getMessages();
     void clearMessages();
 
-    // Chat messages
+    // Multi-channel chat messages
     void addChatMessage(const std::string& pseudo,
                         const std::string& content,
                         const std::string& channel,
                         bool is_local = false);
     std::vector<ChatMessage> getChatMessages();
 
-    // Quests & Inventory
+    /*
+     * Updates active quest list while preserving cached descriptions and progress.
+     * Merges incoming quest records with quest_cache_ and filters out dismissed quests.
+     */
     void setActiveQuests(const std::vector<QuestInfo>& quests);
+
+    // Inserts or updates an individual quest in active list and persistent cache
     void upsertQuest(const QuestInfo& quest);
+
+    // Removes completed quests from display and marks them as dismissed
     void clearCompletedQuests();
+
+    // Retrieves snapshot of currently active quests
     std::vector<QuestInfo> getActiveQuests();
+
+    // Looks up cached quest description by quest identifier
     std::string getQuestDescription(const std::string& quest_id);
 
+    // Updates player inventory items list
     void setInventory(const std::vector<std::string>& inventory);
+
+    // Retrieves snapshot of player inventory items
     std::vector<std::string> getInventory();
 
-    // Map image
+    // Sets current room map image file path
     void setMapImage(const std::string& path);
+
+    // Retrieves current room map image file path
     std::string getMapImage();
 
-    // User pseudo
+    // Sets logged-in user pseudo
     void setUserPseudo(const std::string& pseudo);
+
+    // Retrieves logged-in user pseudo
     std::string getUserPseudo();
 
-    // Pending command
+    // Sets pending protocol command identifier
     void setPendingCommand(int cmd);
+
+    // Retrieves pending protocol command identifier
     int getPendingCommand() const;
 
-    // Pending chats queue
+    // Enqueues locally sent chat message awaiting server ACK
     void pushPendingChat(const PendingChat& chat);
+
+    // Dequeues oldest pending chat message upon server OK ACK
     bool popPendingChat(PendingChat& out);
 
-    // Chat deduplication
+    // Records last sent chat message to detect server echo reflection
     void recordLastChat(const std::string& msg, const std::string& channel);
+
+    /*
+     * Checks if incoming chat event matches the locally recorded sent chat.
+     * Suppresses duplicate echo messages reflected back by the server.
+     */
     bool checkAndClearIfLastChat(const std::string& pseudo,
                                  const std::string& msg,
                                  const std::string& channel);
 
-    // Interface active flag
+    // Checks whether interactive UI event loop is currently active
     bool isInterfaceActive() const;
+
+    // Sets active status flag of the interactive UI loop
     void setInterfaceActive(bool active);
 
-    // Command history
+    /*
+     * Records command string into navigation history.
+     * Enforces duplicate suppression against immediate previous command and caps size at 100.
+     */
     void addCommandHistory(const std::string& cmd);
+
+    // Retrieves full command navigation history list
     std::vector<std::string> getCommandHistory();
 
  private:

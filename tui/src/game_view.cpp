@@ -1,3 +1,14 @@
+/**
+ * @file game_view.cpp
+ * @brief Main interactive game view implementation using FTXUI.
+ *
+ * Provides the fullscreen terminal UI layout comprising:
+ * - Left column: Inventory items and active quests.
+ * - Center column: Server/system message log and interactive command input bar.
+ * - Right column: Dynamic ASCII/pixel room map and multi-channel chat log.
+ * Also handles keyboard navigation, command history, and protocol command dispatching.
+ */
+
 #include "../includes/game_view.hpp"
 
 #include <algorithm>
@@ -40,6 +51,18 @@ using ftxui::xframe;
 using ftxui::xflex;
 using ftxui::yframe;
 
+/**
+ * @brief Runs the primary interactive game loop.
+ *
+ * Sets up FTXUI components, attaches input/event handlers, starts the background
+ * network listener thread, and enters the interactive event loop until the user
+ * quits or connection is severed.
+ *
+ * @param client Network client instance for socket communication.
+ * @param state Shared thread-safe application state.
+ * @param config Active connection configuration (IP, port, pseudo).
+ * @return True if the loop terminated due to unexpected connection loss, false otherwise.
+ */
 bool runGameView(NetworkClient& client,
                  AppState& state,
                  const ConnectionConfig& config) {
@@ -47,19 +70,20 @@ bool runGameView(NetworkClient& client,
 
     auto screen = ScreenInteractive::Fullscreen();
 
-    std::string saisie;
+    std::string user_input;
     int cursor_pos = 0;
     size_t history_index = 0;
     std::string current_draft;
 
     ftxui::InputOption input_option;
-    input_option.content = &saisie;
-    input_option.placeholder = "Tapez votre commande ici...";
+    input_option.content = &user_input;
+    input_option.placeholder = "Type your command here...";
     input_option.multiline = false;
     input_option.cursor_position = &cursor_pos;
-    Component champ = Input(input_option);
+    Component input_component = Input(input_option);
 
-    Component renderer = Renderer(champ, [&] {
+    Component renderer = Renderer(input_component, [&] {
+        // --- 1. Main Terminal Message Log ---
         Elements msg_elements;
         std::vector<ChatMessage> msgs = state.getMessages();
         for (const auto& msg : msgs) {
@@ -74,6 +98,7 @@ bool runGameView(NetworkClient& client,
                     wrapLine(msg.pseudo, msg.content, Color::Yellow));
             }
         }
+        // Focus the last message to keep auto-scroll anchored to the bottom
         if (!msg_elements.empty()) {
             msg_elements.back() = msg_elements.back() | focus;
         }
@@ -81,6 +106,7 @@ bool runGameView(NetworkClient& client,
         std::string title = " Terminal - " + config.pseudo + " @ " +
                             config.ip + ":" + config.port + " ";
 
+        // --- 2. Inventory Items Panel ---
         Elements item_elements;
         std::vector<std::string> inventory = state.getInventory();
         if (inventory.empty()) {
@@ -98,6 +124,7 @@ bool runGameView(NetworkClient& client,
             window(text(" Items "),
                    vbox(item_elements) | yframe | flex) | flex;
 
+        // --- 3. Active Quests Panel ---
         Elements quest_elements;
         std::vector<QuestInfo> quests = state.getActiveQuests();
         if (quests.empty()) {
@@ -106,11 +133,11 @@ bool runGameView(NetworkClient& client,
                     color(Color::GrayDark));
         } else {
             for (const auto& q : quests) {
-                std::string title =
+                std::string quest_title =
                     !q.description.empty() ? q.description : q.quest_id;
-                if (title.empty()) title = "Unknown quest";
+                if (quest_title.empty()) quest_title = "Unknown quest";
                 quest_elements.push_back(
-                    shrinkable(paragraph("  " + title)) |
+                    shrinkable(paragraph("  " + quest_title)) |
                         color(Color::Yellow));
                 std::string progress_str;
                 if (!q.progress.empty()) {
@@ -136,18 +163,21 @@ bool runGameView(NetworkClient& client,
         Element left_column =
             vbox({items_panel, quests_panel}) | flex;
 
+        // --- 4. Command Input Box with Custom Cursor ---
         int pos = std::max(0, std::min(cursor_pos,
-                                       static_cast<int>(saisie.size())));
+                                       static_cast<int>(user_input.size())));
         Elements content_parts;
 
-        if (saisie.empty()) {
+        // Custom cursor rendering: highlight the character under cursor with cyan background
+        if (user_input.empty()) {
             content_parts.push_back(text("█") | color(Color::Cyan));
             content_parts.push_back(
-                text(" Write your commande here...") | color(Color::GrayDark));
-        } else if (pos < static_cast<int>(saisie.size())) {
-            std::string before = saisie.substr(0, pos);
-            std::string at_char = saisie.substr(pos, 1);
-            std::string after = saisie.substr(pos + 1);
+                text(" Type your command here...") | color(Color::GrayDark));
+        } else if (pos < static_cast<int>(user_input.size())) {
+            // Split input into before-cursor, inverted active character, and after-cursor segments
+            std::string before = user_input.substr(0, pos);
+            std::string at_char = user_input.substr(pos, 1);
+            std::string after = user_input.substr(pos + 1);
             if (!before.empty()) {
                 content_parts.push_back(text(before));
             }
@@ -158,12 +188,13 @@ bool runGameView(NetworkClient& client,
                 content_parts.push_back(text(after));
             }
         } else {
-            content_parts.push_back(text(saisie));
+            // Cursor is at end of input line: draw terminal block cursor
+            content_parts.push_back(text(user_input));
             content_parts.push_back(text("█") | color(Color::Cyan));
         }
 
         std::string pos_str = " [" + std::to_string(pos) + "/" +
-                              std::to_string(saisie.size()) + "] ";
+                              std::to_string(user_input.size()) + "] ";
 
         Elements bar_parts;
         bar_parts.push_back(text(" > ") | color(Color::Cyan) | bold);
@@ -180,11 +211,13 @@ bool runGameView(NetworkClient& client,
             input_box,
         }) | flex;
 
+        // --- 5. Map Panel ---
         std::string map_path = state.getMapImage();
         Element map_panel =
             window(text(" Map "),
                    renderImage(map_path, 0, 0, false) | flex) | flex;
 
+        // --- 6. Chat Panel ---
         Elements chat_elements;
         std::vector<ChatMessage> chat_msgs = state.getChatMessages();
         for (const auto& msg : chat_msgs) {
@@ -208,6 +241,7 @@ bool runGameView(NetworkClient& client,
         Element right_column =
             vbox({map_panel, chat_panel}) | flex;
 
+        // Assemble 3-column layout
         return hbox({
             left_column,
             terminal_panel | flex,
@@ -215,49 +249,55 @@ bool runGameView(NetworkClient& client,
         });
     });
 
+    // Handle keyboard events (history navigation & command dispatch)
     renderer |= CatchEvent([&](Event event) {
+        // ArrowUp: Navigate older commands in history
         if (event == Event::ArrowUp) {
             std::vector<std::string> history = state.getCommandHistory();
             if (history.empty()) return true;
+            // Stash unsubmitted draft before cycling backward through history
             if (history_index == history.size()) {
-                current_draft = saisie;
+                current_draft = user_input;
             }
             if (history_index > 0) {
                 history_index--;
-                saisie = history[history_index];
-                cursor_pos = static_cast<int>(saisie.size());
+                user_input = history[history_index];
+                cursor_pos = static_cast<int>(user_input.size());
             }
             return true;
         }
 
+        // ArrowDown: Navigate newer commands or restore current draft
         if (event == Event::ArrowDown) {
             std::vector<std::string> history = state.getCommandHistory();
             if (history_index < history.size()) {
                 history_index++;
+                // Restore stashed draft when returning to bottom of history
                 if (history_index == history.size()) {
-                    saisie = current_draft;
+                    user_input = current_draft;
                 } else {
-                    saisie = history[history_index];
+                    user_input = history[history_index];
                 }
-                cursor_pos = static_cast<int>(saisie.size());
+                cursor_pos = static_cast<int>(user_input.size());
             }
             return true;
         }
 
         if (event != Event::Return) return false;
 
-        if (saisie == "QUIT") {
+        // Return key pressed: evaluate command
+        if (user_input == "QUIT") {
             client.setUserQuit(true);
             screen.Exit();
             return true;
         }
-        if (!saisie.empty()) {
-            state.addCommandHistory(saisie);
+        if (!user_input.empty()) {
+            state.addCommandHistory(user_input);
             history_index = state.getCommandHistory().size();
             current_draft.clear();
             cursor_pos = 0;
 
-            std::string cmd_upper = saisie;
+            std::string cmd_upper = user_input;
             for (auto& c : cmd_upper) {
                 c = static_cast<char>(std::toupper(c));
             }
@@ -272,19 +312,24 @@ bool runGameView(NetworkClient& client,
                 trimmed.pop_back();
             }
 
+            // Client-side quit shortcuts
             if (trimmed == "QUIT" || trimmed == "/QUIT" ||
                 trimmed == "EXIT" || trimmed == "/EXIT") {
                 client.setUserQuit(true);
                 screen.Exit();
                 return true;
             }
+
+            // Client-side clear shortcuts
             if (trimmed == "CLEAN" || trimmed == "CLEAR" ||
                 trimmed == "/CLEAN" || trimmed == "/CLEAR") {
                 state.clearMessages();
                 state.clearCompletedQuests();
-                saisie.clear();
+                user_input.clear();
                 return true;
             }
+
+            // Set pending command state for JSON parsing upon response
             if (cmd_upper == "LOOK") {
                 state.setPendingCommand(CMD_LOOK);
             } else if (cmd_upper == "MOVE" ||
@@ -313,23 +358,26 @@ bool runGameView(NetworkClient& client,
                 state.setPendingCommand(CMD_OTHER_JSON);
             }
 
-            ParsedChat chat = parseChatCommand(saisie);
+            // Handle chat commands (/say, /shout, /msg, /party, /tell) vs raw game commands
+            ParsedChat chat = parseChatCommand(user_input);
             if (chat.is_chat) {
                 state.pushPendingChat({config.pseudo, chat.message,
-                                       chat.channel, saisie});
+                                       chat.channel, user_input});
                 client.sendLine(chat.command_to_send);
             } else {
-                state.addMessage(config.pseudo, saisie, true);
-                client.sendLine(saisie);
+                state.addMessage(config.pseudo, user_input, true);
+                client.sendLine(user_input);
             }
-            saisie.clear();
+            user_input.clear();
         }
         return true;
     });
 
+    // Start background network listener and run FTXUI loop
     client.startListener(screen, state);
     screen.Loop(renderer);
 
+    // Clean up upon loop exit
     state.setInterfaceActive(false);
     client.disconnect();
 

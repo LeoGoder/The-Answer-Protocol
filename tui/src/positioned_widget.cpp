@@ -1,3 +1,5 @@
+// Absolute and proportional positioned UI widgets
+
 #include "../includes/positioned_widget.hpp"
 
 #include <algorithm>
@@ -12,8 +14,10 @@
 
 namespace {
 
+// FTXUI DOM node that positions its single child at explicit or proportional coordinates
 class PositionedWidgetNode : public ftxui::Node {
  public:
+    // Constructs node with absolute integer terminal coordinates
     PositionedWidgetNode(ftxui::Element child, int x, int y, int width,
                          int height)
         : ftxui::Node({std::move(child)}),
@@ -23,6 +27,7 @@ class PositionedWidgetNode : public ftxui::Node {
           width_(width),
           height_(height) {}
 
+    // Constructs node with proportional coordinates relative to parent box
     PositionedWidgetNode(ftxui::Element child, float rx, float ry, float rw,
                          float rh)
         : ftxui::Node({std::move(child)}),
@@ -32,6 +37,7 @@ class PositionedWidgetNode : public ftxui::Node {
           ratio_w_(rw),
           ratio_h_(rh) {}
 
+    // Computes layout requirement deferring to child
     void ComputeRequirement() override {
         if (!children_.empty()) {
             children_[0]->ComputeRequirement();
@@ -44,6 +50,11 @@ class PositionedWidgetNode : public ftxui::Node {
         requirement_.flex_grow_y = 1;
     }
 
+    /*
+     * Computes child bounding box supporting both absolute offsets and relative ratios.
+     * Negative values anchor coordinates to the right or bottom edges of the parent container.
+     * Clamps final coordinates to guarantee content stays within terminal bounds.
+     */
     void SetBox(ftxui::Box box) override {
         box_ = box;
         if (children_.empty()) return;
@@ -58,6 +69,7 @@ class PositionedWidgetNode : public ftxui::Node {
             w = std::max(4, static_cast<int>(parent_w * ratio_w_));
             h = std::max(3, static_cast<int>(parent_h * ratio_h_));
 
+            // Negative ratio: anchor relative to right edge of parent box
             if (ratio_x_ < 0.0f) {
                 int right_margin = static_cast<int>(parent_w * (-ratio_x_));
                 target_x = box.x_max + 1 - w - right_margin;
@@ -65,6 +77,7 @@ class PositionedWidgetNode : public ftxui::Node {
                 target_x = box.x_min + static_cast<int>(parent_w * ratio_x_);
             }
 
+            // Negative ratio: anchor relative to bottom edge of parent box
             if (ratio_y_ < 0.0f) {
                 int bottom_margin = static_cast<int>(parent_h * (-ratio_y_));
                 target_y = box.y_max + 1 - h - bottom_margin;
@@ -75,12 +88,14 @@ class PositionedWidgetNode : public ftxui::Node {
             w = std::max(1, std::min(width_, parent_w));
             h = std::max(1, std::min(height_, parent_h));
 
+            // Negative pixel coordinates anchor from the opposite container edge
             target_x =
                 (x_ >= 0) ? (box.x_min + x_) : (box.x_max + 1 + x_ - w + 1);
             target_y =
                 (y_ >= 0) ? (box.y_min + y_) : (box.y_max + 1 + y_ - h + 1);
         }
 
+        // Clamp computed coordinates so widget remains strictly within terminal bounds
         target_x = std::max(box.x_min, std::min(target_x, box.x_max - w + 1));
         target_y = std::max(box.y_min, std::min(target_y, box.y_max - h + 1));
 
@@ -93,11 +108,13 @@ class PositionedWidgetNode : public ftxui::Node {
         children_[0]->SetBox(child_box);
     }
 
+    // Delegates rendering to positioned child node
     void Render(ftxui::Screen& screen) override {
         if (children_.empty()) return;
         children_[0]->Render(screen);
     }
 
+    // Updates inner child element
     void SetChild(ftxui::Element child) {
         children_.clear();
         children_.push_back(std::move(child));
@@ -115,6 +132,7 @@ class PositionedWidgetNode : public ftxui::Node {
     float ratio_h_ = 0.0f;
 };
 
+// Wraps element in titled window or rounded border with clear_under decoration
 ftxui::Element buildInner(ftxui::Element content,
                           const std::string& title) {
     ftxui::Element inner = title.empty()
@@ -125,6 +143,7 @@ ftxui::Element buildInner(ftxui::Element content,
 
 }  // namespace
 
+// Creates floating widget with absolute coordinates
 ftxui::Element createWidget(int x, int y, int width, int height,
                             ftxui::Element content,
                             const std::string& title) {
@@ -135,11 +154,12 @@ ftxui::Element createWidget(int x, int y, int width, int height,
     return std::make_shared<PositionedWidgetNode>(wgt, x, y, width, height);
 }
 
+// Creates floating widget with proportional coordinates
 ftxui::Element createProportionalWidget(float ratio_x, float ratio_y,
-                                        float ratio_width,
-                                        float ratio_height,
-                                        ftxui::Element content,
-                                        const std::string& title) {
+                                         float ratio_width,
+                                         float ratio_height,
+                                         ftxui::Element content,
+                                         const std::string& title) {
     if (!content) {
         content = renderImage("temp_image.png", 0, 0, false);
     }
@@ -148,6 +168,7 @@ ftxui::Element createProportionalWidget(float ratio_x, float ratio_y,
         wgt, ratio_x, ratio_y, ratio_width, ratio_height);
 }
 
+// Creates positioned floating widget displaying an image from disk
 ftxui::Element createWidgetImage(const std::string& image_path, int x, int y,
                                  int width, int height,
                                  const std::string& title) {
@@ -155,6 +176,7 @@ ftxui::Element createWidgetImage(const std::string& image_path, int x, int y,
     return createWidget(x, y, width, height, img, title);
 }
 
+// Creates proportional positioned floating widget displaying an image from disk
 ftxui::Element createProportionalWidgetImage(const std::string& image_path,
                                              float ratio_x, float ratio_y,
                                              float ratio_width,
@@ -165,6 +187,7 @@ ftxui::Element createProportionalWidgetImage(const std::string& image_path,
         ratio_x, ratio_y, ratio_width, ratio_height, img, title);
 }
 
+// Replaces content and title of an existing positioned widget in-place
 void changeWidget(ftxui::Element widget, ftxui::Element new_content,
                   const std::string& title) {
     auto node = std::dynamic_pointer_cast<PositionedWidgetNode>(widget);
@@ -175,6 +198,7 @@ void changeWidget(ftxui::Element widget, ftxui::Element new_content,
     node->SetChild(buildInner(new_content, title));
 }
 
+// Updates existing proportional widget content in-place
 void changeProportionalWidget(ftxui::Element widget,
                               ftxui::Element new_content,
                               const std::string& title) {

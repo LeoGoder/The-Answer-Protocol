@@ -1,3 +1,5 @@
+// Room map asset resolution
+
 #include "../includes/map_resolver.hpp"
 
 #include <cctype>
@@ -5,20 +7,29 @@
 #include <string>
 #include <vector>
 
+/*
+ * Resolves room map image path using a 4-tier fallback cascade:
+ * 1. Exact sanitized full room ID (e.g. "forest_clearing.png")
+ * 2. Short ID suffix after last dot (e.g. "clearing.png")
+ * 3. Sanitized display name (e.g. "the_dark_cave.png")
+ * 4. Default fallback image ("assets/maps/default.png")
+ */
 std::string resolveMapPath(const std::string& room_id,
                            const std::string& room_name) {
     std::vector<std::string> candidates;
 
     if (!room_id.empty()) {
-        std::string qlq_chose = room_id;
-        size_t dot = qlq_chose.find('.');
+        std::string raw_id = room_id;
+        // Extract base identifier by stripping dot-separated namespace or "room_" prefix
+        size_t dot = raw_id.find('.');
         if (dot != std::string::npos) {
-            qlq_chose = qlq_chose.substr(dot + 1);
-        } else if (qlq_chose.rfind("room_", 0) == 0) {
-            qlq_chose = qlq_chose.substr(5);
+            raw_id = raw_id.substr(dot + 1);
+        } else if (raw_id.rfind("room_", 0) == 0) {
+            raw_id = raw_id.substr(5);
         }
 
-        std::string clean = qlq_chose;
+        // Normalize characters: lowercase and underscores
+        std::string clean = raw_id;
         for (char& c : clean) {
             if (c == ' ' || c == '-' || c == '.') {
                 c = '_';
@@ -34,6 +45,7 @@ std::string resolveMapPath(const std::string& room_id,
             candidates.push_back("assets/maps/" + clean + ".png");
         }
 
+        // Legacy alias for hub starting room
         if (clean == "hub") {
             candidates.push_back("assets/maps/room_start.png");
         }
@@ -75,12 +87,14 @@ std::string resolveMapPath(const std::string& room_id,
         }
     }
 
+    // Check if any candidate exists on disk
     for (const auto& path : candidates) {
         if (std::filesystem::exists(path)) {
             return path;
         }
     }
 
+    // Fallback default image
     if (std::filesystem::exists("assets/maps/default.png")) {
         return "assets/maps/default.png";
     }

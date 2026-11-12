@@ -1,3 +1,5 @@
+// TAP protocol parsing and formatting functions
+
 #include "../includes/protocol.hpp"
 
 #include <cctype>
@@ -10,6 +12,11 @@
 
 using json = nlohmann::json;
 
+/*
+ * Deserializes 'OK { room... }' JSON payload into structured RoomInfo.
+ * Extracts room id, name, description, cardinal exits dictionary, and arrays
+ * of players, items, and NPCs present in the room.
+ */
 bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
     const std::string prefix = "OK ";
     if (raw_response.substr(0, prefix.size()) != prefix) {
@@ -66,6 +73,7 @@ bool parseLookResponse(const std::string& raw_response, RoomInfo& out) {
     }
 }
 
+// Formats vector of strings into comma-separated capitalized list
 static std::string joinList(const std::vector<std::string>& v) {
     if (v.empty()) return "None";
     std::string result;
@@ -79,6 +87,7 @@ static std::string joinList(const std::vector<std::string>& v) {
     return result;
 }
 
+// Strips namespace prefix from room ID and capitalizes name
 static std::string roomIdToName(const std::string& room_id) {
     std::string name = room_id;
     size_t dot = name.find('.');
@@ -89,6 +98,7 @@ static std::string roomIdToName(const std::string& room_id) {
     return name;
 }
 
+// Formats cardinal exits map into readable links
 static std::string joinExits(const std::map<std::string, std::string>& exits) {
     if (exits.empty()) return "None";
     std::string result;
@@ -101,6 +111,7 @@ static std::string joinExits(const std::map<std::string, std::string>& exits) {
     return result;
 }
 
+// Formats RoomInfo fields into printable terminal lines
 std::vector<std::string> formatRoomInfo(const RoomInfo& info) {
     std::vector<std::string> lines;
     lines.push_back("Room: " + info.name);
@@ -112,9 +123,14 @@ std::vector<std::string> formatRoomInfo(const RoomInfo& info) {
     return lines;
 }
 
+/*
+ * Extracts structured quest targets, item names, NPC turn-in recipients, and required
+ * item counts from natural language description strings (e.g. "bring 3 apples to Bob").
+ */
 static void parseQuestObjective(QuestInfo& out) {
     if (out.description.empty()) return;
 
+    // Split quest identifier from narrative description if separated by a colon
     size_t colon_pos = out.description.find(':');
     std::string after_colon;
     if (colon_pos != std::string::npos) {
@@ -135,6 +151,7 @@ static void parseQuestObjective(QuestInfo& out) {
         after_colon = out.description;
     }
 
+    // Trim leading and trailing whitespace from the extracted objective
     while (!after_colon.empty() && std::isspace(
                static_cast<unsigned char>(after_colon.front()))) {
         after_colon.erase(after_colon.begin());
@@ -150,6 +167,7 @@ static void parseQuestObjective(QuestInfo& out) {
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     }
 
+    // Pattern matching: search for natural language pattern "bring <item> to <npc>"
     size_t bring_pos = lower_after.find("bring ");
     size_t to_pos = lower_after.find(" to ");
     if (bring_pos != std::string::npos && to_pos != std::string::npos &&
@@ -180,6 +198,7 @@ static void parseQuestObjective(QuestInfo& out) {
         out.target_item = item_part;
         out.target_npc = npc_part;
 
+        // Parse required item quantity from the item segment
         int count = 0;
         for (size_t i = 0; i < item_part.size(); ++i) {
             if (std::isdigit(static_cast<unsigned char>(item_part[i]))) {
@@ -199,6 +218,7 @@ static void parseQuestObjective(QuestInfo& out) {
         }
         out.required_items = (count > 0) ? count : 1;
     } else {
+        // Fallback: search for first number anywhere in objective text
         int count = 0;
         for (size_t i = 0; i < after_colon.size(); ++i) {
             if (std::isdigit(static_cast<unsigned char>(after_colon[i]))) {
@@ -225,6 +245,7 @@ static void parseQuestObjective(QuestInfo& out) {
     }
 }
 
+// Parses single 'OK { quest... }' JSON response into QuestInfo
 bool parseQuestResponse(const std::string& raw_response, QuestInfo& out) {
     const std::string prefix = "OK ";
     if (raw_response.substr(0, prefix.size()) != prefix) {
@@ -264,6 +285,7 @@ bool parseQuestResponse(const std::string& raw_response, QuestInfo& out) {
     }
 }
 
+// Parses 'OK [ { quest... }, ... ]' list of active quests
 bool parseQuestsResponse(const std::string& raw_response,
                          std::vector<QuestInfo>& out) {
     const std::string prefix = "OK ";
@@ -308,6 +330,7 @@ bool parseQuestsResponse(const std::string& raw_response,
     }
 }
 
+// Parses 'OK [ "item1", ... ]' inventory array response
 bool parseInventoryResponse(const std::string& raw_response,
                             std::vector<std::string>& out) {
     const std::string prefix = "OK ";
@@ -335,6 +358,7 @@ bool parseInventoryResponse(const std::string& raw_response,
     }
 }
 
+// Parses 'OK { "used": ... }' item consumption response
 bool parseUseResponse(const std::string& raw_response, UseInfo& out) {
     const std::string prefix = "OK ";
     if (raw_response.substr(0, prefix.size()) != prefix) {
@@ -369,8 +393,14 @@ bool parseUseResponse(const std::string& raw_response, UseInfo& out) {
     }
 }
 
+/*
+ * Parses combat notifications and results into CombatInfo.
+ * Supports both synchronous ATTACK responses ("OK { ... }") and asynchronous
+ * room combat broadcasts ("EVT ROOM COMBAT { ... }").
+ */
 bool parseCombatResponse(const std::string& raw_response, CombatInfo& out) {
     std::string json_str;
+    // Discriminate between synchronous command response and asynchronous event prefix
     if (raw_response.rfind("OK ", 0) == 0) {
         json_str = raw_response.substr(3);
     } else if (raw_response.rfind("EVT ROOM COMBAT ", 0) == 0) {
@@ -406,6 +436,10 @@ bool parseCombatResponse(const std::string& raw_response, CombatInfo& out) {
     }
 }
 
+/*
+ * Recursively traverses arbitrary nested JSON objects and arrays,
+ * flattening them into human-readable dotted key-value lines for display.
+ */
 static void formatJsonValue(const json& j, const std::string& prefix,
                             std::vector<std::string>& lines) {
     if (j.is_object()) {
@@ -439,6 +473,7 @@ static void formatJsonValue(const json& j, const std::string& prefix,
     }
 }
 
+// Parses arbitrary JSON following 'OK ' prefix and flattens it into text lines
 bool parseGenericOkJson(const std::string& raw_response,
                         std::vector<std::string>& out_lines) {
     const std::string prefix = "OK ";
@@ -457,6 +492,7 @@ bool parseGenericOkJson(const std::string& raw_response,
     }
 }
 
+// Formats QuestInfo fields into readable multi-line descriptions
 std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
     std::vector<std::string> lines;
     if (!info.quest_id.empty())
@@ -482,6 +518,7 @@ std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
     return lines;
 }
 
+// Formats item usage stat changes into display lines
 std::vector<std::string> formatUseInfo(const UseInfo& info) {
     std::vector<std::string> lines;
     std::string item_name = info.used;
@@ -512,6 +549,7 @@ std::vector<std::string> formatUseInfo(const UseInfo& info) {
     return lines;
 }
 
+// Formats combat damage exchange and outcome into display lines
 std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
     std::vector<std::string> lines;
     std::string target_name = info.target;
@@ -542,15 +580,22 @@ std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
     return lines;
 }
 
+/*
+ * Parses user terminal input to detect, validate, and normalize CHAT commands.
+ * Identifies the target channel scope (ROOM, GLOBAL, PARTY/GROUP), extracts
+ * message content, and formats the wire command "CHAT <SCOPE> <MESSAGE>".
+ */
 ParsedChat parseChatCommand(const std::string& input) {
     ParsedChat result;
     size_t i = 0;
+    // Skip leading whitespace before command verb
     while (i < input.size() &&
            std::isspace(static_cast<unsigned char>(input[i]))) {
         i++;
     }
     if (i >= input.size()) return result;
 
+    // Extract command verb token
     size_t cmd_start = i;
     while (i < input.size() &&
            !std::isspace(static_cast<unsigned char>(input[i]))) {
@@ -560,12 +605,14 @@ ParsedChat parseChatCommand(const std::string& input) {
     for (char& c : cmd) c = static_cast<char>(std::toupper(c));
     if (cmd != "CHAT") return result;
 
+    // Skip whitespace between command verb and channel scope token
     while (i < input.size() &&
            std::isspace(static_cast<unsigned char>(input[i]))) {
         i++;
     }
     if (i >= input.size()) return result;
 
+    // Extract channel scope token (e.g. ROOM, GLOBAL, PARTY, GROUP)
     size_t scope_start = i;
     while (i < input.size() &&
            !std::isspace(static_cast<unsigned char>(input[i]))) {
@@ -574,6 +621,7 @@ ParsedChat parseChatCommand(const std::string& input) {
     std::string scope = input.substr(scope_start, i - scope_start);
     for (char& c : scope) c = static_cast<char>(std::toupper(c));
 
+    // Normalize channel names and map wire transmission scopes
     std::string channel;
     std::string wire_scope;
     if (scope == "ROOM") {
@@ -589,12 +637,14 @@ ParsedChat parseChatCommand(const std::string& input) {
         return result;
     }
 
+    // Skip whitespace before message body
     while (i < input.size() &&
            std::isspace(static_cast<unsigned char>(input[i]))) {
         i++;
     }
     if (i >= input.size()) return result;
 
+    // Extract and trim trailing whitespace from chat body
     std::string msg = input.substr(i);
     while (!msg.empty() &&
            std::isspace(static_cast<unsigned char>(msg.back()))) {

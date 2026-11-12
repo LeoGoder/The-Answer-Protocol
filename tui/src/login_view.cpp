@@ -1,3 +1,5 @@
+// Interactive login modal view
+
 #include "../includes/login_view.hpp"
 
 #include <string>
@@ -26,8 +28,14 @@ using ftxui::separator;
 using ftxui::text;
 using ftxui::vbox;
 
+/*
+ * Displays interactive modal dialog prompting user for connection settings.
+ * Validates non-empty pseudo, hooks Enter key to submit and Escape to abort,
+ * renders a centered bordered FTXUI dialog, and runs the terminal event loop.
+ */
 bool showLoginView(ConnectionConfig& config,
                    const std::string& initial_error) {
+    // Input components for configuration fields
     Component input_pseudo = Input(&config.pseudo, "Ex: Alice");
     Component input_ip     = Input(&config.ip, "Ex: 127.0.0.1");
     Component input_port   = Input(&config.port, "Ex: 4242");
@@ -36,6 +44,7 @@ bool showLoginView(ConnectionConfig& config,
     bool is_valid = false;
     std::string error = initial_error;
 
+    // Callback when connection is attempted
     auto on_connect = [&] {
         if (config.pseudo.empty()) {
             error = "Pseudo cannot be empty.";
@@ -44,11 +53,14 @@ bool showLoginView(ConnectionConfig& config,
         is_valid = true;
         screen.Exit();
     };
+
+    // Connect button with animation option
     Component btn_connect = Button(
-        "Se connecter",
+        "Connect",
         on_connect,
         ButtonOption::Animated());
 
+    // Vertical layout container grouping form controls
     Component container = ftxui::Container::Vertical({
         input_pseudo,
         input_ip,
@@ -56,6 +68,7 @@ bool showLoginView(ConnectionConfig& config,
         btn_connect,
     });
 
+    // Keyboard shortcut handler (Enter to submit, Escape to cancel)
     container |= CatchEvent([&](Event event) {
         if (event == Event::Return) {
             on_connect();
@@ -68,6 +81,7 @@ bool showLoginView(ConnectionConfig& config,
         return false;
     });
 
+    // Render the styled bordered dialog
     Component renderer = Renderer(container, [&] {
         return vbox({
             text(" THE ANSWER PROTOCOL - TUI ") | bold | center,
@@ -82,6 +96,7 @@ bool showLoginView(ConnectionConfig& config,
         }) | border | flex_shrink;
     });
 
+    // Run event loop until confirmation or cancel
     screen.Loop(renderer);
 
     return is_valid;
