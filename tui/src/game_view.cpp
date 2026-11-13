@@ -51,6 +51,21 @@ using ftxui::xframe;
 using ftxui::xflex;
 using ftxui::yframe;
 
+// Helper mapping uppercase input command verbs to PendingCommand states
+static int detectPendingCommand(const std::string& cmd) {
+    if (cmd == "LOOK") return CMD_LOOK;
+    if (cmd == "QUESTS") return CMD_QUESTS;
+    if (cmd == "INVENTORY") return CMD_INVENTORY;
+    if (startsWith(cmd, "MOVE")) return CMD_MOVE;
+    if (startsWith(cmd, "QUEST ")) return CMD_QUEST;
+    if (startsWith(cmd, "TAKE")) return CMD_TAKE;
+    if (startsWith(cmd, "DROP")) return CMD_DROP;
+    if (startsWith(cmd, "USE")) return CMD_USE;
+    if (startsWith(cmd, "ATTACK")) return CMD_ATTACK;
+    if (cmd == "STATUS" || startsWith(cmd, "TALK ")) return CMD_OTHER_JSON;
+    return CMD_NONE;
+}
+
 /**
  * @brief Runs the primary interactive game loop.
  *
@@ -285,32 +300,13 @@ bool runGameView(NetworkClient& client,
 
         if (event != Event::Return) return false;
 
-        // Return key pressed: evaluate command
-        if (user_input == "QUIT") {
-            client.setUserQuit(true);
-            screen.Exit();
-            return true;
-        }
         if (!user_input.empty()) {
             state.addCommandHistory(user_input);
             history_index = state.getCommandHistory().size();
             current_draft.clear();
             cursor_pos = 0;
 
-            std::string cmd_upper = user_input;
-            for (auto& c : cmd_upper) {
-                c = static_cast<char>(std::toupper(c));
-            }
-
-            std::string trimmed = cmd_upper;
-            while (!trimmed.empty() &&
-                   std::isspace(static_cast<unsigned char>(trimmed.front()))) {
-                trimmed.erase(trimmed.begin());
-            }
-            while (!trimmed.empty() &&
-                   std::isspace(static_cast<unsigned char>(trimmed.back()))) {
-                trimmed.pop_back();
-            }
+            std::string trimmed = trim(toUpper(user_input));
 
             // Client-side quit shortcuts
             if (trimmed == "QUIT" || trimmed == "/QUIT" ||
@@ -330,35 +326,12 @@ bool runGameView(NetworkClient& client,
             }
 
             // Set pending command state for JSON parsing upon response
-            if (cmd_upper == "LOOK") {
-                state.setPendingCommand(CMD_LOOK);
-            } else if (cmd_upper == "MOVE" ||
-                       cmd_upper.rfind("MOVE ", 0) == 0) {
-                state.setPendingCommand(CMD_MOVE);
-            } else if (cmd_upper.rfind("QUEST ", 0) == 0) {
-                state.setPendingCommand(CMD_QUEST);
-            } else if (cmd_upper == "QUESTS") {
-                state.setPendingCommand(CMD_QUESTS);
-            } else if (cmd_upper == "TAKE" ||
-                       cmd_upper.rfind("TAKE ", 0) == 0) {
-                state.setPendingCommand(CMD_TAKE);
-            } else if (cmd_upper == "DROP" ||
-                       cmd_upper.rfind("DROP ", 0) == 0) {
-                state.setPendingCommand(CMD_DROP);
-            } else if (cmd_upper == "USE" ||
-                       cmd_upper.rfind("USE ", 0) == 0) {
-                state.setPendingCommand(CMD_USE);
-            } else if (cmd_upper == "ATTACK" ||
-                       cmd_upper.rfind("ATTACK ", 0) == 0) {
-                state.setPendingCommand(CMD_ATTACK);
-            } else if (cmd_upper == "INVENTORY") {
-                state.setPendingCommand(CMD_INVENTORY);
-            } else if (cmd_upper == "STATUS" ||
-                       cmd_upper.rfind("TALK ", 0) == 0) {
-                state.setPendingCommand(CMD_OTHER_JSON);
+            int cmd = detectPendingCommand(trimmed);
+            if (cmd != CMD_NONE) {
+                state.setPendingCommand(cmd);
             }
 
-            // Handle chat commands (/say, /shout, /msg, /party, /tell) vs raw game commands
+            // Handle chat commands vs raw game commands
             ParsedChat chat = parseChatCommand(user_input);
             if (chat.is_chat) {
                 state.pushPendingChat({config.pseudo, chat.message,

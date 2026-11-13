@@ -73,15 +73,48 @@ class NetworkClient {
 
  private:
     /**
-     * @brief Background loop continuously receiving TCP packets and dispatching protocol lines.
+     * @brief Background loop continuously receiving TCP packets and framing newline-terminated lines.
      *
-     * Frames stream into lines, routes responses to matching pending commands,
-     * updates AppState, and signals screen redraw.
+     * Frames stream into lines, delegates each line to processIncomingLine(),
+     * and signals FTXUI screen redraws.
      *
      * @param screen FTXUI screen reference to receive refresh events.
      * @param state Central application state.
      */
     void listenerLoop(ftxui::ScreenInteractive& screen, AppState& state);
+
+    // Dispatches a single framed protocol line across specialized handlers
+    void processIncomingLine(const std::string& line, AppState& state);
+
+    // Updates UI room description and resolves map asset
+    void updateRoomState(const RoomInfo& room, AppState& state);
+
+    // Handles server responses to CMD_MOVE (parsing room JSON or triggering LOOK fallback)
+    bool handleMoveResponse(const std::string& line, AppState& state);
+
+    // Handles server responses to TAKE, DROP, and INVENTORY queries
+    bool handleInventoryResponse(const std::string& line, int cmd,
+                                 AppState& state);
+
+    // Handles item consumption responses and triggers automatic inventory update
+    bool handleUseResponse(const std::string& line, AppState& state);
+
+    // Handles attack replies, formats combat results, and triggers LOOK on victory
+    bool handleAttackResponse(const std::string& line, AppState& state);
+
+    /**
+     * @brief Deserializes and formats structured JSON responses for LOOK, QUEST, and QUESTS.
+     *
+     * Also provides fallback flattening for arbitrary generic JSON responses.
+     */
+    bool handleJsonQueryResponse(const std::string& line, int cmd,
+                                 AppState& state);
+
+    // Handles bare OK / ERR acknowledgments for optimistic in-flight chat messages
+    bool handleChatAck(const std::string& line, int cmd, AppState& state);
+
+    // Parses asynchronous server broadcast events (combat notices and multi-channel chat)
+    bool handleAsyncEvent(const std::string& line, AppState& state);
 
     int socket_fd_;
     std::mutex send_mutex_;

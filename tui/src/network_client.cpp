@@ -24,6 +24,7 @@
 
 #include "../includes/map_resolver.hpp"
 #include "../includes/protocol.hpp"
+#include "../includes/ui_helpers.hpp"
 
 /**
  * @brief Default constructor initializing socket file descriptor and atomic flags.
@@ -212,15 +213,280 @@ void NetworkClient::stopListener() {
     listener_thread_.reset();
 }
 
+static void addLogLines(AppState& state, const std::vector<std::string>& lines) {
+    for (const auto& l : lines) {
+        state.addMessage("", l, false);
+    }
+}
+
+// Updates UI room description and resolves map asset
+void NetworkClient::updateRoomState(const RoomInfo& room, AppState& state) {
+    addLogLines(state, formatRoomInfo(room));
+    if (!room.id.empty() || !room.name.empty()) {
+        state.setMapImage(resolveMapPath(room.id, room.name));
+    }
+}
+
+// Handles server responses to CMD_MOVE (parsing room JSON or triggering LOOK fallback)
+bool NetworkClient::handleMoveResponse(const std::string& line,
+                                       AppState& state) {
+    if (!startsWith(line, "OK")) return false;
+    state.addMessage("Server", line, false);
+    if (startsWith(line, "OK ") && line.find('{') != std::string::npos) {
+        RoomInfo room;
+        if (parseLookResponse(line, room)) {
+            updateRoomState(room, state);
+            state.setPendingCommand(CMD_NONE);
+            return true;
+        }
+    }
+    // Server returned bare OK on move: trigger automatic LOOK to update room description & map
+    state.setPendingCommand(CMD_LOOK);
+    sendLine("LOOK");
+    return true;
+}
+
+// Handles server responses to TAKE, DROP, and INVENTORY queries
+bool NetworkClient::handleInventoryResponse(const std::string& line, int cmd,
+                                            AppState& state) {
+    if (cmd == CMD_TAKE || cmd == CMD_DROP) {
+        if (!startsWith(line, "OK")) return false;
+        state.addMessage("Server", line, false);
+        if (startsWith(line, "OK [")) {
+            std::vector<std::string> inventory;
+            if (parseInventoryResponse(line, inventory)) {
+                state.setInventory(inventory);
+                state.setPendingCommand(CMD_NONE);
+                return true;
+            }
+        }
+        state.setPendingCommand(CMD_INVENTORY_AUTO);
+        sendLine("INVENTORY");
+        return true;
+    }
+
+    if (cmd == CMD_INVENTORY || cmd == CMD_INVENTORY_AUTO) {
+        if (!startsWith(line, "OK [")) return false;
+        std::vector<std::string> inventory;
+        if (parseInventoryResponse(line, inventory)) {
+            state.setInventory(inventory);
+            if (cmd == CMD_INVENTORY) {
+                if (inventory.empty()) {
+                    state.addMessage("", "Inventory is empty.", false);
+                } else {
+                    std::string inv_str = "Inventory: ";
+                    for (size_t i = 0; i < inventory.size(); ++i) {
+                        if (i > 0) inv_str += ", ";
+                        inv_str += inventory[i];
+                    }
+                    state.addMessage("", inv_str, false);
+                }
+            }
+            state.setPendingCommand(CMD_NONE);
+            return true;
+        }
+    }
+    return false;
+}
+
+// Handles item consumption responses and triggers automatic inventory update
+bool NetworkClient::handleUseResponse(const std::string& line,
+                                      AppState& state) {
+    if (!startsWith(line, "OK")) return false;
+    UseInfo use_info;
+    if (parseUseResponse(line, use_info)) {
+        addLogLines(state, formatUseInfo(use_info));
+    } else {
+        state.addMessage("Server", line, false);
+    }
+    state.setPendingCommand(CMD_INVENTORY_AUTO);
+    sendLine("INVENTORY");
+    return true;
+}
+
+// Handles attack replies, formats combat results, and triggers LOOK on victory
+bool NetworkClient::handleAttackResponse(const std::string& line,
+                                         AppState& state) {
+    if (!startsWith(line, "OK")) return false;
+    CombatInfo combat_info;
+    if (parseCombatResponse(line, combat_info)) {
+        addLogLines(state, formatCombatInfo(combat_info));
+        if (combat_info.status == "defeated") {
+            state.setPendingCommand(CMD_LOOK);
+            sendLine("LOOK");
+            return true;
+        }
+    } else {
+        state.addMessage("Server", line, false);
+    }
+    state.setPendingCommand(CMD_NONE);
+    return true;
+}
+
+// Deserializes and formats structured JSON responses for LOOK, QUEST, and QUESTS
+bool NetworkClient::handleJsonQueryResponse(const std::string& line, int cmd,
+                                            AppState& state) {
+    if (!startsWith(line, "OK ") || line.size() <= 3) return false;
+
+    if (cmd == CMD_LOOK) {
+        RoomInfo room;
+        if (parseLookResponse(line, room)) {
+            updateRoomState(room, state);
+            state.setPendingCommand(CMD_NONE);
+            return true;
+        }
+    } else if (cmd == CMD_QUEST) {
+        QuestInfo quest;
+        if (parseQuestResponse(line, quest)) {
+            addLogLines(state, formatQuestInfo(quest));
+            state.upsertQuest(quest);
+            state.setPendingCommand(CMD_NONE);
+            return true;
+        }
+    } else if (cmd == CMD_QUESTS) {
+        std::vector<QuestInfo> quests;
+        if (parseQuestsResponse(line, quests)) {
+            state.setActiveQuests(quests);
+            if (quests.empty()) {
+                state.addMessage("", "No active quests.", false);
+            } else {
+                for (auto q : quests) {
+                    if (q.description.empty()) {
+                        std::string desc = state.getQuestDescription(q.quest_id);
+                        if (!desc.empty()) q.description = desc;
+                    }
+                    addLogLines(state, formatQuestInfo(q));
+                    state.addMessage("", "---", false);
+                }
+            }
+            state.setPendingCommand(CMD_NONE);
+            return true;
+        }
+    } else if (cmd != CMD_NONE) {
+        std::vector<std::string> lines;
+        if (parseGenericOkJson(line, lines)) {
+            addLogLines(state, lines);
+            state.setPendingCommand(CMD_NONE);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Handles bare OK / ERR acknowledgments for optimistic in-flight chat messages
+bool NetworkClient::handleChatAck(const std::string& line, int cmd,
+                                  AppState& state) {
+    if (line != "OK") return false;
+    PendingChat pending;
+    if (state.popPendingChat(pending)) {
+        state.addChatMessage(pending.pseudo, pending.content,
+                             pending.channel, true);
+        state.recordLastChat(pending.content, pending.channel);
+        return true;
+    }
+    if (cmd != CMD_NONE) {
+        state.setPendingCommand(CMD_NONE);
+    }
+    return false;
+}
+
+// Parses asynchronous server broadcast events (combat notices and multi-channel chat)
+bool NetworkClient::handleAsyncEvent(const std::string& line,
+                                     AppState& state) {
+    if (!startsWith(line, "EVT ")) return false;
+    std::string after_evt = line.substr(4);
+
+    if (startsWith(after_evt, "ROOM COMBAT ")) {
+        CombatInfo combat_info;
+        if (parseCombatResponse(line, combat_info)) {
+            std::string att = combat_info.attacker.empty()
+                                  ? "Someone"
+                                  : combat_info.attacker;
+            std::string tgt = combat_info.target;
+            if (!tgt.empty()) {
+                tgt[0] = static_cast<char>(std::toupper(tgt[0]));
+            }
+            std::string msg = "[Combat] " + att + " attacked " + tgt + " (" +
+                              std::to_string(combat_info.damage) + " dmg, " +
+                              tgt + " HP: " +
+                              std::to_string(combat_info.target_hp) + ")";
+            state.addMessage("", msg, false);
+            return true;
+        }
+    }
+
+    static const std::pair<const char*, const char*> channels[] = {
+        {"ROOM CHAT ", "ROOM"},
+        {"GLOBAL CHAT ", "GLOBAL"},
+        {"PARTY CHAT ", "PARTY"},
+        {"GROUP CHAT ", "PARTY"}
+    };
+
+    std::string channel, evt_rest;
+    for (const auto& [prefix, chan] : channels) {
+        if (startsWith(after_evt, prefix)) {
+            channel = chan;
+            evt_rest = after_evt.substr(std::strlen(prefix));
+            break;
+        }
+    }
+
+    if (!channel.empty()) {
+        size_t space = evt_rest.find(' ');
+        if (space != std::string::npos) {
+            std::string pseudo = evt_rest.substr(0, space);
+            std::string msg = evt_rest.substr(space + 1);
+            if (state.checkAndClearIfLastChat(pseudo, msg, channel)) {
+                return true;
+            }
+            state.addChatMessage(pseudo, msg, channel, false);
+        } else {
+            state.addChatMessage(evt_rest, "", channel, false);
+        }
+        return true;
+    }
+
+    return false;
+}
+
+// Dispatches a single framed protocol line across specialized handlers
+void NetworkClient::processIncomingLine(const std::string& line,
+                                        AppState& state) {
+    if (startsWith(line, "ERR")) {
+        state.setPendingCommand(CMD_NONE);
+        PendingChat pending;
+        if (state.popPendingChat(pending)) {
+            state.addMessage(pending.pseudo, pending.raw_command, true);
+        }
+        state.addMessage("Server", line, false);
+        return;
+    }
+
+    int cmd = state.getPendingCommand();
+
+    if (cmd == CMD_MOVE && handleMoveResponse(line, state)) return;
+    if ((cmd == CMD_TAKE || cmd == CMD_DROP || cmd == CMD_INVENTORY ||
+         cmd == CMD_INVENTORY_AUTO) &&
+        handleInventoryResponse(line, cmd, state)) return;
+    if (cmd == CMD_USE && handleUseResponse(line, state)) return;
+    if (cmd == CMD_ATTACK && handleAttackResponse(line, state)) return;
+    if (cmd != CMD_NONE && handleJsonQueryResponse(line, cmd, state)) return;
+    if (handleChatAck(line, cmd, state)) return;
+    if (handleAsyncEvent(line, state)) return;
+
+    // Fallback: unhandled server messages sent to main log
+    state.addMessage("Server", line, false);
+}
+
 /**
- * @brief Core worker loop for background socket receiving and protocol dispatch.
+ * @brief Background loop continuously receiving TCP packets and framing newline-terminated lines.
  *
- * Continuously reads from socket, frames incoming data into newline-separated
- * messages, matches them with pending commands or server events (EVT), parses
- * JSON payloads, updates AppState, and requests FTXUI screen redraws.
+ * Slices socket byte stream into lines, delegates protocol dispatching to processIncomingLine(),
+ * triggers FTXUI screen redraws, and detects server disconnection.
  *
- * @param screen FTXUI screen reference to trigger redraw events.
- * @param state Shared application state.
+ * @param screen FTXUI screen reference to receive refresh events.
+ * @param state Central application state.
  */
 void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                                  AppState& state) {
@@ -239,295 +505,7 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
             stream_buffer.erase(0, pos + 1);
             if (!line.empty() && line.back() == '\r') line.pop_back();
 
-            int cmd = state.getPendingCommand();
-
-            // Handling response to CMD_MOVE
-            if (cmd == CMD_MOVE) {
-                if (line.rfind("ERR", 0) == 0) {
-                    state.setPendingCommand(CMD_NONE);
-                    state.addMessage("Server", line, false);
-                    continue;
-                }
-                if (line.rfind("OK", 0) == 0) {
-                    state.addMessage("Server", line, false);
-                    if (line.substr(0, 3) == "OK " &&
-                        line.find('{') != std::string::npos) {
-                        RoomInfo room;
-                        if (parseLookResponse(line, room)) {
-                            auto formatted = formatRoomInfo(room);
-                            for (const auto& item_line : formatted) {
-                                state.addMessage("", item_line, false);
-                            }
-                            if (!room.id.empty() || !room.name.empty()) {
-                                state.setMapImage(
-                                    resolveMapPath(room.id, room.name));
-                            }
-                            state.setPendingCommand(CMD_NONE);
-                            continue;
-                        }
-                    }
-                    // Server returned bare OK on move: trigger automatic LOOK to update room description & map
-                    state.setPendingCommand(CMD_LOOK);
-                    sendLine("LOOK");
-                    continue;
-                }
-            }
-
-            // Handling response to CMD_TAKE / CMD_DROP
-            if (cmd == CMD_TAKE || cmd == CMD_DROP) {
-                if (line.rfind("ERR", 0) == 0) {
-                    state.setPendingCommand(CMD_NONE);
-                    state.addMessage("Server", line, false);
-                    continue;
-                }
-                if (line.rfind("OK", 0) == 0) {
-                    state.addMessage("Server", line, false);
-                    if (line.rfind("OK [", 0) == 0) {
-                        std::vector<std::string> inventory;
-                        if (parseInventoryResponse(line, inventory)) {
-                            state.setInventory(inventory);
-                            state.setPendingCommand(CMD_NONE);
-                            continue;
-                        }
-                    }
-                    // Server returned bare OK: trigger automatic INVENTORY query to refresh items panel
-                    state.setPendingCommand(CMD_INVENTORY_AUTO);
-                    sendLine("INVENTORY");
-                    continue;
-                }
-            }
-
-            // Handling response to CMD_USE
-            if (cmd == CMD_USE) {
-                if (line.rfind("ERR", 0) == 0) {
-                    state.setPendingCommand(CMD_NONE);
-                    state.addMessage("Server", line, false);
-                    continue;
-                }
-                if (line.rfind("OK", 0) == 0) {
-                    UseInfo use_info;
-                    if (parseUseResponse(line, use_info)) {
-                        auto formatted = formatUseInfo(use_info);
-                        for (const auto& item_line : formatted) {
-                            state.addMessage("", item_line, false);
-                        }
-                    } else {
-                        state.addMessage("Server", line, false);
-                    }
-                    // Item consumed: refresh inventory quantities automatically
-                    state.setPendingCommand(CMD_INVENTORY_AUTO);
-                    sendLine("INVENTORY");
-                    continue;
-                }
-            }
-
-            // Handling response to CMD_ATTACK
-            if (cmd == CMD_ATTACK) {
-                if (line.rfind("ERR", 0) == 0) {
-                    state.setPendingCommand(CMD_NONE);
-                    state.addMessage("Server", line, false);
-                    continue;
-                }
-                if (line.rfind("OK", 0) == 0) {
-                    CombatInfo combat_info;
-                    if (parseCombatResponse(line, combat_info)) {
-                        auto formatted = formatCombatInfo(combat_info);
-                        for (const auto& item_line : formatted) {
-                            state.addMessage("", item_line, false);
-                        }
-                        if (combat_info.status == "defeated") {
-                            // Target eliminated: trigger automatic LOOK to reflect dropped loot and room changes
-                            state.setPendingCommand(CMD_LOOK);
-                            sendLine("LOOK");
-                            continue;
-                        }
-                    } else {
-                        state.addMessage("Server", line, false);
-                    }
-                    state.setPendingCommand(CMD_NONE);
-                    continue;
-                }
-            }
-
-            // Handling response to CMD_INVENTORY / CMD_INVENTORY_AUTO
-            if (cmd == CMD_INVENTORY || cmd == CMD_INVENTORY_AUTO) {
-                if (line.rfind("ERR", 0) == 0) {
-                    state.setPendingCommand(CMD_NONE);
-                    state.addMessage("Server", line, false);
-                    continue;
-                }
-                if (line.rfind("OK [", 0) == 0) {
-                    std::vector<std::string> inventory;
-                    if (parseInventoryResponse(line, inventory)) {
-                        state.setInventory(inventory);
-                        if (cmd == CMD_INVENTORY) {
-                            if (inventory.empty()) {
-                                state.addMessage(
-                                    "", "Inventory is empty.", false);
-                            } else {
-                                std::string inv_str = "Inventory: ";
-                                for (size_t i = 0; i < inventory.size(); ++i) {
-                                    if (i > 0) inv_str += ", ";
-                                    inv_str += inventory[i];
-                                }
-                                state.addMessage("", inv_str, false);
-                            }
-                        }
-                        state.setPendingCommand(CMD_NONE);
-                        continue;
-                    }
-                }
-            }
-
-            // Handling generic OK responses with JSON payload
-            if (line.substr(0, 3) == "OK " && line.size() > 3) {
-                if (cmd == CMD_LOOK) {
-                    RoomInfo room;
-                    if (parseLookResponse(line, room)) {
-                        auto formatted = formatRoomInfo(room);
-                        for (const auto& item_line : formatted) {
-                            state.addMessage("", item_line, false);
-                        }
-                        if (!room.id.empty() || !room.name.empty()) {
-                            state.setMapImage(
-                                resolveMapPath(room.id, room.name));
-                        }
-                        state.setPendingCommand(CMD_NONE);
-                        continue;
-                    }
-                } else if (cmd == CMD_QUEST) {
-                    QuestInfo quest;
-                    if (parseQuestResponse(line, quest)) {
-                        auto formatted = formatQuestInfo(quest);
-                        for (const auto& item_line : formatted) {
-                            state.addMessage("", item_line, false);
-                        }
-                        state.upsertQuest(quest);
-                        state.setPendingCommand(CMD_NONE);
-                        continue;
-                    }
-                } else if (cmd == CMD_QUESTS) {
-                    std::vector<QuestInfo> quests;
-                    if (parseQuestsResponse(line, quests)) {
-                        state.setActiveQuests(quests);
-                        if (quests.empty()) {
-                            state.addMessage("", "No active quests.", false);
-                        } else {
-                            for (auto q : quests) {
-                                if (q.description.empty()) {
-                                    std::string desc =
-                                        state.getQuestDescription(q.quest_id);
-                                    if (!desc.empty()) q.description = desc;
-                                }
-                                auto formatted = formatQuestInfo(q);
-                                for (const auto& item_line : formatted) {
-                                    state.addMessage("", item_line, false);
-                                }
-                                state.addMessage("", "---", false);
-                            }
-                        }
-                        state.setPendingCommand(CMD_NONE);
-                        continue;
-                    }
-                }
-
-                if (cmd != CMD_NONE) {
-                    std::vector<std::string> lines;
-                    if (parseGenericOkJson(line, lines)) {
-                        for (const auto& item_line : lines) {
-                            state.addMessage("", item_line, false);
-                        }
-                        state.setPendingCommand(CMD_NONE);
-                        continue;
-                    }
-                }
-            }
-
-            if (cmd != CMD_NONE && line.rfind("ERR", 0) == 0) {
-                state.setPendingCommand(CMD_NONE);
-            }
-
-            // Bare OK response: could be chat acknowledgment
-            if (line == "OK") {
-                PendingChat pending;
-                // Pop optimistic chat: confirmation that server accepted our outgoing chat message
-                if (state.popPendingChat(pending)) {
-                    state.addChatMessage(pending.pseudo, pending.content,
-                                         pending.channel, true);
-                    state.recordLastChat(pending.content, pending.channel);
-                    continue;
-                }
-                if (cmd != CMD_NONE) {
-                    state.setPendingCommand(CMD_NONE);
-                }
-            }
-            if (line.rfind("ERR", 0) == 0) {
-                PendingChat pending;
-                // Chat rejected by server: print error into main terminal log
-                if (state.popPendingChat(pending)) {
-                    state.addMessage(pending.pseudo, pending.raw_command, true);
-                }
-            }
-
-            // Asynchronous event parsing (EVT)
-            std::string channel;
-            std::string evt_rest;
-            if (line.substr(0, 4) == "EVT ") {
-                std::string after_evt = line.substr(4);
-                // Broadcast room combat events between any entities
-                if (after_evt.substr(0, 12) == "ROOM COMBAT ") {
-                    CombatInfo combat_info;
-                    if (parseCombatResponse(line, combat_info)) {
-                        std::string att = combat_info.attacker.empty()
-                                              ? "Someone"
-                                              : combat_info.attacker;
-                        std::string tgt = combat_info.target;
-                        if (!tgt.empty()) {
-                            tgt[0] = static_cast<char>(std::toupper(tgt[0]));
-                        }
-                        std::string dmg_str =
-                            std::to_string(combat_info.damage);
-                        std::string hp_str =
-                            std::to_string(combat_info.target_hp);
-                        std::string msg = "[Combat] " + att + " attacked " +
-                                          tgt + " (" + dmg_str + " dmg, " +
-                                          tgt + " HP: " + hp_str + ")";
-                        state.addMessage("", msg, false);
-                        continue;
-                    }
-                // Room and global chat broadcast channels
-                } else if (after_evt.substr(0, 10) == "ROOM CHAT ") {
-                    channel = "ROOM";
-                    evt_rest = after_evt.substr(10);
-                } else if (after_evt.substr(0, 12) == "GLOBAL CHAT ") {
-                    channel = "GLOBAL";
-                    evt_rest = after_evt.substr(12);
-                } else if (after_evt.substr(0, 11) == "PARTY CHAT ") {
-                    channel = "PARTY";
-                    evt_rest = after_evt.substr(11);
-                } else if (after_evt.substr(0, 11) == "GROUP CHAT ") {
-                    channel = "PARTY";
-                    evt_rest = after_evt.substr(11);
-                }
-            }
-            if (!channel.empty()) {
-                size_t space = evt_rest.find(' ');
-                if (space != std::string::npos) {
-                    std::string pseudo = evt_rest.substr(0, space);
-                    std::string msg = evt_rest.substr(space + 1);
-                    // Discard incoming echo if it matches our own message just acknowledged
-                    if (state.checkAndClearIfLastChat(pseudo, msg, channel)) {
-                        continue;
-                    }
-                    state.addChatMessage(pseudo, msg, channel, false);
-                } else {
-                    state.addChatMessage(evt_rest, "", channel, false);
-                }
-                continue;
-            }
-
-            // Fallback: unhandled server messages sent to main log
-            state.addMessage("Server", line, false);
+            processIncomingLine(line, state);
         }
         screen.PostEvent(ftxui::Event::Custom);
     }

@@ -29,7 +29,6 @@ SRC = src/main.cpp \
       src/login_view.cpp \
       src/map_resolver.cpp \
       src/network_client.cpp \
-      src/positioned_widget.cpp \
       src/protocol.cpp \
       src/ui_helpers.cpp
 OBJ = $(SRC:src/%.cpp=.obj/%.o)

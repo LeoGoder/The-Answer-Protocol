@@ -2,6 +2,7 @@
 
 #include "../includes/ui_helpers.hpp"
 
+#include <cctype>
 #include <memory>
 #include <string>
 #include <utility>
@@ -64,4 +65,35 @@ ftxui::Element wrapLine(const std::string& pseudo,
         ftxui::text(prefix) | ftxui::color(pseudo_color),
         shrinkable(ftxui::paragraph(content)) | ftxui::flex,
     }));
+}
+
+// Strips leading and trailing whitespace characters
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) return "";
+    size_t last = str.find_last_not_of(" \t\r\n");
+    return str.substr(first, (last - first + 1));
+}
+
+// Converts entire string to uppercase
+std::string toUpper(std::string str) {
+    for (char& c : str) {
+        c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    }
+    return str;
+}
+
+// Checks if string starts with given prefix
+bool startsWith(const std::string& str, const std::string& prefix) {
+    return str.rfind(prefix, 0) == 0;
+}
+
+// Strips prefix if present, returns true and sets out; returns false otherwise
+bool stripPrefix(const std::string& str, const std::string& prefix,
+                 std::string& out) {
+    if (startsWith(str, prefix)) {
+        out = str.substr(prefix.size());
+        return true;
+    }
+    return false;
 }
