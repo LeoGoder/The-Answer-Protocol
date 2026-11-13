@@ -1,0 +1,16 @@
+# Build artifacts
+.obj/
+*.o
+*.d
+*.a
+
+# Binaries
+tap_client_tui
+
+# Local documentation
+doc_site/
+
+# Editor & OS files
+.vscode/
+.DS_Store
+*~
