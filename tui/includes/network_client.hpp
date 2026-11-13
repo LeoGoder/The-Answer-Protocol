@@ -84,7 +84,8 @@ class NetworkClient {
     void listenerLoop(ftxui::ScreenInteractive& screen, AppState& state);
 
     // Dispatches a single framed protocol line across specialized handlers
-    void processIncomingLine(const std::string& line, AppState& state);
+    void processIncomingLine(const std::string& line, AppState& state,
+                             ftxui::ScreenInteractive& screen);
 
     // Updates UI room description and resolves map asset
     void updateRoomState(const RoomInfo& room, AppState& state);

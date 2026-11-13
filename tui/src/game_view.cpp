@@ -13,7 +13,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -63,6 +65,8 @@ static int detectPendingCommand(const std::string& cmd) {
     if (startsWith(cmd, "USE")) return CMD_USE;
     if (startsWith(cmd, "ATTACK")) return CMD_ATTACK;
     if (cmd == "STATUS" || startsWith(cmd, "TALK ")) return CMD_OTHER_JSON;
+    if (cmd == "QUIT" || cmd == "/QUIT" || cmd == "EXIT" || cmd == "/EXIT")
+        return CMD_QUIT;
     return CMD_NONE;
 }
 
@@ -308,11 +312,14 @@ bool runGameView(NetworkClient& client,
 
             std::string trimmed = trim(toUpper(user_input));
 
-            // Client-side quit shortcuts
+            // Graceful quit handling (RFC 5.1.4 & RFC 3.3)
             if (trimmed == "QUIT" || trimmed == "/QUIT" ||
                 trimmed == "EXIT" || trimmed == "/EXIT") {
                 client.setUserQuit(true);
-                screen.Exit();
+                state.setPendingCommand(CMD_QUIT);
+                state.addMessage(config.pseudo, user_input, true);
+                client.sendLine("QUIT");
+                user_input.clear();
                 return true;
             }
 

@@ -96,7 +96,8 @@ enum PendingCommand {
     CMD_MOVE,                   ///< Movement command awaiting response.
     CMD_OTHER_JSON,             ///< Generic command expecting arbitrary JSON.
     CMD_USE,                    ///< Item usage awaiting response.
-    CMD_ATTACK                  ///< Combat command awaiting response.
+    CMD_ATTACK,                 ///< Combat command awaiting response.
+    CMD_QUIT                    ///< Quit command awaiting OK bye response.
 };
 
 /**

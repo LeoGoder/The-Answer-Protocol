@@ -452,7 +452,8 @@ bool NetworkClient::handleAsyncEvent(const std::string& line,
 
 // Dispatches a single framed protocol line across specialized handlers
 void NetworkClient::processIncomingLine(const std::string& line,
-                                        AppState& state) {
+                                        AppState& state,
+                                        ftxui::ScreenInteractive& screen) {
     if (startsWith(line, "ERR")) {
         state.setPendingCommand(CMD_NONE);
         PendingChat pending;
@@ -460,6 +461,15 @@ void NetworkClient::processIncomingLine(const std::string& line,
             state.addMessage(pending.pseudo, pending.raw_command, true);
         }
         state.addMessage("Server", line, false);
+        return;
+    }
+
+    // Graceful quit confirmation (RFC 5.1.4)
+    if (line == "OK bye" || startsWith(line, "OK bye")) {
+        state.setPendingCommand(CMD_NONE);
+        state.addMessage("Server", line, false);
+        user_quit_.store(true);
+        screen.Exit();
         return;
     }
 
@@ -505,13 +515,15 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
             stream_buffer.erase(0, pos + 1);
             if (!line.empty() && line.back() == '\r') line.pop_back();
 
-            processIncomingLine(line, state);
+            processIncomingLine(line, state, screen);
         }
         screen.PostEvent(ftxui::Event::Custom);
     }
 
-    if (state.isInterfaceActive() && !user_quit_.load()) {
-        connection_lost_.store(true);
+    if (state.isInterfaceActive()) {
+        if (!user_quit_.load()) {
+            connection_lost_.store(true);
+        }
         screen.Exit();
     }
 }
