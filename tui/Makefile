@@ -11,12 +11,10 @@ MAGENTA = \033[35m
 CYAN    = \033[36m
 GRAY    = \033[90m
 
-# --- FTXUI (téléchargé et compilé automatiquement dans lib/) ---
 FTXUI_DIR = lib/FTXUI
 FTXUI_BUILD = $(FTXUI_DIR)/build
 FTXUI_LIB = $(FTXUI_BUILD)/libftxui-component.a
 
-# -isystem : évite d'afficher les warnings venant des headers de FTXUI
 CXXFLAGS = -Wall -Wextra -std=c++17 -pthread -MMD -MP \
            -I./includes -Isrc -I./lib -isystem $(FTXUI_DIR)/include
 LDFLAGS = -L$(FTXUI_BUILD)
@@ -48,7 +46,6 @@ $(TARGET): $(OBJ)
 	printf "  $(BLUE)[%3d%%]$(RESET) $(CYAN)[CC]$(RESET) Compiling $(BOLD)%-25s$(RESET) $(GRAY)-> $(RESET)%-20s\n" "$$PCT" "$<" "$@"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clone + compile FTXUI (une seule fois)
 $(FTXUI_LIB):
 	@printf "  $(YELLOW)[FTXUI]$(RESET) Cloning and building FTXUI...\n"
 	@test -d $(FTXUI_DIR) || git clone --depth 1 https://github.com/ArthurSonzogni/FTXUI.git $(FTXUI_DIR)
@@ -57,7 +54,7 @@ $(FTXUI_LIB):
 	@cmake --build $(FTXUI_BUILD) -j4 > /dev/null
 	@printf "  $(GREEN)✔  FTXUI ready.$(RESET)\n"
 
-run-client: all
+run: all
 	@./$(TARGET)
 
 clean:
@@ -70,8 +67,6 @@ fclean: clean
 	@rm -rf $(FTXUI_DIR)
 	@printf "  $(GREEN)✔  Full clean finished.$(RESET)\n"
 
-run: all run-client
-
 re: clean all
 
 lint:
@@ -81,4 +76,4 @@ lint:
 
 -include $(OBJ:.o=.d)
 
-.PHONY: all clean fclean run lint run-client re
+.PHONY: all clean fclean run lint re
