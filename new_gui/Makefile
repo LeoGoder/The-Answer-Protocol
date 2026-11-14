@@ -48,6 +48,7 @@ SRC = src/main.cpp \
 	 src/scene/game_world/event.cpp \
 	 src/scene/game_world/map_parse.cpp \
 	 src/scene/game_world/chat.cpp \
+	 src/scene/game_world/draw_player_count.cpp \
 
 OBJ_DIR = obj
 

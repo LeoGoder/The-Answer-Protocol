@@ -28,6 +28,19 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
     room.name = extract_value(response[1], "name");
     room.items = items_extract;
     room.npcs = npcs_extract;
+    std::string names_tab = extract_sub_tab(response[1], "names");
+    std::vector<std::string> ids = items_extract;
+
+    ids.insert(ids.end(), npcs_extract.begin(), npcs_extract.end());
+    ids.push_back(room.exists.north);
+    ids.push_back(room.exists.east);
+    ids.push_back(room.exists.south);
+    ids.push_back(room.exists.west);
+    room.names.clear();
+    for (size_t i = 0; i < ids.size(); i++) {
+        if (ids[i] != "")
+            room.names[ids[i]] = extract_value(names_tab, ids[i]);
+    }
     for (size_t i = 0; i < players_extract.size(); i++) {
         room.player.push_back(std::make_unique<Player>(font, players_extract[i], sprite));
     }

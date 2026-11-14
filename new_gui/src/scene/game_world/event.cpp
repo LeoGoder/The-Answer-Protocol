@@ -1,6 +1,8 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+#include <cstdlib>
+#include <string>
 #include <utility>
 #include "game_world.hpp"
 #include "player.hpp"
@@ -28,4 +30,12 @@ void GameWorld::room_presence_leave(std::string delete_player) {
         std::swap(this->room.player[index], this->room.player.back());
         this->room.player.pop_back();
     }
+}
+
+void GameWorld::update_server_players(std::string msg) {
+    size_t pos = msg.rfind("players=");
+
+    if (pos == std::string::npos)
+        return;
+    this->server_players = std::atoi(msg.c_str() + pos + 8);
 }
