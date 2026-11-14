@@ -49,7 +49,8 @@ SRC = src/main.cpp \
 	 src/scene/game_world/map_parse.cpp \
 	 src/scene/game_world/chat.cpp \
 	 src/scene/game_world/draw_player_count.cpp \
-
+	 src/scene/game_world/draw_world_objects.cpp \
+	
 OBJ_DIR = obj
 
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))

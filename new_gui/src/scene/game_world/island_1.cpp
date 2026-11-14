@@ -70,6 +70,7 @@ void GameWorld::draw_game() {
             draw_island(this->map_data.vinterfint);
             break;
     }
+    GameWorld::draw_world_objects();
     player.draw_player(this->player_name);
     if (!this->room.player.empty()) {
         for (size_t i = 0; i < this->room.player.size(); i++) {

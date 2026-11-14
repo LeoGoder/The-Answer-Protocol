@@ -54,6 +54,8 @@ GameWorld::GameWorld(GameState *game_state){
 GameWorld::~GameWorld() {
     UnloadTexture(this->font);
     UnloadTexture(this->player_sprite);
+    for (std::map<std::string, Texture2D>::iterator it = this->object_textures.begin(); it != this->object_textures.end(); it++)
+        UnloadTexture(it->second);
     if (this->fd >= 0) {
         close(this->fd);
         this->fd = -1;

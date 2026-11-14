@@ -14,6 +14,10 @@
 #define ALIVE_CHECK_TIMER 10
 #define HUD_FONT_SIZE 10
 #define HUD_PADDING 6
+#define OBJECT_SIZE 32
+#define OBJECT_SPACING 96
+#define NPC_ROW_OFFSET 80
+#define ITEM_ROW_OFFSET 160
 
 
 enum GameWorldScene {
@@ -57,6 +61,7 @@ class GameWorld : public GameScene {
         Player player;
         Maps map;
         MapData map_data;
+        std::map<std::string, Texture2D> object_textures;
 
         GameWorld(GameState *game_state);
         ~GameWorld();
@@ -72,6 +77,9 @@ class GameWorld : public GameScene {
         void draw_game();
         void draw_hud();
         void draw_player_count();
+        void draw_world_objects();
+        void draw_object_row(std::vector<std::string> &ids, std::string prefix, float row_offset, Vector2 mouse);
+        Texture2D get_object_texture(const std::string &file);
         void update_server_players(std::string msg);
         void draw_island(std::vector<std::vector<int>> &island);
 };
