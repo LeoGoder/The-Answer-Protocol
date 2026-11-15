@@ -69,6 +69,8 @@ void GameWorld::update() {
     }
     if (this->intern_scene == in_game) {
         this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_item.empty())
+            send_message(this->command.TAKE, this->hovered_item, this->fd);
     }
 }
 
@@ -114,6 +116,7 @@ void GameWorld::net_update() {
                         std::cout << "Error send\n";
                     }
                     send_message(this->command.WHO, "", this->fd);
+                    send_message(this->command.INVENTORY, "", this->fd);
                 }
                 else {
                     this->intern_scene = connection_error;
@@ -158,9 +161,11 @@ void GameWorld::net_update() {
 
                     this->player.chat.add_global_msg(sub_string);
                 }
-                if (msg_copy.find("players=") != std::string::npos) {
-                    GameWorld::update_server_players(msg_copy);
+                GameWorld::update_server_players(msg_copy);
+                if (msg_copy.find("OK [") != std::string::npos) {
+                    this->player.set_inventory(parse_inventory_response(msg_copy));
                 }
+                GameWorld::update_items(msg_copy);
             }
             this->timer += this->game_state->dt;
             if (this->timer >= 1.0 / 24.0) {

@@ -18,6 +18,10 @@
 #define OBJECT_SPACING 96
 #define NPC_ROW_OFFSET 80
 #define ITEM_ROW_OFFSET 160
+#define INVENTORY_SLOTS 7
+#define INVENTORY_X 10
+#define INVENTORY_Y 40
+#define SLOT_SIZE 36
 
 
 enum GameWorldScene {
@@ -62,6 +66,7 @@ class GameWorld : public GameScene {
         Maps map;
         MapData map_data;
         std::map<std::string, Texture2D> object_textures;
+        std::string hovered_item;
 
         GameWorld(GameState *game_state);
         ~GameWorld();
@@ -80,6 +85,9 @@ class GameWorld : public GameScene {
         void draw_world_objects();
         void draw_object_row(std::vector<std::string> &ids, std::string prefix, float row_offset, Vector2 mouse);
         Texture2D get_object_texture(const std::string &file);
+        std::string display_name(const std::string &id);
+        void draw_inventory();
         void update_server_players(std::string msg);
+        void update_items(std::string msg);
         void draw_island(std::vector<std::vector<int>> &island);
 };

@@ -6,6 +6,7 @@
 #include <utility>
 #include "game_world.hpp"
 #include "player.hpp"
+#include "helper.hpp"
 
 void GameWorld::room_presence_enter(std::string new_player) {
     this->room.player.push_back(std::make_unique<Player>(&this->font, new_player, &this->player_sprite));
@@ -38,4 +39,56 @@ void GameWorld::update_server_players(std::string msg) {
     if (pos == std::string::npos)
         return;
     this->server_players = std::atoi(msg.c_str() + pos + 8);
+}
+
+
+static void remove_id(std::vector<std::string> &list, const std::string &id) {
+    for (size_t i = 0; i < list.size(); i++) {
+        if (list[i] == id) {
+            list.erase(list.begin() + i);
+            return;
+        }
+    }
+}
+
+static std::string word_after(const std::string &msg, const std::string &prefix, size_t skip) {
+    size_t pos = msg.find(prefix);
+
+    if (pos == std::string::npos)
+        return "";
+    std::string rest = msg.substr(pos + prefix.length());
+    std::vector<std::string> words = split(rest, ' ');
+
+    if (words.size() <= skip)
+        return "";
+    return words[skip];
+}
+
+void GameWorld::update_items(std::string msg) {
+    std::vector<std::string> inventory = this->player.get_inventory();
+    std::string id;
+
+    id = word_after(msg, "OK taken=", 0);
+    if (id != "") {
+        remove_id(this->room.items, id);
+        inventory.push_back(id);
+    }
+    id = word_after(msg, "OK dropped=", 0);
+    if (id != "") {
+        remove_id(inventory, id);
+        this->room.items.push_back(id);
+    }
+    id = word_after(msg, "EVT ROOM ITEM TAKE ", 1);
+    if (id != "")
+        remove_id(this->room.items, id);
+    id = word_after(msg, "EVT ROOM ITEM DROP ", 1);
+    if (id != "")
+        this->room.items.push_back(id);
+    id = word_after(msg, "EVT ROOM ITEM GONE ", 0);
+    if (id != "")
+        remove_id(this->room.items, id);
+    id = word_after(msg, "EVT ROOM ITEM SPAWN ", 0);
+    if (id != "")
+        this->room.items.push_back(id);
+    this->player.set_inventory(inventory);
 }

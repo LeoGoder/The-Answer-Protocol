@@ -29,17 +29,19 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
     room.items = items_extract;
     room.npcs = npcs_extract;
     std::string names_tab = extract_sub_tab(response[1], "names");
-    std::vector<std::string> ids = items_extract;
+    size_t key_start = names_tab.find('"');
 
-    ids.insert(ids.end(), npcs_extract.begin(), npcs_extract.end());
-    ids.push_back(room.exists.north);
-    ids.push_back(room.exists.east);
-    ids.push_back(room.exists.south);
-    ids.push_back(room.exists.west);
-    room.names.clear();
-    for (size_t i = 0; i < ids.size(); i++) {
-        if (ids[i] != "")
-            room.names[ids[i]] = extract_value(names_tab, ids[i]);
+    while (key_start != std::string::npos) {
+        size_t key_end = names_tab.find('"', key_start + 1);
+        size_t value_start = names_tab.find('"', key_end + 1);
+        size_t value_end = names_tab.find('"', value_start + 1);
+
+        if (value_end == std::string::npos)
+            break;
+        std::string key = names_tab.substr(key_start + 1, key_end - key_start - 1);
+
+        room.names[key] = names_tab.substr(value_start + 1, value_end - value_start - 1);
+        key_start = names_tab.find('"', value_end + 1);
     }
     for (size_t i = 0; i < players_extract.size(); i++) {
         room.player.push_back(std::make_unique<Player>(font, players_extract[i], sprite));
@@ -68,4 +70,22 @@ void parse_move_response(std::string &player_name, Room &room, NetCommand &comma
     (void) player_name;
 
     send_message(command.LOOK, "", fd);
+}
+
+std::vector<std::string> parse_inventory_response(std::string &msg) {
+    std::vector<std::string> inventory;
+    size_t start = msg.find("OK [");
+    size_t end = msg.find(']', start);
+    std::string list = msg.substr(start + 4, end - start - 4);
+    size_t cursor = list.find('"');
+
+    while (cursor != std::string::npos) {
+        size_t close = list.find('"', cursor + 1);
+
+        if (close == std::string::npos)
+            break;
+        inventory.push_back(list.substr(cursor + 1, close - cursor - 1));
+        cursor = list.find('"', close + 1);
+    }
+    return inventory;
 }

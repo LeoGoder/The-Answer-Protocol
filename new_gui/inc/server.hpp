@@ -15,6 +15,8 @@ struct NetCommand {
     std::string ALIVE = "ALIVE\n";
     std::string MOVE = "MOVE\n";
     std::string WHO = "WHO\n";
+    std::string INVENTORY = "INVENTORY\n";
+    std::string TAKE = "TAKE ";
     std::string POSITION = "POSITION ";
 };
 

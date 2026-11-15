@@ -33,6 +33,13 @@ class Player {
         Camera2D cam;
         Chat chat;
 
+        std::vector<std::string> get_inventory() const {
+            return this->inventory;
+        }
+        void set_inventory(std::vector<std::string> new_inventory) {
+            this->inventory = new_inventory;
+        }
+
         Player(Texture2D *font, std::string name, Texture2D *sprite);
         Player();
         ~Player();
