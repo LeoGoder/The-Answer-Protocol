@@ -1,6 +1,6 @@
 SERVER_DIR = server
 GUI_DIR = new_gui
-TUI_DIR = tap/tui
+TUI_DIR = tui
 
 install:
 	cd $(SERVER_DIR) && go mod download
@@ -11,8 +11,12 @@ run-server:
 run-client-gui:
 	cd $(GUI_DIR) && make run
 
-run-client-tui:
-	$(MAKE) -C $(TUI_DIR) run-client
+run-client:
+	$(MAKE) -C $(TUI_DIR) run
+
+# C++ lint (GUI, TUI) to be added with the team.
+lint:
+	cd $(SERVER_DIR) && gofmt -l . && test -z "$$(gofmt -l .)" && go vet ./...
 
 clean:
 	cd $(SERVER_DIR) && go clean
@@ -20,4 +24,4 @@ clean:
 	$(MAKE) -C $(TUI_DIR) fclean
 
 
-.PHONY: install run-server run-client-gui clean
+.PHONY: install run-server run-client run-client-gui lint clean

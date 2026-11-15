@@ -8,8 +8,8 @@ void GameWorld::draw_player_count() {
     int width = MeasureText(count.c_str(), HUD_FONT_SIZE) + HUD_PADDING * 2;
     int height = HUD_FONT_SIZE + HUD_PADDING * 2;
 
-    DrawRectangle(10, SCREEN_HEIGHT - 10 - height, width, height, ColorAlpha(BLACK, 0.6));
-    DrawText(count.c_str(), 10 + HUD_PADDING, SCREEN_HEIGHT - 10 - height + HUD_PADDING, HUD_FONT_SIZE, WHITE);
+    DrawRectangle(SCREEN_WIDTH - 10 - width, 10, width, height, ColorAlpha(BLACK, 0.6));
+    DrawText(count.c_str(), SCREEN_WIDTH - 10 - width + HUD_PADDING, 10 + HUD_PADDING, HUD_FONT_SIZE, WHITE);
 }
 
 void GameWorld::draw_hp() {

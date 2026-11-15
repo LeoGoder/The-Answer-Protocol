@@ -48,4 +48,6 @@ class Player {
         void input_player(float dt, Maps &map, MapData &map_data, int fd);
 };
 
+std::string player_change_room(std::vector<std::vector<int>> &data, Vector2 player_pos);
+
 void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::string event);

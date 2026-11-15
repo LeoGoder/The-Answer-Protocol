@@ -41,6 +41,7 @@ void GameWorld::draw_island(std::vector<std::vector<int>> &island) {
             index++;
         }
     }
+    GameWorld::draw_exits(island);
 }
 
 void GameWorld::draw_game() {

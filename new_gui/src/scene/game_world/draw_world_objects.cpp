@@ -1,5 +1,7 @@
 #include "game_world.hpp"
 #include "helper.hpp"
+#include "player.hpp"
+#include "map_parse.hpp"
 #include "raylib.h"
 #include <algorithm>
 #include <cstddef>
@@ -52,16 +54,59 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids, std::string prefi
     }
 }
 
-void GameWorld::draw_world_objects() {
+// Mouse in world coordinates, {-1, -1} when it is over the inventory or the dialog panel.
+Vector2 GameWorld::world_mouse() {
     Vector2 screen_mouse = get_virtual_mouse_position();
-    Vector2 mouse = GetScreenToWorld2D(screen_mouse, this->player.cam);
+
+    if (screen_mouse.x < INVENTORY_X + SLOT_SIZE
+        || (!this->dialog_npc.empty() && CheckCollisionPointRec(screen_mouse, GameWorld::dialog_rect())))
+        return Vector2{-1, -1};
+    return GetScreenToWorld2D(screen_mouse, this->player.cam);
+}
+
+// One label per exit, at the center of its tiles in the last map layer; yellow with [E] when the player stands on it.
+void GameWorld::draw_exits(std::vector<std::vector<int>> &island) {
+    std::vector<int> &layer = island.back();
+    std::string standing = player_change_room(island, this->player.player_pos);
+    std::string directions[4] = {"NORTH", "EAST", "SOUTH", "WEST"};
+    int tiles[4] = {NORTH, EAST, SOUTH, WEST};
+    std::string targets[4] = {this->room.exists.north, this->room.exists.east, this->room.exists.south, this->room.exists.west};
+    Vector2 mouse = GameWorld::world_mouse();
+
+    this->hovered_exit.clear();
+    for (int d = 0; d < 4; d++) {
+        Vector2 center = {0, 0};
+        int count = 0;
+
+        for (size_t i = 0; i < layer.size(); i++) {
+            if (layer[i] != tiles[d])
+                continue;
+            center.x += (i % MAP_WIDTH) * TILE_WIDTH + TILE_WIDTH / 2;
+            center.y += (i / MAP_WIDTH) * TILE_HEIGHT + TILE_HEIGHT / 2;
+            count++;
+        }
+        if (targets[d].empty() || count == 0)
+            continue;
+        std::string name = GameWorld::display_name(targets[d]);
+
+        if (standing == directions[d])
+            name += " [E]";
+        int width = MeasureText(name.c_str(), HUD_FONT_SIZE);
+        Rectangle label = {center.x / count - width / 2 - 2, center.y / count - HUD_FONT_SIZE / 2 - 1, float(width + 4), HUD_FONT_SIZE + 2};
+        bool hovered = CheckCollisionPointRec(mouse, label);
+
+        if (hovered)
+            this->hovered_exit = directions[d];
+        DrawRectangleRec(label, ColorAlpha(BLACK, 0.6));
+        DrawText(name.c_str(), label.x + 2, label.y + 1, HUD_FONT_SIZE, hovered || standing == directions[d] ? YELLOW : WHITE);
+    }
+}
+
+void GameWorld::draw_world_objects() {
+    Vector2 mouse = GameWorld::world_mouse();
 
     this->hovered_item.clear();
     this->hovered_npc.clear();
-    if (screen_mouse.x < INVENTORY_X + SLOT_SIZE
-        || (!this->dialog_npc.empty() && CheckCollisionPointRec(screen_mouse, GameWorld::dialog_rect())))
-        mouse = Vector2{-1, -1};
-
     GameWorld::draw_object_row(this->room.npcs, "npc_", NPC_ROW_OFFSET, mouse);
     GameWorld::draw_object_row(this->room.items, "item_", ITEM_ROW_OFFSET, mouse);
 }

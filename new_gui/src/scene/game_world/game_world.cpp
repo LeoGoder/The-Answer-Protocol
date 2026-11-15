@@ -89,18 +89,11 @@ void GameWorld::update() {
             send_message(this->command.USE, this->hovered_slot, this->fd);
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !this->player.show_chat && !this->hovered_slot.empty())
             send_message(this->command.DROP, this->hovered_slot, this->fd);
-    }
-}
-
-static bool is_connection_approved(std::vector<std::string> msg) {
-    std::vector<std::string> args_split = split(msg[1], ' ');
-
-    for (long unsigned int i = 0; i < args_split.size(); i++) {
-        if (args_split[i] == "OK" && args_split[i + 1] == "connected") {
-            return true;
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_exit.empty()) {
+            send_message("MOVE ", this->hovered_exit, this->fd);
+            this->player.player_pos = PLAYER_DEFAULT_POS;
         }
     }
-    return false;
 }
 
 void GameWorld::net_update() {
@@ -127,7 +120,8 @@ void GameWorld::net_update() {
             break;
         case connection_loading:
             if (!msg_split.empty()) {
-                if (is_connection_approved(msg_split) == true) {
+                // "OK hello" can arrive alone before "OK connected": wait until one of them or an ERR.
+                if (msg_copy.find("OK connected") != std::string::npos) {
                     this->intern_scene = in_game;
                     int res = send_message(this->command.LOOK, "", this->fd);
 
@@ -141,7 +135,7 @@ void GameWorld::net_update() {
                     send_message(this->command.STATUS, "", this->fd);
                     send_message(this->command.QUESTS, "", this->fd);
                 }
-                else {
+                else if (msg_copy.find("ERR") != std::string::npos) {
                     this->intern_scene = connection_error;
                     this->error_log = msg_copy;
                 }
@@ -217,6 +211,10 @@ void GameWorld::net_update() {
                 size_t quest_pos = msg_copy.find(R"(OK {"quest_id")");
                 if (quest_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(quest_pos));
+                if (quest_pos != std::string::npos && msg_copy.find(R"("status":"completed")", quest_pos) != std::string::npos)
+                    send_message(this->command.INVENTORY, "", this->fd);
+                if (msg_copy.find(R"("status":"victory")") != std::string::npos)
+                    send_message(this->command.LOOK, "", this->fd);
                 size_t attack_pos = msg_copy.find(R"(OK {"attacker")");
                 if (attack_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(attack_pos));

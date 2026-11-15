@@ -34,6 +34,7 @@
 #define MINIMAP_CELL 14
 #define MINIMAP_STEP 26
 #define MINIMAP_SIZE (2 * MINIMAP_STEP + MINIMAP_CELL + HUD_PADDING * 2)
+#define MINIMAP_Y (10 + HUD_FONT_SIZE + HUD_PADDING * 2 + 4)
 #define QUESTS_WIDTH 150
 
 
@@ -93,6 +94,7 @@ class GameWorld : public GameScene {
         std::vector<std::string> usable;
         std::vector<std::string> quests;
         std::string hovered_npc;
+        std::string hovered_exit;
         std::string dialog_npc;
         std::string dialog_text;
 
@@ -115,6 +117,8 @@ class GameWorld : public GameScene {
         void draw_quests();
         void refresh_quests(std::string msg);
         void draw_world_objects();
+        Vector2 world_mouse();
+        void draw_exits(std::vector<std::vector<int>> &island);
         void draw_object_row(std::vector<std::string> &ids, std::string prefix, float row_offset, Vector2 mouse);
         Texture2D get_object_texture(const std::string &file);
         std::string display_name(const std::string &id);

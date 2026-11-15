@@ -14,9 +14,8 @@ void GameWorld::add_log(std::string msg) {
 void GameWorld::draw_log() {
     std::string commands[4] = {this->command.LOOK, this->command.STATUS, this->command.QUESTS, this->command.WHO};
     Vector2 mouse = get_virtual_mouse_position();
-    int count_height = HUD_FONT_SIZE + HUD_PADDING * 2;
     int log_height = (LOG_LINES + 1) * LOG_LINE_HEIGHT + HUD_PADDING * 3;
-    int log_y = SCREEN_HEIGHT - 10 - count_height - 4 - log_height;
+    int log_y = SCREEN_HEIGHT - 10 - log_height;
     int button_x = 10 + HUD_PADDING;
     int button_y = log_y + log_height - HUD_PADDING - HUD_FONT_SIZE;
 
