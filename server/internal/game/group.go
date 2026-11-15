@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"tap/server/internal/logger"
@@ -45,7 +46,7 @@ func (s *State) createGroup(player *Player) Result {
 
 	logger.Info("group_created", logger.Fields{"player": player.Username, "group": id})
 
-	return reply("OK group=" + id)
+	return Result{Reply: "OK group=" + id, Events: []Event{s.membersEvent(s.groups[id])}}
 }
 
 func (s *State) inviteToGroup(player *Player, username string) Result {
@@ -107,7 +108,7 @@ func (s *State) joinGroup(player *Player, name string) Result {
 
 	return Result{
 		Reply:  "OK group=" + group.ID,
-		Events: []Event{s.toGroup(group.ID, "EVT GROUP JOIN "+player.Username, player.Username)},
+		Events: []Event{s.toGroup(group.ID, "EVT GROUP JOIN "+player.Username, player.Username), s.membersEvent(group)},
 	}
 }
 
@@ -119,12 +120,19 @@ func (s *State) leaveGroup(player *Player) []Event {
 
 	logger.Info("group_left", logger.Fields{"player": player.Username, "group": group.ID})
 
-	event := s.toGroup(group.ID, "EVT GROUP LEAVE "+player.Username, "")
+	events := []Event{s.toGroup(group.ID, "EVT GROUP LEAVE "+player.Username, "")}
 
 	if len(group.Members) == 0 {
 		delete(s.groups, group.ID)
 		logger.Info("group_disbanded", logger.Fields{"group": group.ID})
+	} else {
+		events = append(events, s.membersEvent(group))
 	}
 
-	return []Event{event}
+	return events
+}
+
+// Not in the RFC: the full member list (leader first) after each change, as a client cannot know who joined before it.
+func (s *State) membersEvent(group *Group) Event {
+	return Event{To: slices.Clone(group.Members), Line: "EVT GROUP MEMBERS " + strings.Join(group.Members, ",")}
 }
