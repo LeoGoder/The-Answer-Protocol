@@ -11,8 +11,7 @@ void GameWorld::draw_hud() {
     }
     else {
         DrawFontText(this->font, this->room.name, room_name_x, 20);
-        GameWorld::draw_player_count();
-        GameWorld::draw_hp();
+        GameWorld::draw_player_info();
         GameWorld::draw_minimap();
         GameWorld::draw_quests();
         GameWorld::draw_inventory();
@@ -21,21 +20,22 @@ void GameWorld::draw_hud() {
     }
 }
 
-// Returns the index of the clicked button, -1 if none.
-int GameWorld::draw_text_buttons(std::vector<std::string> names, int x, int y, int bottom) {
+// Boxed buttons in a row; returns the index of the clicked one, -1 if none. The selected one stays yellow.
+int GameWorld::draw_text_buttons(std::vector<std::string> names, int x, int y, int selected) {
     Vector2 mouse = get_virtual_mouse_position();
     int clicked = -1;
 
     for (size_t i = 0; i < names.size(); i++) {
-        int width = MeasureText(names[i].c_str(), HUD_FONT_SIZE);
-        bool hovered = CheckCollisionPointRec(mouse, Rectangle{float(x), float(y), float(width), HUD_FONT_SIZE});
+        Rectangle box = {float(x), float(y), float(MeasureText(names[i].c_str(), HUD_FONT_SIZE) + BUTTON_PADDING * 2), BUTTON_HEIGHT};
+        bool hovered = CheckCollisionPointRec(mouse, box);
+        Color color = hovered || int(i) == selected ? YELLOW : WHITE;
 
-        DrawText(names[i].c_str(), x, y, HUD_FONT_SIZE, hovered ? YELLOW : WHITE);
+        DrawRectangleRec(box, ColorAlpha(BLACK, 0.6));
+        DrawRectangleLinesEx(box, 1, hovered || int(i) == selected ? YELLOW : GRAY);
+        DrawText(names[i].c_str(), x + BUTTON_PADDING, y + BUTTON_PADDING, HUD_FONT_SIZE, color);
         if (hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             clicked = i;
-        x += width + BUTTON_SPACING;
-        if (i + 1 < names.size())
-            DrawLine(x - BUTTON_SPACING / 2, y - HUD_PADDING, x - BUTTON_SPACING / 2, bottom, GRAY);
+        x += box.width + BUTTON_SPACING;
     }
     return clicked;
 }

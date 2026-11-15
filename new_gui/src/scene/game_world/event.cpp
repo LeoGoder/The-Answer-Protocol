@@ -118,3 +118,30 @@ void GameWorld::refresh_quests(std::string msg) {
         send_message(this->command.QUESTS, "", this->fd);
     }
 }
+
+// Group state from "EVT GROUP INVITE <leader>" and "EVT GROUP MEMBERS a,b" (leader first); other group events and group errors go to the GROUP tab.
+void GameWorld::update_group(std::string msg) {
+    std::string inviter = word_after(msg, "EVT GROUP INVITE ", 0);
+    std::string members = word_after(msg, "EVT GROUP MEMBERS ", 0);
+    size_t event_pos = msg.find("EVT GROUP ");
+    size_t err_pos = msg.find("ERR ");
+    std::string line = "";
+
+    if (inviter != "")
+        this->group_inviter = inviter;
+    if (members != "") {
+        this->group_members = split(members, ',');
+        this->group_inviter.clear();
+    }
+    if (event_pos != std::string::npos && msg.compare(event_pos, 18, "EVT GROUP MEMBERS ") != 0)
+        line = msg.substr(event_pos);
+    // These errors only come from GROUP commands (404 PLAYER_NOT_FOUND from INVITE / JOIN).
+    if (err_pos != std::string::npos && (msg.compare(err_pos, 7, "ERR 401") == 0 || msg.compare(err_pos, 7, "ERR 402") == 0
+        || msg.compare(err_pos, 7, "ERR 403") == 0 || msg.find("PLAYER_NOT_FOUND", err_pos) != std::string::npos))
+        line = msg.substr(err_pos);
+    if (line.empty())
+        return;
+    GameWorld::add_log(line, PANEL_GROUP);
+    if (this->panel_tab != PANEL_GROUP)
+        this->group_unread = true;
+}

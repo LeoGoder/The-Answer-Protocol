@@ -24,17 +24,21 @@
 #define SLOT_SIZE 36
 #define LOG_LINES 6
 #define LOG_HISTORY 100
-#define LOG_LINE_CHARS 38
+#define LOG_LINE_CHARS 81
 #define LOG_LINE_HEIGHT 12
-#define LOG_WIDTH 238
-#define BUTTON_SPACING 20
+#define LOG_WIDTH 500
+#define PANEL_LOG 0
+#define PANEL_GROUP 1
+#define BUTTON_SPACING 6
+#define BUTTON_PADDING 3
+#define BUTTON_HEIGHT (HUD_FONT_SIZE + BUTTON_PADDING * 2)
 #define DIALOG_WIDTH 320
 #define DIALOG_HEIGHT 80
 #define DIALOG_LINE_CHARS 52
 #define MINIMAP_CELL 14
 #define MINIMAP_STEP 26
 #define MINIMAP_SIZE (2 * MINIMAP_STEP + MINIMAP_CELL + HUD_PADDING * 2)
-#define MINIMAP_Y (10 + HUD_FONT_SIZE + HUD_PADDING * 2 + 4)
+#define MINIMAP_HEIGHT (MINIMAP_SIZE + LOG_LINE_HEIGHT)
 #define QUESTS_WIDTH 150
 
 
@@ -59,6 +63,7 @@ class GameWorld : public GameScene {
         bool log_quests;
         bool wait_talk;
         int log_scroll;
+        int panel_tab;
 
         std::string player_name;
         std::string error_log;
@@ -88,7 +93,11 @@ class GameWorld : public GameScene {
         std::map<std::string, Texture2D> object_textures;
         std::string hovered_item;
         std::string hovered_slot;
-        std::vector<std::string> log;
+        std::vector<std::string> panel_lines[2];
+        std::string group_inviter;
+        std::vector<std::string> group_members;
+        bool group_unread;
+        bool inviting;
         std::vector<std::string> hostile;
         std::vector<std::string> quest_givers;
         std::vector<std::string> usable;
@@ -111,8 +120,8 @@ class GameWorld : public GameScene {
         void draw_connection_error();
         void draw_game();
         void draw_hud();
-        void draw_player_count();
-        void draw_hp();
+        void draw_player_count(int x, int y, int width);
+        void draw_player_info();
         void draw_minimap();
         void draw_quests();
         void refresh_quests(std::string msg);
@@ -123,9 +132,11 @@ class GameWorld : public GameScene {
         Texture2D get_object_texture(const std::string &file);
         std::string display_name(const std::string &id);
         void draw_inventory();
-        void add_log(std::string msg);
+        void add_log(std::string msg, int tab = PANEL_LOG);
+        void draw_group_buttons(int x, int y);
+        void update_group(std::string msg);
         void draw_log();
-        int draw_text_buttons(std::vector<std::string> names, int x, int y, int bottom);
+        int draw_text_buttons(std::vector<std::string> names, int x, int y, int selected = -1);
         Rectangle dialog_rect();
         void draw_dialog();
         void read_talk_reply(std::string buffer);

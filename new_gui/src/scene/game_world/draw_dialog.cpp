@@ -30,7 +30,7 @@ void GameWorld::draw_dialog() {
         return;
     std::vector<std::string> names = {"TALK"};
     Rectangle panel = GameWorld::dialog_rect();
-    int button_y = panel.y + DIALOG_HEIGHT - HUD_PADDING - HUD_FONT_SIZE;
+    int button_y = panel.y + DIALOG_HEIGHT - HUD_PADDING - BUTTON_HEIGHT;
 
     if (std::find(this->quest_givers.begin(), this->quest_givers.end(), this->dialog_npc) != this->quest_givers.end())
         names.push_back("QUEST");
@@ -41,10 +41,9 @@ void GameWorld::draw_dialog() {
     DrawText(GameWorld::display_name(this->dialog_npc).c_str(), panel.x + HUD_PADDING, panel.y + HUD_PADDING, HUD_FONT_SIZE, YELLOW);
     for (size_t i = 0; i * DIALOG_LINE_CHARS < this->dialog_text.size(); i++)
         DrawText(this->dialog_text.substr(i * DIALOG_LINE_CHARS, DIALOG_LINE_CHARS).c_str(), panel.x + HUD_PADDING, panel.y + HUD_PADDING + (i + 1) * LOG_LINE_HEIGHT, HUD_FONT_SIZE, WHITE);
-    DrawLine(panel.x, button_y - HUD_PADDING, panel.x + DIALOG_WIDTH, button_y - HUD_PADDING, GRAY);
 
     std::string clicked = "";
-    int index = GameWorld::draw_text_buttons(names, panel.x + HUD_PADDING, button_y, panel.y + DIALOG_HEIGHT);
+    int index = GameWorld::draw_text_buttons(names, panel.x + HUD_PADDING, button_y);
 
     if (index >= 0)
         clicked = names[index];

@@ -48,6 +48,9 @@ GameWorld::GameWorld(GameState *game_state){
     this->wait_quests = true;
     this->log_quests = false;
     this->log_scroll = 0;
+    this->panel_tab = PANEL_LOG;
+    this->group_unread = false;
+    this->inviting = false;
     this->wait_talk = false;
     this->player = Player(&this->font, "", &this->player_sprite);
     this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
@@ -235,6 +238,7 @@ void GameWorld::net_update() {
                 if (err_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(err_pos));
                 GameWorld::update_items(msg_copy);
+                GameWorld::update_group(msg_copy);
                 GameWorld::refresh_quests(msg_copy);
             }
             this->timer += this->game_state->dt;
