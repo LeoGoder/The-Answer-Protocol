@@ -22,6 +22,12 @@
 #define INVENTORY_X 10
 #define INVENTORY_Y 40
 #define SLOT_SIZE 36
+#define LOG_LINES 6
+#define LOG_HISTORY 100
+#define LOG_LINE_CHARS 38
+#define LOG_LINE_HEIGHT 12
+#define LOG_WIDTH 238
+#define LOG_BUTTON_SPACING 20
 
 
 enum GameWorldScene {
@@ -39,6 +45,8 @@ class GameWorld : public GameScene {
         float alive_timer;
         float timer;
         int server_players;
+        bool wait_quests;
+        int log_scroll;
 
         std::string player_name;
         std::string error_log;
@@ -68,6 +76,7 @@ class GameWorld : public GameScene {
         std::map<std::string, Texture2D> object_textures;
         std::string hovered_item;
         std::string hovered_slot;
+        std::vector<std::string> log;
 
         GameWorld(GameState *game_state);
         ~GameWorld();
@@ -88,6 +97,8 @@ class GameWorld : public GameScene {
         Texture2D get_object_texture(const std::string &file);
         std::string display_name(const std::string &id);
         void draw_inventory();
+        void add_log(std::string msg);
+        void draw_log();
         void update_server_players(std::string msg);
         void update_items(std::string msg);
         void draw_island(std::vector<std::vector<int>> &island);

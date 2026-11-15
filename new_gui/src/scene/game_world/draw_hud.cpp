@@ -13,5 +13,6 @@ void GameWorld::draw_hud() {
         DrawFontText(this->font, this->room.name, room_name_x, 20);
         GameWorld::draw_player_count();
         GameWorld::draw_inventory();
+        GameWorld::draw_log();
     }
 }

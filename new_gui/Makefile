@@ -51,6 +51,7 @@ SRC = src/main.cpp \
 	 src/scene/game_world/draw_player_count.cpp \
 	 src/scene/game_world/draw_world_objects.cpp \
 	 src/scene/game_world/draw_inventory.cpp \
+	 src/scene/game_world/draw_log.cpp \
 	
 OBJ_DIR = obj
 

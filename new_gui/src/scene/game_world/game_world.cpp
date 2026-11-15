@@ -42,6 +42,8 @@ GameWorld::GameWorld(GameState *game_state){
     this->alive_last_time = 0.0;
     this->timer = 0.0;
     this->server_players = 0;
+    this->wait_quests = false;
+    this->log_scroll = 0;
     this->player = Player(&this->font, "", &this->player_sprite);
     this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
     this->player.cam.rotation = 0.0;
@@ -134,6 +136,7 @@ void GameWorld::net_update() {
             if (!msg_split.empty()) {
                 if (msg_copy.rfind(R"(OK {"room")", 0) == 0) {
                     parse_look_response(msg_split, this->room, &this->font, &this->player_sprite, this->map);
+                    GameWorld::add_log(msg_copy);
                 }
                 size_t move = msg_copy.find("OK room=");
                 if (move != std::string::npos) {
@@ -166,9 +169,23 @@ void GameWorld::net_update() {
                     this->player.chat.add_global_msg(sub_string);
                 }
                 GameWorld::update_server_players(msg_copy);
-                if (msg_copy.find("OK [") != std::string::npos) {
+                size_t list_pos = msg_copy.find("OK [");
+                if (list_pos != std::string::npos && this->wait_quests) {
+                    GameWorld::add_log(msg_copy.substr(list_pos));
+                    this->wait_quests = false;
+                }
+                else if (list_pos != std::string::npos) {
                     this->player.set_inventory(parse_inventory_response(msg_copy));
                 }
+                size_t status_pos = msg_copy.find(R"(OK {"hp")");
+                if (status_pos != std::string::npos)
+                    GameWorld::add_log(msg_copy.substr(status_pos));
+                size_t who_pos = msg_copy.find("OK players=");
+                if (who_pos != std::string::npos)
+                    GameWorld::add_log(msg_copy.substr(who_pos));
+                size_t err_pos = msg_copy.find("ERR ");
+                if (err_pos != std::string::npos)
+                    GameWorld::add_log(msg_copy.substr(err_pos));
                 GameWorld::update_items(msg_copy);
             }
             this->timer += this->game_state->dt;
