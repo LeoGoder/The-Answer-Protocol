@@ -5,11 +5,9 @@
 #include "raylib.h"
 #include <cstddef>
 #include <cstdio>
-#include <iostream>
 #include <vector>
 
 void GameWorld::draw_island(std::vector<std::vector<int>> &island) {
-    int index = 0;
     Vector2 tile_size = {TILE_WIDTH, TILE_HEIGHT};
 
     for (size_t i = 0; i < island.size() - 2; i++) {
@@ -36,9 +34,7 @@ void GameWorld::draw_island(std::vector<std::vector<int>> &island) {
                     draw_sprite_sheet(this->rock_flowers, tile_id - ROCK_AND_FLOWERS_FIRSTGRID, this->rock_flowers.width / TILE_WIDTH, position, tile_size, 1);
                 if (tile_id >= FOX_WITH_SHADOW_FIRSTGRID && tile_id < HARE_IDLE_WITH_SHADOW_FIRSTGRID)
                     draw_sprite_sheet(this->fox, tile_id - FOX_WITH_SHADOW_FIRSTGRID, this->fox.width / TILE_WIDTH, position, tile_size, 1);
-                index++;
             }
-            index++;
         }
     }
 }

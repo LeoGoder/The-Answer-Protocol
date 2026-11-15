@@ -33,9 +33,11 @@ void GameWorld::room_presence_leave(std::string delete_player) {
 }
 
 void GameWorld::update_server_players(std::string msg) {
-    size_t pos = msg.rfind("players=");
+    const std::string sub_string = "players=";
+    const int character_skip = sub_string.size();
+    size_t pos = msg.rfind(sub_string);
 
     if (pos == std::string::npos)
         return;
-    this->server_players = std::atoi(msg.c_str() + pos + 8);
+    this->server_players = std::atoi(msg.c_str() + pos + character_skip);
 }
