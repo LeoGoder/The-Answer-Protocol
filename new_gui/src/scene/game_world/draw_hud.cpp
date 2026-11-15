@@ -14,5 +14,6 @@ void GameWorld::draw_hud() {
         GameWorld::draw_player_count();
         GameWorld::draw_inventory();
         GameWorld::draw_log();
+        GameWorld::draw_dialog();
     }
 }

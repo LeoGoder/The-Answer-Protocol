@@ -1,6 +1,7 @@
 #include "game_world.hpp"
 #include "helper.hpp"
 #include "raylib.h"
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -20,7 +21,9 @@ void GameWorld::draw_inventory() {
             continue;
         DrawTexture(GameWorld::get_object_texture("item_" + inventory[i] + ".png"), slot.x + 1, slot.y + 1, WHITE);
         if (CheckCollisionPointRec(mouse, slot)) {
-            hovered = GameWorld::display_name(inventory[i]) + "  L: use  R: drop";
+            bool usable = std::find(this->usable.begin(), this->usable.end(), inventory[i]) != this->usable.end();
+
+            hovered = GameWorld::display_name(inventory[i]) + (usable ? "  L: use  R: drop" : "  R: drop");
             hovered_y = slot.y;
             this->hovered_slot = inventory[i];
         }

@@ -21,6 +21,10 @@ struct NetCommand {
     std::string USE = "USE ";
     std::string STATUS = "STATUS\n";
     std::string QUESTS = "QUESTS\n";
+    std::string WORLD = "WORLD\n";
+    std::string TALK = "TALK ";
+    std::string QUEST = "QUEST ";
+    std::string ATTACK = "ATTACK ";
     std::string POSITION = "POSITION ";
 };
 

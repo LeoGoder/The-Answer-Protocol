@@ -43,6 +43,8 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids, std::string prefi
             name_color = YELLOW;
             if (prefix == "item_")
                 this->hovered_item = ids[i];
+            else
+                this->hovered_npc = ids[i];
         }
         DrawTexture(texture, pos.x, pos.y, WHITE);
         DrawRectangle(name_x - 2, pos.y + OBJECT_SIZE + 2, name_width + 4, HUD_FONT_SIZE + 2, ColorAlpha(BLACK, 0.6));
@@ -55,7 +57,9 @@ void GameWorld::draw_world_objects() {
     Vector2 mouse = GetScreenToWorld2D(screen_mouse, this->player.cam);
 
     this->hovered_item.clear();
-    if (screen_mouse.x < INVENTORY_X + SLOT_SIZE)
+    this->hovered_npc.clear();
+    if (screen_mouse.x < INVENTORY_X + SLOT_SIZE
+        || (!this->dialog_npc.empty() && CheckCollisionPointRec(screen_mouse, GameWorld::dialog_rect())))
         mouse = Vector2{-1, -1};
 
     GameWorld::draw_object_row(this->room.npcs, "npc_", NPC_ROW_OFFSET, mouse);

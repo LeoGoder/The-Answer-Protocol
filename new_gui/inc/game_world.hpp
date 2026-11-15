@@ -28,6 +28,9 @@
 #define LOG_LINE_HEIGHT 12
 #define LOG_WIDTH 238
 #define LOG_BUTTON_SPACING 20
+#define DIALOG_WIDTH 320
+#define DIALOG_HEIGHT 80
+#define DIALOG_LINE_CHARS 52
 
 
 enum GameWorldScene {
@@ -46,6 +49,7 @@ class GameWorld : public GameScene {
         float timer;
         int server_players;
         bool wait_quests;
+        bool wait_talk;
         int log_scroll;
 
         std::string player_name;
@@ -77,6 +81,12 @@ class GameWorld : public GameScene {
         std::string hovered_item;
         std::string hovered_slot;
         std::vector<std::string> log;
+        std::vector<std::string> hostile;
+        std::vector<std::string> quest_givers;
+        std::vector<std::string> usable;
+        std::string hovered_npc;
+        std::string dialog_npc;
+        std::string dialog_text;
 
         GameWorld(GameState *game_state);
         ~GameWorld();
@@ -99,6 +109,10 @@ class GameWorld : public GameScene {
         void draw_inventory();
         void add_log(std::string msg);
         void draw_log();
+        int draw_text_buttons(std::vector<std::string> names, int x, int y, int bottom);
+        Rectangle dialog_rect();
+        void draw_dialog();
+        void read_talk_reply(std::string buffer);
         void update_server_players(std::string msg);
         void update_items(std::string msg);
         void draw_island(std::vector<std::vector<int>> &island);

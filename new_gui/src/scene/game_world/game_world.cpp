@@ -5,6 +5,7 @@
 #include "raylib.h"
 #include "server.hpp"
 #include "parsing_command_response.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -44,6 +45,7 @@ GameWorld::GameWorld(GameState *game_state){
     this->server_players = 0;
     this->wait_quests = false;
     this->log_scroll = 0;
+    this->wait_talk = false;
     this->player = Player(&this->font, "", &this->player_sprite);
     this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
     this->player.cam.rotation = 0.0;
@@ -73,7 +75,14 @@ void GameWorld::update() {
         this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_item.empty())
             send_message(this->command.TAKE, this->hovered_item, this->fd);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_slot.empty())
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_npc.empty()) {
+            this->dialog_npc = this->hovered_npc;
+            this->dialog_text.clear();
+            this->wait_talk = true;
+            send_message(this->command.TALK, this->hovered_npc, this->fd);
+        }
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_slot.empty()
+            && std::find(this->usable.begin(), this->usable.end(), this->hovered_slot) != this->usable.end())
             send_message(this->command.USE, this->hovered_slot, this->fd);
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !this->player.show_chat && !this->hovered_slot.empty())
             send_message(this->command.DROP, this->hovered_slot, this->fd);
@@ -104,6 +113,8 @@ void GameWorld::net_update() {
         this->intern_scene = connection_error;
     }
     if (buffer != "") {
+        if (this->wait_talk)
+            GameWorld::read_talk_reply(buffer);
         kill_return_line(buffer);
         msg_copy = buffer;
         msg_split = split(buffer, ' ', 1);
@@ -123,6 +134,7 @@ void GameWorld::net_update() {
                     }
                     send_message(this->command.WHO, "", this->fd);
                     send_message(this->command.INVENTORY, "", this->fd);
+                    send_message(this->command.WORLD, "", this->fd);
                 }
                 else {
                     this->intern_scene = connection_error;
@@ -175,8 +187,19 @@ void GameWorld::net_update() {
                     this->wait_quests = false;
                 }
                 else if (list_pos != std::string::npos) {
-                    this->player.set_inventory(parse_inventory_response(msg_copy));
+                    this->player.set_inventory(parse_id_list(msg_copy, "OK ["));
                 }
+                if (msg_copy.find(R"(OK {"hostile")") != std::string::npos) {
+                    this->hostile = parse_id_list(msg_copy, R"("hostile":[)");
+                    this->quest_givers = parse_id_list(msg_copy, R"("quest_givers":[)");
+                    this->usable = parse_id_list(msg_copy, R"("usable":[)");
+                }
+                size_t quest_pos = msg_copy.find(R"(OK {"quest_id")");
+                if (quest_pos != std::string::npos)
+                    GameWorld::add_log(msg_copy.substr(quest_pos));
+                size_t attack_pos = msg_copy.find(R"(OK {"attacker")");
+                if (attack_pos != std::string::npos)
+                    GameWorld::add_log(msg_copy.substr(attack_pos));
                 size_t status_pos = msg_copy.find(R"(OK {"hp")");
                 if (status_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(status_pos));

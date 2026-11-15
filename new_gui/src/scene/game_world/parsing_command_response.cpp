@@ -72,11 +72,11 @@ void parse_move_response(std::string &player_name, Room &room, NetCommand &comma
     send_message(command.LOOK, "", fd);
 }
 
-std::vector<std::string> parse_inventory_response(std::string &msg) {
+std::vector<std::string> parse_id_list(std::string &msg, std::string key) {
     std::vector<std::string> inventory;
-    size_t start = msg.find("OK [");
+    size_t start = msg.find(key);
     size_t end = msg.find(']', start);
-    std::string list = msg.substr(start + 4, end - start - 4);
+    std::string list = msg.substr(start + key.size(), end - start - key.size());
     size_t cursor = list.find('"');
 
     while (cursor != std::string::npos) {

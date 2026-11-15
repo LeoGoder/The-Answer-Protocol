@@ -12,7 +12,6 @@ void GameWorld::add_log(std::string msg) {
 }
 
 void GameWorld::draw_log() {
-    std::string names[4] = {"LOOK", "STATUS", "QUESTS", "WHO"};
     std::string commands[4] = {this->command.LOOK, this->command.STATUS, this->command.QUESTS, this->command.WHO};
     Vector2 mouse = get_virtual_mouse_position();
     int count_height = HUD_FONT_SIZE + HUD_PADDING * 2;
@@ -32,18 +31,29 @@ void GameWorld::draw_log() {
     for (int i = 0; i < LOG_LINES && first + i < int(this->log.size()); i++)
         DrawText(this->log[first + i].c_str(), 10 + HUD_PADDING, log_y + HUD_PADDING + i * LOG_LINE_HEIGHT, HUD_FONT_SIZE, WHITE);
     DrawLine(10, button_y - HUD_PADDING, 10 + LOG_WIDTH, button_y - HUD_PADDING, GRAY);
-    for (int i = 0; i < 4; i++) {
-        int width = MeasureText(names[i].c_str(), HUD_FONT_SIZE);
-        bool hovered = CheckCollisionPointRec(mouse, Rectangle{float(button_x), float(button_y), float(width), HUD_FONT_SIZE});
+    int clicked = GameWorld::draw_text_buttons({"LOOK", "STATUS", "QUESTS", "WHO"}, button_x, button_y, log_y + log_height);
 
-        DrawText(names[i].c_str(), button_x, button_y, HUD_FONT_SIZE, hovered ? YELLOW : WHITE);
-        if (hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (i == 2)
-                this->wait_quests = true;
-            send_message(commands[i], "", this->fd);
-        }
-        button_x += width + LOG_BUTTON_SPACING;
-        if (i < 3)
-            DrawLine(button_x - LOG_BUTTON_SPACING / 2, button_y - HUD_PADDING, button_x - LOG_BUTTON_SPACING / 2, log_y + log_height, GRAY);
+    if (clicked == 2)
+        this->wait_quests = true;
+    if (clicked >= 0)
+        send_message(commands[clicked], "", this->fd);
+}
+
+// Returns the index of the clicked button, -1 if none.
+int GameWorld::draw_text_buttons(std::vector<std::string> names, int x, int y, int bottom) {
+    Vector2 mouse = get_virtual_mouse_position();
+    int clicked = -1;
+
+    for (size_t i = 0; i < names.size(); i++) {
+        int width = MeasureText(names[i].c_str(), HUD_FONT_SIZE);
+        bool hovered = CheckCollisionPointRec(mouse, Rectangle{float(x), float(y), float(width), HUD_FONT_SIZE});
+
+        DrawText(names[i].c_str(), x, y, HUD_FONT_SIZE, hovered ? YELLOW : WHITE);
+        if (hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            clicked = i;
+        x += width + LOG_BUTTON_SPACING;
+        if (i + 1 < names.size())
+            DrawLine(x - LOG_BUTTON_SPACING / 2, y - HUD_PADDING, x - LOG_BUTTON_SPACING / 2, bottom, GRAY);
     }
+    return clicked;
 }
