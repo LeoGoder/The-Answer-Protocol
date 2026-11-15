@@ -90,5 +90,7 @@ void GameWorld::update_items(std::string msg) {
     id = word_after(msg, "EVT ROOM ITEM SPAWN ", 0);
     if (id != "")
         this->room.items.push_back(id);
+    if (extract_value(msg, "used") != "")
+        send_message(this->command.INVENTORY, "", this->fd);
     this->player.set_inventory(inventory);
 }

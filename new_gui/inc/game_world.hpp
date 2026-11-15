@@ -67,6 +67,7 @@ class GameWorld : public GameScene {
         MapData map_data;
         std::map<std::string, Texture2D> object_textures;
         std::string hovered_item;
+        std::string hovered_slot;
 
         GameWorld(GameState *game_state);
         ~GameWorld();

@@ -71,6 +71,10 @@ void GameWorld::update() {
         this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_item.empty())
             send_message(this->command.TAKE, this->hovered_item, this->fd);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_slot.empty())
+            send_message(this->command.USE, this->hovered_slot, this->fd);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !this->player.show_chat && !this->hovered_slot.empty())
+            send_message(this->command.DROP, this->hovered_slot, this->fd);
     }
 }
 

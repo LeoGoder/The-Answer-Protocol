@@ -11,6 +11,7 @@ void GameWorld::draw_inventory() {
     std::string hovered;
     float hovered_y = 0;
 
+    this->hovered_slot.clear();
     for (size_t i = 0; i < INVENTORY_SLOTS; i++) {
         Rectangle slot = {INVENTORY_X, float(INVENTORY_Y + i * SLOT_SIZE), SLOT_SIZE - 2, SLOT_SIZE - 2};
 
@@ -19,8 +20,9 @@ void GameWorld::draw_inventory() {
             continue;
         DrawTexture(GameWorld::get_object_texture("item_" + inventory[i] + ".png"), slot.x + 1, slot.y + 1, WHITE);
         if (CheckCollisionPointRec(mouse, slot)) {
-            hovered = GameWorld::display_name(inventory[i]);
+            hovered = GameWorld::display_name(inventory[i]) + "  L: use  R: drop";
             hovered_y = slot.y;
+            this->hovered_slot = inventory[i];
         }
     }
     if (hovered.empty())
