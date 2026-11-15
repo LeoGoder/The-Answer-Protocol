@@ -41,6 +41,23 @@ void GameWorld::update_server_players(std::string msg) {
     this->server_players = std::atoi(msg.c_str() + pos + 8);
 }
 
+// "hp" comes with STATUS and USE, "attacker_hp" with ATTACK; a completed quest raises HP without telling it.
+void GameWorld::update_hp(std::string msg) {
+    size_t hp_pos = msg.find("\"hp\":");
+    size_t max_pos = msg.find("\"max_hp\":");
+    size_t attack_pos = msg.find(R"(OK {"attacker")");
+    size_t quest_pos = msg.find(R"(OK {"quest_id")");
+
+    if (hp_pos != std::string::npos)
+        this->hp = std::atoi(msg.c_str() + hp_pos + 5);
+    if (max_pos != std::string::npos)
+        this->max_hp = std::atoi(msg.c_str() + max_pos + 9);
+    if (attack_pos != std::string::npos)
+        this->hp = std::atoi(msg.c_str() + msg.find("\"attacker_hp\":", attack_pos) + 14);
+    if (quest_pos != std::string::npos && msg.find(R"("status":"completed")", quest_pos) != std::string::npos)
+        send_message(this->command.STATUS, "", this->fd);
+}
+
 
 static void remove_id(std::vector<std::string> &list, const std::string &id) {
     for (size_t i = 0; i < list.size(); i++) {
@@ -93,4 +110,14 @@ void GameWorld::update_items(std::string msg) {
     if (extract_value(msg, "used") != "")
         send_message(this->command.INVENTORY, "", this->fd);
     this->player.set_inventory(inventory);
+}
+
+// Quest progress changes with the inventory, a quest reply or a defeated NPC.
+void GameWorld::refresh_quests(std::string msg) {
+    if (msg.find("OK taken=") != std::string::npos || msg.find("OK dropped=") != std::string::npos
+        || extract_value(msg, "used") != "" || msg.find(R"(OK {"quest_id")") != std::string::npos
+        || msg.find(R"("status":"victory")") != std::string::npos) {
+        this->wait_quests = true;
+        send_message(this->command.QUESTS, "", this->fd);
+    }
 }

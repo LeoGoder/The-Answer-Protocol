@@ -43,7 +43,10 @@ GameWorld::GameWorld(GameState *game_state){
     this->alive_last_time = 0.0;
     this->timer = 0.0;
     this->server_players = 0;
-    this->wait_quests = false;
+    this->hp = 0;
+    this->max_hp = 0;
+    this->wait_quests = true;
+    this->log_quests = false;
     this->log_scroll = 0;
     this->wait_talk = false;
     this->player = Player(&this->font, "", &this->player_sprite);
@@ -135,6 +138,8 @@ void GameWorld::net_update() {
                     send_message(this->command.WHO, "", this->fd);
                     send_message(this->command.INVENTORY, "", this->fd);
                     send_message(this->command.WORLD, "", this->fd);
+                    send_message(this->command.STATUS, "", this->fd);
+                    send_message(this->command.QUESTS, "", this->fd);
                 }
                 else {
                     this->intern_scene = connection_error;
@@ -181,13 +186,28 @@ void GameWorld::net_update() {
                     this->player.chat.add_global_msg(sub_string);
                 }
                 GameWorld::update_server_players(msg_copy);
-                size_t list_pos = msg_copy.find("OK [");
-                if (list_pos != std::string::npos && this->wait_quests) {
-                    GameWorld::add_log(msg_copy.substr(list_pos));
+                GameWorld::update_hp(msg_copy);
+                // QUESTS replies "OK [{...}]", INVENTORY "OK ["..."]": only the empty "OK []" needs wait_quests.
+                size_t quests_pos = msg_copy.find("OK [{");
+                size_t inventory_pos = msg_copy.find("OK [\"");
+                size_t empty_pos = msg_copy.find("OK []");
+                if (this->wait_quests && quests_pos == std::string::npos)
+                    quests_pos = empty_pos;
+                else
+                    inventory_pos = std::min(inventory_pos, empty_pos);
+                if (quests_pos != std::string::npos) {
+                    std::string reply = msg_copy.substr(quests_pos);
+
+                    this->quests = parse_quests(reply);
+                    if (this->log_quests)
+                        GameWorld::add_log(reply);
                     this->wait_quests = false;
+                    this->log_quests = false;
                 }
-                else if (list_pos != std::string::npos) {
-                    this->player.set_inventory(parse_id_list(msg_copy, "OK ["));
+                if (inventory_pos != std::string::npos) {
+                    std::string reply = msg_copy.substr(inventory_pos);
+
+                    this->player.set_inventory(parse_id_list(reply, "OK ["));
                 }
                 if (msg_copy.find(R"(OK {"hostile")") != std::string::npos) {
                     this->hostile = parse_id_list(msg_copy, R"("hostile":[)");
@@ -210,6 +230,7 @@ void GameWorld::net_update() {
                 if (err_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(err_pos));
                 GameWorld::update_items(msg_copy);
+                GameWorld::refresh_quests(msg_copy);
             }
             this->timer += this->game_state->dt;
             if (this->timer >= 1.0 / 24.0) {
@@ -222,7 +243,7 @@ void GameWorld::net_update() {
             break;
             }
 
-    GameWorld::server_alive(msg_split);
+    GameWorld::server_alive(msg_copy);
     this->alive_timer += this->game_state->dt;
 }
 

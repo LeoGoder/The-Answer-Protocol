@@ -31,6 +31,10 @@
 #define DIALOG_WIDTH 320
 #define DIALOG_HEIGHT 80
 #define DIALOG_LINE_CHARS 52
+#define MINIMAP_CELL 14
+#define MINIMAP_STEP 26
+#define MINIMAP_SIZE (2 * MINIMAP_STEP + MINIMAP_CELL + HUD_PADDING * 2)
+#define QUESTS_WIDTH 150
 
 
 enum GameWorldScene {
@@ -48,7 +52,10 @@ class GameWorld : public GameScene {
         float alive_timer;
         float timer;
         int server_players;
+        int hp;
+        int max_hp;
         bool wait_quests;
+        bool log_quests;
         bool wait_talk;
         int log_scroll;
 
@@ -84,6 +91,7 @@ class GameWorld : public GameScene {
         std::vector<std::string> hostile;
         std::vector<std::string> quest_givers;
         std::vector<std::string> usable;
+        std::vector<std::string> quests;
         std::string hovered_npc;
         std::string dialog_npc;
         std::string dialog_text;
@@ -92,7 +100,7 @@ class GameWorld : public GameScene {
         ~GameWorld();
 
         void update() override;
-        void server_alive(std::vector<std::string> msg_split);
+        void server_alive(std::string msg);
         void net_update();
         void room_presence_enter(std::string new_player);
         void room_presence_leave(std::string delete_player);
@@ -102,6 +110,10 @@ class GameWorld : public GameScene {
         void draw_game();
         void draw_hud();
         void draw_player_count();
+        void draw_hp();
+        void draw_minimap();
+        void draw_quests();
+        void refresh_quests(std::string msg);
         void draw_world_objects();
         void draw_object_row(std::vector<std::string> &ids, std::string prefix, float row_offset, Vector2 mouse);
         Texture2D get_object_texture(const std::string &file);
@@ -114,6 +126,7 @@ class GameWorld : public GameScene {
         void draw_dialog();
         void read_talk_reply(std::string buffer);
         void update_server_players(std::string msg);
+        void update_hp(std::string msg);
         void update_items(std::string msg);
         void draw_island(std::vector<std::vector<int>> &island);
 };

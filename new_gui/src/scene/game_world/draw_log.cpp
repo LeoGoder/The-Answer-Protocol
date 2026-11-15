@@ -33,8 +33,10 @@ void GameWorld::draw_log() {
     DrawLine(10, button_y - HUD_PADDING, 10 + LOG_WIDTH, button_y - HUD_PADDING, GRAY);
     int clicked = GameWorld::draw_text_buttons({"LOOK", "STATUS", "QUESTS", "WHO"}, button_x, button_y, log_y + log_height);
 
-    if (clicked == 2)
+    if (clicked == 2) {
         this->wait_quests = true;
+        this->log_quests = true;
+    }
     if (clicked >= 0)
         send_message(commands[clicked], "", this->fd);
 }

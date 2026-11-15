@@ -53,6 +53,7 @@ SRC = src/main.cpp \
 	 src/scene/game_world/draw_inventory.cpp \
 	 src/scene/game_world/draw_log.cpp \
 	 src/scene/game_world/draw_dialog.cpp \
+	 src/scene/game_world/draw_minimap.cpp \
 	
 OBJ_DIR = obj
 

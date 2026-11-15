@@ -89,3 +89,22 @@ std::vector<std::string> parse_id_list(std::string &msg, std::string key) {
     }
     return inventory;
 }
+
+// One line per quest: "fetch_egg  0/1", or "done" once completed.
+std::vector<std::string> parse_quests(std::string &msg) {
+    std::vector<std::string> quests;
+    std::string list = msg.substr(0, msg.find(']'));
+    size_t cursor = list.find('{');
+
+    while (cursor != std::string::npos) {
+        size_t next = list.find('{', cursor + 1);
+        std::string entry = list.substr(cursor, next - cursor);
+        std::string progress = extract_value(entry, "progress");
+
+        if (extract_value(entry, "status") == "completed")
+            progress = "done";
+        quests.push_back(extract_value(entry, "quest_id") + "  " + progress);
+        cursor = next;
+    }
+    return quests;
+}
