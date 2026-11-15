@@ -20,3 +20,22 @@ void GameWorld::draw_hud() {
         GameWorld::draw_dialog();
     }
 }
+
+// Returns the index of the clicked button, -1 if none.
+int GameWorld::draw_text_buttons(std::vector<std::string> names, int x, int y, int bottom) {
+    Vector2 mouse = get_virtual_mouse_position();
+    int clicked = -1;
+
+    for (size_t i = 0; i < names.size(); i++) {
+        int width = MeasureText(names[i].c_str(), HUD_FONT_SIZE);
+        bool hovered = CheckCollisionPointRec(mouse, Rectangle{float(x), float(y), float(width), HUD_FONT_SIZE});
+
+        DrawText(names[i].c_str(), x, y, HUD_FONT_SIZE, hovered ? YELLOW : WHITE);
+        if (hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            clicked = i;
+        x += width + BUTTON_SPACING;
+        if (i + 1 < names.size())
+            DrawLine(x - BUTTON_SPACING / 2, y - HUD_PADDING, x - BUTTON_SPACING / 2, bottom, GRAY);
+    }
+    return clicked;
+}

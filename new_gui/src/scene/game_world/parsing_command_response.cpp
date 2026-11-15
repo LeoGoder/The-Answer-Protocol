@@ -73,7 +73,7 @@ void parse_move_response(std::string &player_name, Room &room, NetCommand &comma
 }
 
 std::vector<std::string> parse_id_list(std::string &msg, std::string key) {
-    std::vector<std::string> inventory;
+    std::vector<std::string> ids;
     size_t start = msg.find(key);
     size_t end = msg.find(']', start);
     std::string list = msg.substr(start + key.size(), end - start - key.size());
@@ -84,10 +84,10 @@ std::vector<std::string> parse_id_list(std::string &msg, std::string key) {
 
         if (close == std::string::npos)
             break;
-        inventory.push_back(list.substr(cursor + 1, close - cursor - 1));
+        ids.push_back(list.substr(cursor + 1, close - cursor - 1));
         cursor = list.find('"', close + 1);
     }
-    return inventory;
+    return ids;
 }
 
 // One line per quest: "fetch_egg  0/1", or "done" once completed.

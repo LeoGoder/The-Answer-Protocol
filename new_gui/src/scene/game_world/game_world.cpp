@@ -76,22 +76,26 @@ void GameWorld::update() {
     }
     if (this->intern_scene == in_game) {
         this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_item.empty())
-            send_message(this->command.TAKE, this->hovered_item, this->fd);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_npc.empty()) {
-            this->dialog_npc = this->hovered_npc;
-            this->dialog_text.clear();
-            this->wait_talk = true;
-            send_message(this->command.TALK, this->hovered_npc, this->fd);
-        }
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_slot.empty()
-            && std::find(this->usable.begin(), this->usable.end(), this->hovered_slot) != this->usable.end())
-            send_message(this->command.USE, this->hovered_slot, this->fd);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !this->player.show_chat && !this->hovered_slot.empty())
-            send_message(this->command.DROP, this->hovered_slot, this->fd);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !this->player.show_chat && !this->hovered_exit.empty()) {
-            send_message("MOVE ", this->hovered_exit, this->fd);
-            this->player.player_pos = PLAYER_DEFAULT_POS;
+        if (!this->player.show_chat) {
+            bool left = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+
+            if (left && !this->hovered_item.empty())
+                send_message(this->command.TAKE, this->hovered_item, this->fd);
+            if (left && !this->hovered_npc.empty()) {
+                this->dialog_npc = this->hovered_npc;
+                this->dialog_text.clear();
+                this->wait_talk = true;
+                send_message(this->command.TALK, this->hovered_npc, this->fd);
+            }
+            if (left && !this->hovered_slot.empty()
+                && std::find(this->usable.begin(), this->usable.end(), this->hovered_slot) != this->usable.end())
+                send_message(this->command.USE, this->hovered_slot, this->fd);
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !this->hovered_slot.empty())
+                send_message(this->command.DROP, this->hovered_slot, this->fd);
+            if (left && !this->hovered_exit.empty()) {
+                send_message("MOVE ", this->hovered_exit, this->fd);
+                this->player.player_pos = PLAYER_DEFAULT_POS;
+            }
         }
     }
 }
@@ -211,8 +215,11 @@ void GameWorld::net_update() {
                 size_t quest_pos = msg_copy.find(R"(OK {"quest_id")");
                 if (quest_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(quest_pos));
-                if (quest_pos != std::string::npos && msg_copy.find(R"("status":"completed")", quest_pos) != std::string::npos)
+                // A completed quest raises HP and takes the delivered item, without telling it.
+                if (quest_pos != std::string::npos && msg_copy.find(R"("status":"completed")", quest_pos) != std::string::npos) {
+                    send_message(this->command.STATUS, "", this->fd);
                     send_message(this->command.INVENTORY, "", this->fd);
+                }
                 if (msg_copy.find(R"("status":"victory")") != std::string::npos)
                     send_message(this->command.LOOK, "", this->fd);
                 size_t attack_pos = msg_copy.find(R"(OK {"attacker")");
