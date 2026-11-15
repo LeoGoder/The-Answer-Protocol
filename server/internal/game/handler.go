@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -23,6 +24,12 @@ type lookResponse struct {
 	Items   []string          `json:"items"`
 	NPCs    []string          `json:"npcs"`
 	Names   map[string]string `json:"names"`
+}
+
+type worldResponse struct {
+	Hostile     []string `json:"hostile"`
+	QuestGivers []string `json:"quest_givers"`
+	Usable      []string `json:"usable"`
 }
 
 // Handle locks once: never call an exported method below (deadlock).
@@ -48,6 +55,8 @@ func (s *State) handle(username string, cmd protocol.Command) Result {
 	switch cmd.Name {
 	case "LOOK":
 		return s.look(player)
+	case "WORLD":
+		return s.worldInfo()
 	case "MOVE":
 		return s.move(player, cmd.Args[0])
 	case "WHO":
@@ -133,6 +142,35 @@ func (s *State) look(player *Player) Result {
 		NPCs:    npcs,
 		Names:   names,
 	}))
+}
+
+// Not in the RFC: static world data the clients ask once, to know which buttons to show.
+func (s *State) worldInfo() Result {
+	response := worldResponse{Hostile: []string{}, QuestGivers: []string{}, Usable: []string{}}
+
+	for id, npc := range s.world.npcs {
+		if npc.Hostile {
+			response.Hostile = append(response.Hostile, id)
+		}
+	}
+
+	for _, quest := range s.world.quests {
+		if !slices.Contains(response.QuestGivers, quest.Giver) {
+			response.QuestGivers = append(response.QuestGivers, quest.Giver)
+		}
+	}
+
+	for id, item := range s.world.items {
+		if item.Heal > 0 {
+			response.Usable = append(response.Usable, id)
+		}
+	}
+
+	sort.Strings(response.Hostile)
+	sort.Strings(response.QuestGivers)
+	sort.Strings(response.Usable)
+
+	return reply(okJSON(response))
 }
 
 func (s *State) playersIn(roomID string) []string {

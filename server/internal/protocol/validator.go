@@ -26,7 +26,7 @@ func Validate(cmd Command) error {
 			return fmt.Errorf("POSITION requires two arguments")
 		}
 
-	case "QUIT", "LOOK", "WHO", "INVENTORY", "STATUS", "QUESTS", "ALIVE":
+	case "QUIT", "LOOK", "WHO", "INVENTORY", "STATUS", "QUESTS", "ALIVE", "WORLD":
 		if len(cmd.Args) != 0 {
 			return fmt.Errorf("%s does not accept arguments", cmd.Name)
 		}
