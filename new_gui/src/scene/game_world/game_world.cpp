@@ -50,6 +50,8 @@ GameWorld::GameWorld(GameState *game_state){
     this->log_scroll = 0;
     this->panel_tab = PANEL_LOG;
     this->group_unread = false;
+    for (int i = 0; i < 3; i++)
+        this->chat_unread[i] = false;
     this->inviting = false;
     this->wait_talk = false;
     this->player = Player(&this->font, "", &this->player_sprite);
@@ -73,12 +75,23 @@ GameWorld::~GameWorld() {
 }
 
 void GameWorld::update() {
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_ESCAPE) && !this->player.show_chat) {
         game_state->set_init_scene(true);
         game_state->set_actual_scene(splash_screen);
     }
     if (this->intern_scene == in_game) {
         this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
+        // show_chat: the player is typing in the CHAT tab (ESC cancels, Enter sends).
+        if (this->player.show_chat) {
+            if (IsKeyPressed(KEY_ESCAPE))
+                this->player.show_chat = false;
+            else if (this->player.chat.chat_input()) {
+                GameWorld::send_chat();
+                this->player.show_chat = false;
+            }
+        }
+        else if (IsKeyPressed(KEY_SLASH))
+            GameWorld::open_chat();
         if (!this->player.show_chat) {
             bool left = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
@@ -118,6 +131,7 @@ void GameWorld::net_update() {
     if (buffer != "") {
         if (this->wait_talk)
             GameWorld::read_talk_reply(buffer);
+        GameWorld::read_chat(buffer);
         kill_return_line(buffer);
         msg_copy = buffer;
         msg_split = split(buffer, ' ', 1);
@@ -178,13 +192,6 @@ void GameWorld::net_update() {
                 }
                 if (msg_copy.find("EVT ROOM POSITION {") != std::string::npos) {
                     update_player_pos(this->room.player, msg_copy);
-                }
-                size_t global_msg = msg_copy.find("EVT GLOBAL CHAT ");
-                if (global_msg != std::string::npos) {
-                    std::string prefix = "EVT GLOBAL CHAT ";
-                    std::string sub_string = msg_copy.substr(global_msg + prefix.length());
-
-                    this->player.chat.add_global_msg(sub_string);
                 }
                 GameWorld::update_server_players(msg_copy);
                 GameWorld::update_hp(msg_copy);

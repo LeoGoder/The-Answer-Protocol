@@ -145,3 +145,22 @@ void GameWorld::update_group(std::string msg) {
     if (this->panel_tab != PANEL_GROUP)
         this->group_unread = true;
 }
+
+// Chat lines are read from the raw buffer (before kill_return_line): a message can contain any text, so it ends at its own '\n'.
+void GameWorld::read_chat(std::string buffer) {
+    const std::string prefixes[3] = {"EVT GLOBAL CHAT ", "EVT ROOM CHAT ", "EVT GROUP CHAT "};
+    std::vector<std::string> lines = split(buffer, '\n');
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        for (int scope = 0; scope < 3; scope++) {
+            if (lines[i].rfind(prefixes[scope], 0) != 0)
+                continue;
+            std::string rest = lines[i].substr(prefixes[scope].size());
+            size_t space = rest.find(' ');
+
+            GameWorld::add_log(rest.substr(0, space) + ": " + rest.substr(space + 1), PANEL_CHAT + scope);
+            if (this->panel_tab != PANEL_CHAT || this->player.chat.chat != scope)
+                this->chat_unread[scope] = true;
+        }
+    }
+}
