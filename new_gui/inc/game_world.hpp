@@ -12,6 +12,9 @@
 #define SERVER_PORT 4242
 #define ALIVE_MAX_TIME 35
 #define ALIVE_CHECK_TIMER 10
+#define HUD_FONT_SIZE 10
+#define HUD_PADDING 6
+
 
 enum GameWorldScene {
     connection = 0,
@@ -27,6 +30,7 @@ class GameWorld : public GameScene {
         float alive_last_time;
         float alive_timer;
         float timer;
+        int server_players;
 
         std::string player_name;
         std::string error_log;
@@ -67,5 +71,7 @@ class GameWorld : public GameScene {
         void draw_connection_error();
         void draw_game();
         void draw_hud();
+        void draw_player_count();
+        void update_server_players(std::string msg);
         void draw_island(std::vector<std::vector<int>> &island);
 };

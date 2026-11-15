@@ -2,6 +2,7 @@
 
 #include "player.hpp"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@ struct NetCommand {
     std::string LOOK = "LOOK\n";
     std::string ALIVE = "ALIVE\n";
     std::string MOVE = "MOVE\n";
+    std::string WHO = "WHO\n";
     std::string POSITION = "POSITION ";
 };
 
@@ -38,6 +40,7 @@ struct Room {
     std::vector<std::unique_ptr<Player>> player;
     std::vector<std::string> items;
     std::vector<std::string> npcs;
+    std::map<std::string, std::string> names;
 };
 
 int send_message(std::string command, std::string param, int fd);

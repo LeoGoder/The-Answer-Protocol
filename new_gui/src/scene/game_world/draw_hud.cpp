@@ -9,6 +9,8 @@ void GameWorld::draw_hud() {
         this->player.chat.draw_chat();
         this->player.chat.draw_msg();
     }
-    else
+    else {
         DrawFontText(this->font, this->room.name, room_name_x, 20);
+        GameWorld::draw_player_count();
+    }
 }

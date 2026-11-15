@@ -41,6 +41,7 @@ GameWorld::GameWorld(GameState *game_state){
     this->alive_timer = 0.0;
     this->alive_last_time = 0.0;
     this->timer = 0.0;
+    this->server_players = 0;
     this->player = Player(&this->font, "", &this->player_sprite);
     this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
     this->player.cam.rotation = 0.0;
@@ -110,6 +111,7 @@ void GameWorld::net_update() {
                         // TODO: change to notify system for ux enhanced
                         std::cout << "Error send\n";
                     }
+                    send_message(this->command.WHO, "", this->fd);
                 }
                 else {
                     this->intern_scene = connection_error;
@@ -153,6 +155,9 @@ void GameWorld::net_update() {
                     std::string sub_string = msg_copy.substr(global_msg + prefix.length());
 
                     this->player.chat.add_global_msg(sub_string);
+                }
+                if (msg_copy.find("players=") != std::string::npos) {
+                    GameWorld::update_server_players(msg_copy);
                 }
             }
             this->timer += this->game_state->dt;
