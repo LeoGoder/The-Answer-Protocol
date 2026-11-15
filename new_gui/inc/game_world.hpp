@@ -52,6 +52,7 @@ enum GameWorldScene {
 class GameWorld : public GameScene {
     public:
         int fd;
+        std::string pending;
 
         float alive_last_time;
         float alive_timer;
