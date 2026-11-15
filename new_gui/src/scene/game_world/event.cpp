@@ -45,16 +45,19 @@ void GameWorld::update_server_players(std::string msg) {
 
 // "hp" comes with STATUS and USE, "attacker_hp" with ATTACK.
 void GameWorld::update_hp(std::string msg) {
-    size_t hp_pos = msg.find("\"hp\":");
-    size_t max_pos = msg.find("\"max_hp\":");
+    const std::string hp_key = "\"hp\":";
+    const std::string max_hp_key = "\"max_hp\":";
+    const std::string attacker_hp_key = "\"attacker_hp\":";
+    size_t hp_pos = msg.find(hp_key);
+    size_t max_pos = msg.find(max_hp_key);
     size_t attack_pos = msg.find(R"(OK {"attacker")");
 
     if (hp_pos != std::string::npos)
-        this->hp = std::atoi(msg.c_str() + hp_pos + 5);
+        this->hp = std::atoi(msg.c_str() + hp_pos + hp_key.size());
     if (max_pos != std::string::npos)
-        this->max_hp = std::atoi(msg.c_str() + max_pos + 9);
+        this->max_hp = std::atoi(msg.c_str() + max_pos + max_hp_key.size());
     if (attack_pos != std::string::npos)
-        this->hp = std::atoi(msg.c_str() + msg.find("\"attacker_hp\":", attack_pos) + 14);
+        this->hp = std::atoi(msg.c_str() + msg.find(attacker_hp_key, attack_pos) + attacker_hp_key.size());
 }
 
 
