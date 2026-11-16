@@ -23,7 +23,7 @@ void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::
     }
 }
 
-Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat(font) {
+Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat() {
     this->player_pos = PLAYER_DEFAULT_POS;
     this->font = font;
     this->name = name;
@@ -31,7 +31,7 @@ Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat(font
     this->show_chat = false;
 }
 
-Player::Player() : chat(nullptr) {
+Player::Player() : chat() {
     (void)font;
 }
 
@@ -204,14 +204,6 @@ void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
         }
     }
 
-    if (this->show_chat == true)
-        this->chat.chat_input(fd);
-    if (IsKeyPressed(KEY_SLASH)) {
-        if (this->show_chat == false)
-            this->show_chat = true;
-        else
-            this->show_chat = false;
-    }
 
     if (IsKeyPressed(KEY_ESCAPE)) {
         // Pause menu enable

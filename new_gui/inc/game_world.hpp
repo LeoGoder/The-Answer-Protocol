@@ -29,6 +29,7 @@
 #define LOG_WIDTH 500
 #define PANEL_LOG 0
 #define PANEL_GROUP 1
+#define PANEL_CHAT 2
 #define BUTTON_SPACING 6
 #define BUTTON_PADDING 3
 #define BUTTON_HEIGHT (HUD_FONT_SIZE + BUTTON_PADDING * 2)
@@ -93,10 +94,11 @@ class GameWorld : public GameScene {
         std::map<std::string, Texture2D> object_textures;
         std::string hovered_item;
         std::string hovered_slot;
-        std::vector<std::string> panel_lines[2];
+        std::vector<std::string> panel_lines[5];
         std::string group_inviter;
         std::vector<std::string> group_members;
         bool group_unread;
+        bool chat_unread[3];
         bool inviting;
         std::vector<std::string> hostile;
         std::vector<std::string> quest_givers;
@@ -134,6 +136,11 @@ class GameWorld : public GameScene {
         void draw_inventory();
         void add_log(std::string msg, int tab = PANEL_LOG);
         void draw_group_buttons(int x, int y);
+        void draw_chat_buttons(int x, int y);
+        void draw_bubble(float x, float y);
+        void open_chat();
+        void send_chat();
+        void read_chat(std::string buffer);
         void update_group(std::string msg);
         void draw_log();
         int draw_text_buttons(std::vector<std::string> names, int x, int y, int selected = -1);

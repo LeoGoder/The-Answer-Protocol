@@ -45,16 +45,19 @@ void GameWorld::update_server_players(std::string msg) {
 
 // "hp" comes with STATUS and USE, "attacker_hp" with ATTACK.
 void GameWorld::update_hp(std::string msg) {
-    size_t hp_pos = msg.find("\"hp\":");
-    size_t max_pos = msg.find("\"max_hp\":");
+    const std::string hp_key = "\"hp\":";
+    const std::string max_hp_key = "\"max_hp\":";
+    const std::string attacker_hp_key = "\"attacker_hp\":";
+    size_t hp_pos = msg.find(hp_key);
+    size_t max_pos = msg.find(max_hp_key);
     size_t attack_pos = msg.find(R"(OK {"attacker")");
 
     if (hp_pos != std::string::npos)
-        this->hp = std::atoi(msg.c_str() + hp_pos + 5);
+        this->hp = std::atoi(msg.c_str() + hp_pos + hp_key.size());
     if (max_pos != std::string::npos)
-        this->max_hp = std::atoi(msg.c_str() + max_pos + 9);
+        this->max_hp = std::atoi(msg.c_str() + max_pos + max_hp_key.size());
     if (attack_pos != std::string::npos)
-        this->hp = std::atoi(msg.c_str() + msg.find("\"attacker_hp\":", attack_pos) + 14);
+        this->hp = std::atoi(msg.c_str() + msg.find(attacker_hp_key, attack_pos) + attacker_hp_key.size());
 }
 
 
@@ -146,4 +149,23 @@ void GameWorld::update_group(std::string msg) {
     GameWorld::add_log(line, PANEL_GROUP);
     if (this->panel_tab != PANEL_GROUP)
         this->group_unread = true;
+}
+
+// Chat lines are read from the raw buffer (before kill_return_line): a message can contain any text, so it ends at its own '\n'.
+void GameWorld::read_chat(std::string buffer) {
+    const std::string prefixes[3] = {"EVT GLOBAL CHAT ", "EVT ROOM CHAT ", "EVT GROUP CHAT "};
+    std::vector<std::string> lines = split(buffer, '\n');
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        for (int scope = 0; scope < 3; scope++) {
+            if (lines[i].rfind(prefixes[scope], 0) != 0)
+                continue;
+            std::string rest = lines[i].substr(prefixes[scope].size());
+            size_t space = rest.find(' ');
+
+            GameWorld::add_log(rest.substr(0, space) + ": " + rest.substr(space + 1), PANEL_CHAT + scope);
+            if (this->panel_tab != PANEL_CHAT || this->player.chat.chat != scope)
+                this->chat_unread[scope] = true;
+        }
+    }
 }

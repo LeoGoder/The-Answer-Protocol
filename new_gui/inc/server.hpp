@@ -26,6 +26,7 @@ struct NetCommand {
     std::string QUEST = "QUEST ";
     std::string ATTACK = "ATTACK ";
     std::string GROUP = "GROUP ";
+    std::string CHAT = "CHAT ";
     std::string QUIT = "QUIT\n";
     std::string POSITION = "POSITION ";
 };
