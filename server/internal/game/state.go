@@ -3,7 +3,6 @@ package game
 import (
 	"fmt"
 	"math/rand"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -233,9 +232,22 @@ func matches(typed string, id string, name string) bool {
 
 // remove removes the first element equal to value.
 func remove[T comparable](list []T, value T) []T {
-	if index := slices.Index(list, value); index >= 0 {
-		return slices.Delete(list, index, index+1)
+	for index, item := range list {
+		if item == value {
+			return append(list[:index], list[index+1:]...)
+		}
 	}
 
 	return list
+}
+
+// contains reports whether value is in list.
+func contains[T comparable](list []T, value T) bool {
+	for _, item := range list {
+		if item == value {
+			return true
+		}
+	}
+
+	return false
 }

@@ -3,7 +3,6 @@ package game
 import (
 	"encoding/json"
 	"fmt"
-	"slices"
 	"sort"
 	"strings"
 
@@ -155,7 +154,7 @@ func (s *State) worldInfo() Result {
 	}
 
 	for _, quest := range s.world.quests {
-		if !slices.Contains(response.QuestGivers, quest.Giver) {
+		if !contains(response.QuestGivers, quest.Giver) {
 			response.QuestGivers = append(response.QuestGivers, quest.Giver)
 		}
 	}
