@@ -54,7 +54,7 @@ class NetworkClient {
     // Checks whether the connection was severed unexpectedly by the remote host
     bool isConnectionLost() const;
 
-    // Sets flag indicating whether disconnection was initiated voluntarily by the user
+    // Flag indicating whether disconnect was initiated voluntarily by user
     void setUserQuit(bool val);
 
     // Sends a line of text terminated by a newline character across the socket
@@ -90,17 +90,17 @@ class NetworkClient {
     // Updates UI room description and resolves map asset
     void updateRoomState(const RoomInfo& room, AppState& state);
 
-    // Handles server responses to CMD_MOVE (parsing room JSON or triggering LOOK fallback)
+    // Handles server responses to CMD_MOVE (room JSON or LOOK fallback)
     bool handleMoveResponse(const std::string& line, AppState& state);
 
     // Handles server responses to TAKE, DROP, and INVENTORY queries
     bool handleInventoryResponse(const std::string& line, int cmd,
                                  AppState& state);
 
-    // Handles item consumption responses and triggers automatic inventory update
+    // Handles item consumption responses and triggers auto inventory update
     bool handleUseResponse(const std::string& line, AppState& state);
 
-    // Handles attack replies, formats combat results, and triggers LOOK on victory
+    // Handles attack replies, formats results, and triggers LOOK on victory
     bool handleAttackResponse(const std::string& line, AppState& state);
 
     /**
@@ -111,10 +111,10 @@ class NetworkClient {
     bool handleJsonQueryResponse(const std::string& line, int cmd,
                                  AppState& state);
 
-    // Handles bare OK / ERR acknowledgments for optimistic in-flight chat messages
+    // Handles bare OK / ERR acknowledgments for optimistic chat messages
     bool handleChatAck(const std::string& line, int cmd, AppState& state);
 
-    // Parses asynchronous server broadcast events (combat notices and multi-channel chat)
+    // Parses async server broadcast events (combat notices and chat)
     bool handleAsyncEvent(const std::string& line, AppState& state);
 
     int socket_fd_;

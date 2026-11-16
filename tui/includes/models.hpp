@@ -13,32 +13,46 @@
  * @brief Connection parameters for TCP socket establishment.
  */
 struct ConnectionConfig {
-    std::string pseudo;         ///< Player username / handle.
-    std::string ip   = "127.0.0.1"; ///< Server IPv4 address.
-    std::string port = "4242";      ///< Server TCP listening port.
+    /// Player username / handle.
+    std::string pseudo;
+    /// Server IPv4 address.
+    std::string ip   = "127.0.0.1";
+    /// Server TCP listening port.
+    std::string port = "4242";
 };
 
 /**
  * @brief Structured chat or terminal message log entry.
  */
 struct ChatMessage {
-    std::string pseudo;         ///< Sender username (empty for system/server notices).
-    std::string content;        ///< Message body.
-    std::string channel;        ///< Target channel (e.g., "ROOM", "GLOBAL", "PARTY").
-    bool is_local = false;      ///< True if sent by the local client.
+    /// Sender username (empty for system/server notices).
+    std::string pseudo;
+    /// Message body.
+    std::string content;
+    /// Target channel (e.g., "ROOM", "GLOBAL", "PARTY").
+    std::string channel;
+    /// True if sent by the local client.
+    bool is_local = false;
 };
 
 /**
  * @brief Room state information received from LOOK responses.
  */
 struct RoomInfo {
-    std::string id;             ///< Canonical room identifier (e.g. "tavern.entrance").
-    std::string name;           ///< Display name of the room.
-    std::string description;    ///< Descriptive narrative of the room.
-    std::map<std::string, std::string> exits; ///< Cardinal exits mapping direction to target room ID.
-    std::vector<std::string> players;         ///< List of other players present in the room.
-    std::vector<std::string> items;           ///< List of items on the floor.
-    std::vector<std::string> npcs;            ///< List of non-player characters in the room.
+    /// Canonical room identifier (e.g. "tavern.entrance").
+    std::string id;
+    /// Display name of the room.
+    std::string name;
+    /// Descriptive narrative of the room.
+    std::string description;
+    /// Cardinal exits mapping direction to target room ID.
+    std::map<std::string, std::string> exits;
+    /// List of other players present in the room.
+    std::vector<std::string> players;
+    /// List of items on the floor.
+    std::vector<std::string> items;
+    /// List of non-player characters in the room.
+    std::vector<std::string> npcs;
 };
 
 /**
@@ -77,7 +91,8 @@ struct CombatInfo {
     int target_hp = 0;          ///< Target remaining hit points.
     int damage = 0;             ///< Damage dealt by attacker.
     int damage_taken = 0;       ///< Retaliation damage suffered.
-    std::string status;         ///< Status (e.g., "in_combat", "defeated", "victory").
+    /// Status (e.g., "in_combat", "defeated", "victory").
+    std::string status;
     std::string room;           ///< Respawn room or location.
 };
 
@@ -114,8 +129,12 @@ struct PendingChat {
  * @brief Normalized result of parsing user chat input.
  */
 struct ParsedChat {
-    bool is_chat = false;       ///< True if input represents a chat action.
-    std::string channel;        ///< Canonical channel ("ROOM", "GLOBAL", "PARTY").
-    std::string message;        ///< Message text without prefix.
-    std::string command_to_send;///< Protocol-formatted line for socket transmission.
+    /// True if input represents a chat action.
+    bool is_chat = false;
+    /// Canonical channel ("ROOM", "GLOBAL", "PARTY").
+    std::string channel;
+    /// Message text without prefix.
+    std::string message;
+    /// Protocol-formatted line for socket transmission.
+    std::string command_to_send;
 };

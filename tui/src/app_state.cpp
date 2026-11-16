@@ -252,7 +252,7 @@ bool AppState::checkAndClearIfLastChat(const std::string& pseudo,
                                       const std::string& channel) {
     std::string current_user = getUserPseudo();
     std::lock_guard<std::mutex> lock(last_chat_mutex_);
-    // Match sender pseudo, message body, and channel against recorded outgoing message
+    // Match sender pseudo, message body, and channel against recorded message
     if (pseudo == current_user && msg == last_chat_msg_ &&
         (last_chat_channel_.empty() || channel == last_chat_channel_)) {
         // Clear echo buffer upon match
@@ -273,11 +273,11 @@ void AppState::setInterfaceActive(bool active) {
     interface_active_.store(active);
 }
 
-// Adds command to navigation history with duplicate suppression and 100-entry limit
+// Adds command to history with duplicate suppression and 100-entry limit
 void AppState::addCommandHistory(const std::string& cmd) {
     if (cmd.empty()) return;
     std::lock_guard<std::mutex> lock(command_history_mutex_);
-    // Suppress immediate repeated commands (like pressing Return multiple times)
+    // Suppress immediate repeated commands (like pressing Return repeatedly)
     if (!command_history_.empty() && command_history_.back() == cmd) {
         return;
     }

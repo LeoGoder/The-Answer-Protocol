@@ -10,14 +10,15 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
 
-// Wraps an element into a ShrinkableNode to allow terminal window shrinking without layout overflow
+// Wraps an element into a ShrinkableNode to allow window shrinking
 ftxui::Element shrinkable(ftxui::Element child);
 
 // String trimming and prefix manipulation utilities
 std::string trim(const std::string& str);
 std::string toUpper(std::string str);
 bool startsWith(const std::string& str, const std::string& prefix);
-bool stripPrefix(const std::string& str, const std::string& prefix, std::string& out);
+bool stripPrefix(const std::string& str, const std::string& prefix,
+                 std::string& out);
 
 /**
  * @brief Constructs an auto-wrapping paragraph element with optional sender pseudo and channel badge.

@@ -47,7 +47,7 @@ ftxui::Element shrinkable(ftxui::Element child) {
     return std::make_shared<ShrinkableNode>(std::move(child));
 }
 
-// Constructs an auto-wrapping message element with optional channel and colored pseudo
+// Constructs an auto-wrapping element with channel and colored pseudo
 ftxui::Element wrapLine(const std::string& pseudo,
                         const std::string& content,
                         ftxui::Color pseudo_color,

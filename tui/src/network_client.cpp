@@ -213,7 +213,8 @@ void NetworkClient::stopListener() {
     listener_thread_.reset();
 }
 
-static void addLogLines(AppState& state, const std::vector<std::string>& lines) {
+static void addLogLines(AppState& state,
+                        const std::vector<std::string>& lines) {
     for (const auto& l : lines) {
         state.addMessage("", l, false);
     }
@@ -227,7 +228,7 @@ void NetworkClient::updateRoomState(const RoomInfo& room, AppState& state) {
     }
 }
 
-// Handles server responses to CMD_MOVE (parsing room JSON or triggering LOOK fallback)
+// Handles responses to CMD_MOVE (room JSON or LOOK fallback)
 bool NetworkClient::handleMoveResponse(const std::string& line,
                                        AppState& state) {
     if (!startsWith(line, "OK")) return false;
@@ -240,7 +241,7 @@ bool NetworkClient::handleMoveResponse(const std::string& line,
             return true;
         }
     }
-    // Server returned bare OK on move: trigger automatic LOOK to update room description & map
+    // Bare OK on move: trigger automatic LOOK to update room & map
     state.setPendingCommand(CMD_LOOK);
     sendLine("LOOK");
     return true;
@@ -323,7 +324,7 @@ bool NetworkClient::handleAttackResponse(const std::string& line,
     return true;
 }
 
-// Deserializes and formats structured JSON responses for LOOK, QUEST, and QUESTS
+// Deserializes JSON responses for LOOK, QUEST, and QUESTS
 bool NetworkClient::handleJsonQueryResponse(const std::string& line, int cmd,
                                             AppState& state) {
     if (!startsWith(line, "OK ") || line.size() <= 3) return false;
@@ -352,7 +353,8 @@ bool NetworkClient::handleJsonQueryResponse(const std::string& line, int cmd,
             } else {
                 for (auto q : quests) {
                     if (q.description.empty()) {
-                        std::string desc = state.getQuestDescription(q.quest_id);
+                        std::string desc =
+                            state.getQuestDescription(q.quest_id);
                         if (!desc.empty()) q.description = desc;
                     }
                     addLogLines(state, formatQuestInfo(q));
@@ -391,7 +393,7 @@ bool NetworkClient::handleChatAck(const std::string& line, int cmd,
     return false;
 }
 
-// Parses asynchronous server broadcast events (combat notices and multi-channel chat)
+// Parses async server broadcast events (combat notices and chat)
 bool NetworkClient::handleAsyncEvent(const std::string& line,
                                      AppState& state) {
     if (!startsWith(line, "EVT ")) return false;

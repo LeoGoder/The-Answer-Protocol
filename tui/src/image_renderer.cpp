@@ -76,7 +76,7 @@ ImageEntry loadImage(const std::string& path) {
     for (std::size_t i = 0; i < bmp->pixels.size(); ++i) {
         const unsigned char* p = data + 4 * i;
         const int a = p[3];
-        // Premultiply RGB channels by alpha value to avoid dark fringe halos against terminal backgrounds
+        // Premultiply RGB by alpha to avoid dark fringe halos on backgrounds
         bmp->pixels[i] = {static_cast<std::uint8_t>(p[0] * a / 255),
                           static_cast<std::uint8_t>(p[1] * a / 255),
                           static_cast<std::uint8_t>(p[2] * a / 255)};

@@ -49,7 +49,7 @@ class AppState {
      */
     void setActiveQuests(const std::vector<QuestInfo>& quests);
 
-    // Inserts or updates an individual quest in active list and persistent cache
+    // Inserts or updates an individual quest in active list and cache
     void upsertQuest(const QuestInfo& quest);
 
     // Removes completed quests from display and marks them as dismissed

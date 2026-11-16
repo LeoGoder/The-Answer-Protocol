@@ -187,13 +187,13 @@ bool runGameView(NetworkClient& client,
                                        static_cast<int>(user_input.size())));
         Elements content_parts;
 
-        // Custom cursor rendering: highlight the character under cursor with cyan background
+        // Custom cursor: highlight char under cursor with cyan background
         if (user_input.empty()) {
             content_parts.push_back(text("█") | color(Color::Cyan));
             content_parts.push_back(
                 text(" Type your command here...") | color(Color::GrayDark));
         } else if (pos < static_cast<int>(user_input.size())) {
-            // Split input into before-cursor, inverted active character, and after-cursor segments
+            // Split input into before-cursor, active char, and after-cursor
             std::string before = user_input.substr(0, pos);
             std::string at_char = user_input.substr(pos, 1);
             std::string after = user_input.substr(pos + 1);

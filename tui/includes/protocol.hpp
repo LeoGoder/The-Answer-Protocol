@@ -67,7 +67,7 @@ std::vector<std::string> formatRoomInfo(const RoomInfo& info);
 // Formats QuestInfo fields into human-readable terminal lines
 std::vector<std::string> formatQuestInfo(const QuestInfo& info);
 
-// Formats item consumption results (HP changes, attack boosts) into display lines
+// Formats item consumption results (HP, attack boosts) into display lines
 std::vector<std::string> formatUseInfo(const UseInfo& info);
 
 // Formats combat round outcome and damage details into display lines

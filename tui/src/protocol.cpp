@@ -24,7 +24,8 @@ static std::string joinList(const std::vector<std::string>& v) {
         if (i > 0) result += ", ";
         std::string word = v[i];
         if (!word.empty()) {
-            word[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(word[0])));
+            word[0] = static_cast<char>(
+                std::toupper(static_cast<unsigned char>(word[0])));
         }
         result += word;
     }
@@ -37,7 +38,8 @@ static std::string roomIdToName(const std::string& room_id) {
     size_t dot = name.find('.');
     if (dot != std::string::npos) name = name.substr(dot + 1);
     if (!name.empty()) {
-        name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[0])));
+        name[0] = static_cast<char>(
+            std::toupper(static_cast<unsigned char>(name[0])));
     }
     return name;
 }
@@ -60,7 +62,8 @@ static int extractFirstNumber(const std::string& text) {
     for (size_t i = 0; i < text.size(); ++i) {
         if (std::isdigit(static_cast<unsigned char>(text[i]))) {
             size_t j = i;
-            while (j < text.size() && std::isdigit(static_cast<unsigned char>(text[j]))) {
+            while (j < text.size() &&
+                   std::isdigit(static_cast<unsigned char>(text[j]))) {
                 j++;
             }
             try {
@@ -93,10 +96,14 @@ static void parseQuestObjective(QuestInfo& out) {
 
     size_t bring = lower.find("bring ");
     size_t to    = lower.find(" to ");
-    if (bring != std::string::npos && to != std::string::npos && to > bring + 6) {
-        out.target_item = trim(out.objective.substr(bring + 6, to - (bring + 6)));
+    if (bring != std::string::npos && to != std::string::npos &&
+        to > bring + 6) {
+        out.target_item = trim(
+            out.objective.substr(bring + 6, to - (bring + 6)));
         std::string npc = trim(out.objective.substr(to + 4));
-        while (!npc.empty() && (npc.back() == '.' || std::isspace(static_cast<unsigned char>(npc.back())))) {
+        while (!npc.empty() &&
+               (npc.back() == '.' ||
+                std::isspace(static_cast<unsigned char>(npc.back())))) {
             npc.pop_back();
         }
         out.target_npc = npc;
@@ -256,14 +263,15 @@ bool parseCombatResponse(const std::string& raw_response, CombatInfo& out) {
     }
 }
 
-// Recursively traverses arbitrary nested JSON objects and arrays into text lines
+// Recursively traverses arbitrary nested JSON into text lines
 static void formatJsonValue(const json& j, const std::string& prefix,
                             std::vector<std::string>& lines) {
     if (j.is_object()) {
         for (auto& [key, val] : j.items()) {
             std::string label = key;
             if (!label.empty()) {
-                label[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(label[0])));
+                label[0] = static_cast<char>(
+                    std::toupper(static_cast<unsigned char>(label[0])));
             }
             if (val.is_object() || val.is_array()) {
                 formatJsonValue(val, prefix + label + ".", lines);
@@ -319,15 +327,22 @@ std::vector<std::string> formatRoomInfo(const RoomInfo& info) {
 std::vector<std::string> formatQuestInfo(const QuestInfo& info) {
     std::vector<std::string> lines;
     if (!info.quest_id.empty()) lines.push_back("Quest: " + info.quest_id);
-    if (!info.description.empty()) lines.push_back("Description: " + info.description);
+    if (!info.description.empty()) {
+        lines.push_back("Description: " + info.description);
+    }
     if (!info.objective.empty() && info.objective != info.description) {
         lines.push_back("Objective: " + info.objective);
     }
     if (info.required_items > 0) {
-        lines.push_back("Required items: " + std::to_string(info.required_items));
+        lines.push_back("Required items: " +
+                        std::to_string(info.required_items));
     }
-    if (!info.target_item.empty()) lines.push_back("Target item: " + info.target_item);
-    if (!info.target_npc.empty()) lines.push_back("Deliver to: " + info.target_npc);
+    if (!info.target_item.empty()) {
+        lines.push_back("Target item: " + info.target_item);
+    }
+    if (!info.target_npc.empty()) {
+        lines.push_back("Deliver to: " + info.target_npc);
+    }
     if (!info.progress.empty()) lines.push_back("Progress: " + info.progress);
     if (!info.reward.empty()) lines.push_back("Reward: " + info.reward);
     if (!info.status.empty()) lines.push_back("Status: " + info.status);
@@ -338,12 +353,14 @@ std::vector<std::string> formatUseInfo(const UseInfo& info) {
     std::vector<std::string> lines;
     std::string item_name = info.used;
     if (!item_name.empty()) {
-        item_name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(item_name[0])));
+        item_name[0] = static_cast<char>(
+            std::toupper(static_cast<unsigned char>(item_name[0])));
     }
     lines.push_back("Used: " + item_name);
 
     if (info.max_hp > 0) {
-        lines.push_back("HP: " + std::to_string(info.hp) + "/" + std::to_string(info.max_hp));
+        lines.push_back("HP: " + std::to_string(info.hp) + "/" +
+                        std::to_string(info.max_hp));
     } else if (info.hp > 0) {
         lines.push_back("HP: " + std::to_string(info.hp));
     }
@@ -355,7 +372,8 @@ std::vector<std::string> formatUseInfo(const UseInfo& info) {
     if (!info.received.empty()) {
         std::string rec = info.received;
         if (!rec.empty()) {
-            rec[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(rec[0])));
+            rec[0] = static_cast<char>(
+                std::toupper(static_cast<unsigned char>(rec[0])));
         }
         lines.push_back("Received: " + rec);
     }
@@ -367,12 +385,14 @@ std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
     std::vector<std::string> lines;
     std::string target_name = info.target;
     if (!target_name.empty()) {
-        target_name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(target_name[0])));
+        target_name[0] = static_cast<char>(
+            std::toupper(static_cast<unsigned char>(target_name[0])));
     }
 
     lines.push_back("Combat vs " + target_name + ":");
     lines.push_back("  Damage dealt: " + std::to_string(info.damage) +
-                    " (" + target_name + " HP: " + std::to_string(info.target_hp) + ")");
+                    " (" + target_name + " HP: " +
+                    std::to_string(info.target_hp) + ")");
 
     if (info.status == "victory") {
         lines.push_back("  Status: Victory! " + target_name + " defeated.");
@@ -380,8 +400,10 @@ std::vector<std::string> formatCombatInfo(const CombatInfo& info) {
         lines.push_back("  Damage taken: " + std::to_string(info.damage_taken) +
                         " (Your HP: " + std::to_string(info.attacker_hp) + ")");
         if (info.status == "defeated") {
-            std::string respawn = info.room.empty() ? "respawn point" : info.room;
-            lines.push_back("  Status: Defeated! You respawned in " + respawn + ".");
+            std::string respawn = info.room.empty() ? "respawn point"
+                                                    : info.room;
+            lines.push_back("  Status: Defeated! You respawned in " +
+                            respawn + ".");
         } else {
             lines.push_back("  Status: In combat");
         }

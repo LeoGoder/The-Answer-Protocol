@@ -20,7 +20,7 @@ std::string resolveMapPath(const std::string& room_id,
 
     if (!room_id.empty()) {
         std::string raw_id = room_id;
-        // Extract base identifier by stripping dot-separated namespace or "room_" prefix
+        // Extract base ID by stripping namespace or "room_" prefix
         size_t dot = raw_id.find('.');
         if (dot != std::string::npos) {
             raw_id = raw_id.substr(dot + 1);
