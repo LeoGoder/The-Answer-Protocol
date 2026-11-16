@@ -51,3 +51,13 @@ bool is_slot_used(int slot_index) {
     }
     return false;
 }
+
+void delete_save(int slot_index) {
+    char dir_path[64];
+    char file_path[128];
+
+    snprintf(dir_path, sizeof(dir_path), "saves/TAP_%02d", slot_index);
+    snprintf(file_path, sizeof(file_path), "%s/save.bin", dir_path);
+    unlink(file_path);
+    rmdir(dir_path);
+}
