@@ -243,7 +243,7 @@ void GameWorld::net_update() {
                 GameWorld::refresh_quests(msg_copy);
             }
             this->timer += this->game_state->dt;
-            if (this->timer >= 1.0 / 24.0) {
+            if (this->timer >= REQUEST_FREQUENCE) {
                 this->timer = 0.0;
                 std::string p_pos = "";
 
@@ -308,9 +308,9 @@ void GameWorld::draw() {
             draw_connection_error();
             break;
         case in_game:
-            float player_center = (float(this->player_sprite.width) / 2);
+            // float player_center = (float(this->player_sprite.width) / 2);
 
-            this->player.cam.target.x = this->player.player_pos.x + player_center;
+            this->player.cam.target.x = this->player.player_pos.x + SPRITE_SIZE.x;
             this->player.cam.target.y = this->player.player_pos.y;
             BeginMode2D(this->player.cam);
                 draw_game();

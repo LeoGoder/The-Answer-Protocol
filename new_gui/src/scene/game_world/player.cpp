@@ -30,7 +30,9 @@ Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat(font
     this->sprite = sprite;
     this->show_chat = false;
     this->time = 0.0f;
-    this->animation = 0;
+    this->idle_animation = 0;
+    this->walk_animation = 0;
+    this->last_direction = 0;
 }
 
 Player::Player() : chat(nullptr) {
@@ -41,6 +43,23 @@ Player::~Player() {
 
 }
 
+void Player::update_animation_timer(float dt) {
+    this->time += dt;
+    if (this->time > TARGET_SPEED) {
+        this->time = 0.0f;
+
+        this->idle_animation += 1;
+        if (this->idle_animation >= PLAYER_IDLE_ANIMATION) {
+            this->idle_animation = 0;
+        }
+
+        this->walk_animation += 1;
+        if (this->walk_animation >= PLAYER_WALKING_ANIMATION) {
+            this->walk_animation = 0;
+        }
+    }
+}
+
 void Player::draw_player(std::string player_name, float dt) {
     float player_center = (float(this->sprite->width) / 2.0f);
     float text_len_full = float(GetFontTextWidth(player_name));
@@ -48,27 +67,50 @@ void Player::draw_player(std::string player_name, float dt) {
 
     DrawRectangle(this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4), this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
     DrawFontText(*this->font, player_name, this->player_pos.x - text_len + player_center, this->player_pos.y - 20);
-    if (IsKeyDown(KEY_A))
-        draw_sprite_sheet(*this->sprite, this->animation + LEFT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
-    else if (IsKeyDown(KEY_D))
-        draw_sprite_sheet(*this->sprite, this->animation + RIGHT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
-    else if (IsKeyDown(KEY_W))
-        draw_sprite_sheet(*this->sprite, this->animation + BACK, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+
+    if (IsKeyDown(KEY_A) && IsKeyDown(KEY_W)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT_DIAG_UP, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_LEFT_DIAG_UP;
+    }
+    else if (IsKeyDown(KEY_A) && IsKeyDown(KEY_S)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT_DIAG_DOWN, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_LEFT_DIAG_DOWN;
+    }
+    else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_W)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT_DIAG_UP, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_RIGHT_DIAG_UP;
+    }
+    else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_S)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_RIGHT_DIAG_DOWN;
+    }
+
+    else if (IsKeyDown(KEY_A)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_LEFT;
+    }
+    else if (IsKeyDown(KEY_D)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_RIGHT;
+    }
+    else if (IsKeyDown(KEY_W)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_BACK, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_BACK;
+    }
+    else if (IsKeyDown(KEY_S)) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_FRONT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        this->last_direction = WALK_FRONT;
+    }
     else {
-        draw_sprite_sheet(*this->sprite, this->animation, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        int direction;
+
+        if (this->last_direction > 0)
+            direction = this->last_direction - (8 * 6);
+        else
+            direction = 0;
+        draw_sprite_sheet(*this->sprite, this->idle_animation + direction, 6, this->player_pos, SPRITE_SIZE, 2.0f);
     }
-
-
-    
-    this->time += dt;
-    if (this->time > TARGET_SPEED) {
-        this->time = 0.0f;
-
-        this->animation += 1;
-        if (this->animation >= 6) {
-            this->animation = 0;
-        }
-    }
+    update_animation_timer(dt);
 }
 
 bool player_overlap(std::vector<std::vector<int>> &data, Vector2 player_pos) {
@@ -84,8 +126,8 @@ bool player_overlap(std::vector<std::vector<int>> &data, Vector2 player_pos) {
             tile_pos.y += TILE_HEIGHT;
         }
         if (data[layer][y] != 0) {
-            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
-                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
+            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x - PLAYER_OFFSET && player_pos.x + PLAYER_OFFSET <= tile_pos.x + TILE_WIDTH) &&
+                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y - PLAYER_OFFSET && player_pos.y + PLAYER_OFFSET <= tile_pos.y + TILE_HEIGHT)) {
                 return true;
             }
         }
