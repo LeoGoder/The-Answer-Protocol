@@ -120,9 +120,23 @@ void GameWorld::net_update() {
     std::vector<std::string> msg_split;
     std::string msg_copy;
     std::string buffer;
+    std::string look;
 
-    if (this->fd > 0)
-        buffer = receiv_msg(this->fd);
+    if (this->fd > 0) {
+        // Only complete lines are read: the end of a long line can come in the next recv.
+        this->pending += receiv_msg(this->fd);
+        size_t end = this->pending.rfind('\n');
+
+        if (end != std::string::npos) {
+            buffer = this->pending.substr(0, end + 1);
+            this->pending.erase(0, end + 1);
+        }
+        // The last LOOK line of the buffer: the "OK" replies to POSITION often come before it.
+        size_t look_pos = ("\n" + buffer).rfind("\n" R"(OK {"room")");
+
+        if (look_pos != std::string::npos)
+            look = buffer.substr(look_pos, buffer.find('\n', look_pos) - look_pos);
+    }
     if (this->fd == 0) {
         close(fd);
         this->fd = -1;
@@ -166,9 +180,11 @@ void GameWorld::net_update() {
             break;
         case in_game:
             if (!msg_split.empty()) {
-                if (msg_copy.rfind(R"(OK {"room")", 0) == 0) {
-                    parse_look_response(msg_split, this->room, &this->font, &this->player_sprite, this->map);
-                    GameWorld::add_log(msg_copy);
+                if (!look.empty()) {
+                    std::vector<std::string> look_split = split(look, ' ', 1);
+
+                    parse_look_response(look_split, this->room, &this->font, &this->player_sprite, this->map);
+                    GameWorld::add_log(look);
                 }
                 size_t move = msg_copy.find("OK room=");
                 if (move != std::string::npos) {
@@ -230,7 +246,9 @@ void GameWorld::net_update() {
                     send_message(this->command.STATUS, "", this->fd);
                     send_message(this->command.INVENTORY, "", this->fd);
                 }
-                if (msg_copy.find(R"("status":"victory")") != std::string::npos)
+                // A defeated or respawned enemy changes the NPCs of the room.
+                if (msg_copy.find(R"("status":"victory")") != std::string::npos
+                    || msg_copy.find("EVT ROOM NPC SPAWN ") != std::string::npos)
                     send_message(this->command.LOOK, "", this->fd);
                 size_t attack_pos = msg_copy.find(R"(OK {"attacker")");
                 if (attack_pos != std::string::npos)

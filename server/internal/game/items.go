@@ -320,7 +320,7 @@ func (s *State) pickFloor(id string) (string, *floorItem) {
 	return bestRoom, best
 }
 
-// Tick runs every second: dropped items expire, spawn points refill.
+// Tick runs every second: dropped items expire, spawn points refill, defeated enemies respawn.
 func (s *State) Tick() []Event {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -344,6 +344,12 @@ func (s *State) Tick() []Event {
 
 		s.fillSpawnPoint(point, "spawn")
 		s.queue(s.toRoom(point.Room, "EVT ROOM ITEM SPAWN "+point.ItemID, ""))
+	}
+
+	for _, npc := range s.npcs {
+		if npc.Def.Hostile && npc.HP <= 0 && s.isAlive(npc) {
+			s.queue(s.toRoom(npc.Room, "EVT ROOM NPC SPAWN "+npc.Def.ID, ""))
+		}
 	}
 
 	return s.flush()
