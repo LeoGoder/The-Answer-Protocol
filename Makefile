@@ -17,6 +17,7 @@ run-client-tui:
 # C++ lint (GUI, TUI) to be added with the team.
 lint:
 	cd $(SERVER_DIR) && gofmt -l . && test -z "$$(gofmt -l .)" && go vet ./...
+	$(MAKE) -C $(TUI_DIR) lint
 
 clean:
 	cd $(SERVER_DIR) && go clean
