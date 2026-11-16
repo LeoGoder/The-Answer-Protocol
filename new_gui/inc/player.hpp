@@ -16,6 +16,15 @@
 #define PLAYER_HEIGHT 28
 #define PLAYER_DEFAULT_POS {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT}
 
+#define PLAYER_IDLE_ANIMATION 6
+#define PLAYER_WALKING_ANIMATION 4
+
+#define TARGET_SPEED 0.1
+#define TRANSITION (8 * 6)
+#define LEFT (6 * 6)
+#define RIGHT (6 * 2)
+#define BACK (6 * 4)
+
 class Player {
     private:
         std::vector<std::string> inventory;
@@ -23,6 +32,8 @@ class Player {
     public:
         bool show_chat;
         float speed = 200.0;
+        float time;
+        int animation;
         Vector2 player_pos;
 
         std::string name;
@@ -44,7 +55,7 @@ class Player {
         Player();
         ~Player();
 
-        void draw_player(std::string player_name);
+        void draw_player(std::string player_name, float dt);
         void input_player(float dt, Maps &map, MapData &map_data, int fd);
 };
 

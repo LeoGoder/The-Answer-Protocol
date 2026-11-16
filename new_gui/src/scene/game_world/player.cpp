@@ -29,6 +29,8 @@ Player::Player(Texture2D *font, std::string name, Texture2D *sprite) : chat(font
     this->name = name;
     this->sprite = sprite;
     this->show_chat = false;
+    this->time = 0.0f;
+    this->animation = 0;
 }
 
 Player::Player() : chat(nullptr) {
@@ -39,14 +41,34 @@ Player::~Player() {
 
 }
 
-void Player::draw_player(std::string player_name) {
+void Player::draw_player(std::string player_name, float dt) {
     float player_center = (float(this->sprite->width) / 2.0f);
     float text_len_full = float(GetFontTextWidth(player_name));
     float text_len = float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
 
     DrawRectangle(this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4), this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
     DrawFontText(*this->font, player_name, this->player_pos.x - text_len + player_center, this->player_pos.y - 20);
-    DrawTexture(*this->sprite, this->player_pos.x, this->player_pos.y, WHITE);
+    if (IsKeyDown(KEY_A))
+        draw_sprite_sheet(*this->sprite, this->animation + LEFT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    else if (IsKeyDown(KEY_D))
+        draw_sprite_sheet(*this->sprite, this->animation + RIGHT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    else if (IsKeyDown(KEY_W))
+        draw_sprite_sheet(*this->sprite, this->animation + BACK, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    else {
+        draw_sprite_sheet(*this->sprite, this->animation, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    }
+
+
+    
+    this->time += dt;
+    if (this->time > TARGET_SPEED) {
+        this->time = 0.0f;
+
+        this->animation += 1;
+        if (this->animation >= 6) {
+            this->animation = 0;
+        }
+    }
 }
 
 bool player_overlap(std::vector<std::vector<int>> &data, Vector2 player_pos) {

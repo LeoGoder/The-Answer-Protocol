@@ -5,6 +5,7 @@
 #include "raylib.h"
 #include "server.hpp"
 #include "parsing_command_response.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>

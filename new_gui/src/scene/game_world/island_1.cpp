@@ -68,12 +68,12 @@ void GameWorld::draw_game() {
             break;
     }
     GameWorld::draw_world_objects();
-    player.draw_player(this->player_name);
+    player.draw_player(this->player_name, this->game_state->dt);
     if (!this->room.player.empty()) {
         for (size_t i = 0; i < this->room.player.size(); i++) {
             std::string player_room_name = this->room.player[i]->name;
             if (player_room_name != this->player_name)
-                room.player[i]->draw_player(player_room_name);
+                room.player[i]->draw_player(player_room_name, this->game_state->dt);
         }
     }
 }
