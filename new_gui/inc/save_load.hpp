@@ -14,3 +14,4 @@ int save_game(int slot_index, GameData &data);
 int load_data(int slot_index, GameData &data);
 
 bool is_slot_used(int slot_index);
+void delete_save(int slot_index);

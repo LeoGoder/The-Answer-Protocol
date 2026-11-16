@@ -43,14 +43,11 @@ SplashScreen::SplashScreen(GameState *game_state) {
     save_slot_choice = 0;
 
     // Main menu buttons
-    button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Load", [this]() {
-        change_to_sub_menu(0, current_state);
-    }));
     button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "New game", [this]() {
         change_to_sub_menu(1, current_state);
     }));
-    button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Option", [this]() {
-        change_to_sub_menu(2, current_state);
+    button_list.push_back(std::make_unique<Button>(&this->arrow, nullptr, "Load", [this]() {
+        change_to_sub_menu(0, current_state);
     }));
 
     // Save slot buttons
@@ -71,6 +68,14 @@ SplashScreen::SplashScreen(GameState *game_state) {
                 create_or_launch(current_state, this->game_state, this->save_slot_choice, i, this->save_lst[i]->player_name);
             }));
         }
+        // X in Load: deletes the save, the slot becomes an empty one.
+        btn_delete.push_back(std::make_unique<Button>(nullptr, nullptr, "X", [this, i]() {
+            delete_save(i);
+            this->save_lst[i] = std::make_unique<GameData>();
+            this->btn_save[i] = std::make_unique<Button>(nullptr, &this->btn_background, "Empty", [this, i]() {
+                create_or_launch(current_state, this->game_state, this->save_slot_choice, i, "Empty");
+            });
+        }));
     }
 }
 
@@ -135,14 +140,21 @@ void SplashScreen::draw_welcome_screen() {
 }
 
 void SplashScreen::draw_main_menu() {
+    const float scale = 2.0f;
+    float width = mn_background.width * scale;
+    float height = mn_background.height * scale;
     Rectangle src = { 0, 0, (float)mn_background.width, (float)mn_background.height };
-    Rectangle dst = { SCREEN_WIDTH / 2.0f - 128.0f, SCREEN_HEIGHT / 2.0f - 128.0f, 256.0f, 256.0f };
-    std::string back = "back";
+    Rectangle dst = { (SCREEN_WIDTH - width) / 2.0f, (SCREEN_HEIGHT - height) / 2.0f, width, height };
+    float step = height / (this->button_list.size() + 1);
 
     DrawTexturePro(mn_background, src, dst, Vector2{0, 0}, 0.0f, WHITE);
-    this->button_list[0]->draw_button(font, (SCREEN_WIDTH - this->button_list[0]->get_size_text(1.0f)) / 2.0f, (SCREEN_HEIGHT / 2.0f) - (256.0f * 0.3f), 1.0f);
-    this->button_list[1]->draw_button(font, (SCREEN_WIDTH - this->button_list[1]->get_size_text(1.0f)) / 2.0f, (SCREEN_HEIGHT / 2.0f) - (256.0f * 0.0f), 1.0f);
-    this->button_list[2]->draw_button(font, (SCREEN_WIDTH - this->button_list[2]->get_size_text(1.0f)) / 2.0f, (SCREEN_HEIGHT / 2.0f) + (256.0f * 0.3f), 1.0f);
+    // The buttons share the box evenly (2 buttons: at 1/3 and 2/3 of its height).
+    for (size_t i = 0; i < this->button_list.size(); i++) {
+        float x = (SCREEN_WIDTH - this->button_list[i]->get_size_text(1.0f)) / 2.0f;
+        float y = dst.y + step * (i + 1) - CHAR_HEIGHT / 2.0f;
+
+        this->button_list[i]->draw_button(font, x, y, 1.0f);
+    }
     input_hint(this->font, this->mouse_keyboard_icons, "back");
 }
 
