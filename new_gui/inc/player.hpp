@@ -49,6 +49,7 @@ class Player {
         int walk_animation;
         int last_direction;
         Vector2 player_pos;
+        Vector2 last_player_pos;
 
         std::string name;
 
@@ -70,6 +71,7 @@ class Player {
         ~Player();
 
         void draw_player(std::string player_name, float dt);
+        void draw_other_player(std::string player_name, float dt);
         void input_player(float dt, Maps &map, MapData &map_data, int fd);
         void update_animation_timer(float dt);
 };
