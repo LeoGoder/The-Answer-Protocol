@@ -35,5 +35,7 @@ clean:
 	$(MAKE) -C $(GUI_DIR) fclean
 	@$(MAKE) -C $(TUI_DIR) fclean --no-print-directory
 
+distclean:
+	@$(MAKE) -C $(TUI_DIR) distclean --no-print-directory
 
-.PHONY: install run-server run-client run-client-gui lint clean
+.PHONY: install run-server run-client run-client-gui lint clean distclean
