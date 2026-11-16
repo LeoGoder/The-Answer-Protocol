@@ -1,5 +1,4 @@
 #include "game_world.hpp"
-#include "helper.hpp"
 #include "raylib.h"
 #include <string>
 
