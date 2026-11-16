@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"tap/server/internal/logger"
@@ -134,5 +133,5 @@ func (s *State) leaveGroup(player *Player) []Event {
 
 // Not in the RFC: the full member list (leader first) after each change, as a client cannot know who joined before it.
 func (s *State) membersEvent(group *Group) Event {
-	return Event{To: slices.Clone(group.Members), Line: "EVT GROUP MEMBERS " + strings.Join(group.Members, ",")}
+	return Event{To: append([]string(nil), group.Members...), Line: "EVT GROUP MEMBERS " + strings.Join(group.Members, ",")}
 }
