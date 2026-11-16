@@ -11,7 +11,7 @@ run-server:
 run-client-gui:
 	cd $(GUI_DIR) && make run
 
-run-client:
+run-client-tui:
 	$(MAKE) -C $(TUI_DIR) run
 
 # C++ lint (GUI, TUI) to be added with the team.
