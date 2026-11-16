@@ -28,6 +28,15 @@ void GameWorld::read_talk_reply(std::string buffer) {
 void GameWorld::draw_dialog() {
     if (this->dialog_npc.empty())
         return;
+    // The dialog closes when its NPC leaves the view (room change, defeat) or on a click outside it (not on another NPC).
+    bool npc_gone = std::find(this->room.npcs.begin(), this->room.npcs.end(), this->dialog_npc) == this->room.npcs.end();
+    bool click_outside = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && this->hovered_npc.empty()
+        && !CheckCollisionPointRec(get_virtual_mouse_position(), GameWorld::dialog_rect());
+
+    if (npc_gone || click_outside) {
+        this->dialog_npc.clear();
+        return;
+    }
     std::vector<std::string> names = {"TALK"};
     Rectangle panel = GameWorld::dialog_rect();
     int button_y = panel.y + DIALOG_HEIGHT - HUD_PADDING - BUTTON_HEIGHT;
