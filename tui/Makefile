@@ -48,11 +48,20 @@ $(TARGET): $(OBJ)
 
 $(FTXUI_LIB):
 	@printf "  $(YELLOW)[FTXUI]$(RESET) Cloning and building FTXUI...\n"
-	@test -d $(FTXUI_DIR) || git clone --depth 1 https://github.com/ArthurSonzogni/FTXUI.git $(FTXUI_DIR)
+	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
+		git submodule update --init --recursive $(FTXUI_DIR) 2>/dev/null || \
+		git submodule update --init --recursive 2>/dev/null || true; \
+	fi
+	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
+		rm -rf $(FTXUI_DIR) && git clone --depth 1 https://github.com/ArthurSonzogni/FTXUI.git $(FTXUI_DIR); \
+	fi
 	@cmake -S $(FTXUI_DIR) -B $(FTXUI_BUILD) -DCMAKE_BUILD_TYPE=Release \
 		-DFTXUI_BUILD_EXAMPLES=OFF -DFTXUI_BUILD_DOCS=OFF -DFTXUI_BUILD_TESTS=OFF > /dev/null
 	@cmake --build $(FTXUI_BUILD) -j4 > /dev/null
 	@printf "  $(GREEN)✔  FTXUI ready.$(RESET)\n"
+
+install: $(FTXUI_LIB)
+	@printf "  $(BOLD)$(GREEN)✔  FTXUI is installed.$(RESET)\n"
 
 run: all
 	@./$(TARGET)
@@ -63,17 +72,22 @@ clean:
 	@printf "  $(GREEN)✔  Clean finished.$(RESET)\n"
 
 fclean: clean
-	@printf "  $(YELLOW)[RM]$(RESET) Removing FTXUI library...\n"
-	@rm -rf $(FTXUI_DIR)
+	@printf "  $(YELLOW)[RM]$(RESET) Removing FTXUI build...\n"
+	@rm -rf $(FTXUI_BUILD)
 	@printf "  $(GREEN)✔  Full clean finished.$(RESET)\n"
+
+distclean: fclean
+	@printf "  $(YELLOW)[RM]$(RESET) Removing FTXUI library source...\n"
+	@rm -rf $(FTXUI_DIR)
+	@printf "  $(GREEN)✔  Distclean finished.$(RESET)\n"
 
 re: clean all
 
 lint:
 	@printf "  $(BLUE)[LINT]$(RESET) Running cpplint...\n"
-	@cpplint --filter=-legal/copyright --recursive src includes
+	@cpplint --quiet --filter=-legal/copyright --recursive src includes
 	@printf "  $(GREEN)✔  Linting passed with 0 errors.$(RESET)\n"
 
 -include $(OBJ:.o=.d)
 
-.PHONY: all clean fclean run lint re
+.PHONY: all clean fclean distclean run lint re install
