@@ -1,6 +1,7 @@
 SERVER_DIR = server
 GUI_DIR = new_gui
 TUI_DIR = tui
+MAKEFLAGS += --no-print-directory
 
 # --- Colors & Styling ---
 RESET   = \033[0m
@@ -20,20 +21,20 @@ run-server:
 	cd $(SERVER_DIR) && go run ./cmd/server
 
 run-client:
-	@$(MAKE) -C $(TUI_DIR) run --no-print-directory
+	@$(MAKE) -C $(TUI_DIR) run
 
 run-client-gui:
-	cd $(GUI_DIR) && make run
+	@$(MAKE) -C $(GUI_DIR) run
 
 lint:
 	cd $(SERVER_DIR) && gofmt -l . && test -z "$$(gofmt -l .)" && go vet ./...
-	$(MAKE) -C $(GUI_DIR) lint
+	$(MAKE) -C $(GUI_DIR) lint 
 	$(MAKE) -C $(TUI_DIR) lint
 
 clean:
-	cd $(SERVER_DIR) && go clean
-	$(MAKE) -C $(GUI_DIR) fclean
-	@$(MAKE) -C $(TUI_DIR) fclean --no-print-directory
+	cd $(SERVER_DIR) && gofmt -l . && test -z "$$(gofmt -l .)" && go vet ./...
+	@$(MAKE) -C $(GUI_DIR) lint
+	@$(MAKE) -C $(TUI_DIR) lint
 
 distclean:
 	@$(MAKE) -C $(TUI_DIR) distclean --no-print-directory
