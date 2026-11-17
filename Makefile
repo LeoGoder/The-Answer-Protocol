@@ -19,16 +19,16 @@ install:
 run-server:
 	cd $(SERVER_DIR) && go run ./cmd/server
 
+run-client:
+	@$(MAKE) -C $(TUI_DIR) run --no-print-directory
+
 run-client-gui:
 	cd $(GUI_DIR) && make run
 
-run-client-tui:
-	@$(MAKE) -C $(TUI_DIR) run --no-print-directory
-
-# C++ lint (GUI, TUI) to be added with the team.
 lint:
 	cd $(SERVER_DIR) && gofmt -l . && test -z "$$(gofmt -l .)" && go vet ./...
-	@$(MAKE) -C $(TUI_DIR) lint --no-print-directory
+	$(MAKE) -C $(GUI_DIR) lint
+	$(MAKE) -C $(TUI_DIR) lint
 
 clean:
 	cd $(SERVER_DIR) && go clean
