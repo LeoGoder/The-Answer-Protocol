@@ -116,7 +116,7 @@ class GameWorld : public GameScene {
         std::string dialog_npc;
         std::string dialog_text;
 
-        GameWorld(GameState *game_state);
+        explicit GameWorld(GameState *game_state);
         ~GameWorld();
 
         void update() override;

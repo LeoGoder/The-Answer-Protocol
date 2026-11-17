@@ -40,7 +40,7 @@ void SplashScreen::draw_create_player() {
 static int last_character(char player_name[P_NAME_LEN]) {
     int position = 0;
 
-    for (long unsigned int i = 0; i < std::strlen(player_name); i++) {
+    for (size_t i = 0; i < std::strlen(player_name); i++) {
         if (!std::isalnum(player_name[i]) && player_name[i] != ' ')
             break;
         position += 1;
