@@ -9,10 +9,13 @@
 #include "helper.hpp"
 
 void GameWorld::room_presence_enter(std::string new_player) {
-    this->room.player.push_back(std::make_unique<Player>(&this->font, new_player, &this->player_sprite));
+    this->room.player.push_back(std::make_unique<Player>(
+        &this->font, new_player, &this->player_sprite));
 }
 
-static int find_player_to_delete(const std::string &player_to_find, std::vector<std::unique_ptr<Player>> &players) {
+static int find_player_to_delete(
+    const std::string &player_to_find,
+    std::vector<std::unique_ptr<Player>> &players) {
     int res = -1;
 
     for (std::size_t i = 0; i < players.size(); i++) {
@@ -57,7 +60,9 @@ void GameWorld::update_hp(std::string msg) {
     if (max_pos != std::string::npos)
         this->max_hp = std::atoi(msg.c_str() + max_pos + max_hp_key.size());
     if (attack_pos != std::string::npos)
-        this->hp = std::atoi(msg.c_str() + msg.find(attacker_hp_key, attack_pos) + attacker_hp_key.size());
+        this->hp =
+            std::atoi(msg.c_str() + msg.find(attacker_hp_key, attack_pos) +
+                      attacker_hp_key.size());
 }
 
 
@@ -70,7 +75,8 @@ static void remove_id(std::vector<std::string> &list, const std::string &id) {
     }
 }
 
-static std::string word_after(const std::string &msg, const std::string &prefix, size_t skip) {
+static std::string word_after(const std::string &msg, const std::string &prefix,
+                              size_t skip) {
     size_t pos = msg.find(prefix);
 
     if (pos == std::string::npos)
@@ -116,15 +122,18 @@ void GameWorld::update_items(std::string msg) {
 
 // Quest progress changes with the inventory, a quest reply or a defeated NPC.
 void GameWorld::refresh_quests(std::string msg) {
-    if (msg.find("OK taken=") != std::string::npos || msg.find("OK dropped=") != std::string::npos
-        || extract_value(msg, "used") != "" || msg.find(R"(OK {"quest_id")") != std::string::npos
-        || msg.find(R"("status":"victory")") != std::string::npos) {
+    if (msg.find("OK taken=") != std::string::npos ||
+        msg.find("OK dropped=") != std::string::npos ||
+        extract_value(msg, "used") != "" ||
+        msg.find(R"(OK {"quest_id")") != std::string::npos ||
+        msg.find(R"("status":"victory")") != std::string::npos) {
         this->wait_quests = true;
         send_message(this->command.QUESTS, "", this->fd);
     }
 }
 
-// Group state from "EVT GROUP INVITE <leader>" and "EVT GROUP MEMBERS a,b" (leader first); other group events and group errors go to the GROUP tab.
+// Group state from "EVT GROUP INVITE <leader>" and "EVT GROUP MEMBERS a,b"
+// (leader first); other group events and group errors go to the GROUP tab.
 void GameWorld::update_group(std::string msg) {
     std::string inviter = word_after(msg, "EVT GROUP INVITE ", 0);
     std::string members = word_after(msg, "EVT GROUP MEMBERS ", 0);
@@ -138,11 +147,16 @@ void GameWorld::update_group(std::string msg) {
         this->group_members = split(members, ',');
         this->group_inviter.clear();
     }
-    if (event_pos != std::string::npos && msg.compare(event_pos, 18, "EVT GROUP MEMBERS ") != 0)
+    if (event_pos != std::string::npos &&
+        msg.compare(event_pos, 18, "EVT GROUP MEMBERS ") != 0)
         line = msg.substr(event_pos);
-    // These errors only come from GROUP commands (404 PLAYER_NOT_FOUND from INVITE / JOIN).
-    if (err_pos != std::string::npos && (msg.compare(err_pos, 7, "ERR 401") == 0 || msg.compare(err_pos, 7, "ERR 402") == 0
-        || msg.compare(err_pos, 7, "ERR 403") == 0 || msg.find("PLAYER_NOT_FOUND", err_pos) != std::string::npos))
+    // These errors only come from GROUP commands (404 PLAYER_NOT_FOUND from
+    // INVITE / JOIN).
+    if (err_pos != std::string::npos &&
+        (msg.compare(err_pos, 7, "ERR 401") == 0 ||
+         msg.compare(err_pos, 7, "ERR 402") == 0 ||
+         msg.compare(err_pos, 7, "ERR 403") == 0 ||
+         msg.find("PLAYER_NOT_FOUND", err_pos) != std::string::npos))
         line = msg.substr(err_pos);
     if (line.empty())
         return;
@@ -151,9 +165,11 @@ void GameWorld::update_group(std::string msg) {
         this->group_unread = true;
 }
 
-// Chat lines are read from the raw buffer (before kill_return_line): a message can contain any text, so it ends at its own '\n'.
+// Chat lines are read from the raw buffer (before kill_return_line): a message
+// can contain any text, so it ends at its own '\n'.
 void GameWorld::read_chat(std::string buffer) {
-    const std::string prefixes[3] = {"EVT GLOBAL CHAT ", "EVT ROOM CHAT ", "EVT GROUP CHAT "};
+    const std::string prefixes[3] = {"EVT GLOBAL CHAT ", "EVT ROOM CHAT ",
+                                     "EVT GROUP CHAT "};
     std::vector<std::string> lines = split(buffer, '\n');
 
     for (size_t i = 0; i < lines.size(); i++) {
@@ -163,8 +179,11 @@ void GameWorld::read_chat(std::string buffer) {
             std::string rest = lines[i].substr(prefixes[scope].size());
             size_t space = rest.find(' ');
 
-            GameWorld::add_log(rest.substr(0, space) + ": " + rest.substr(space + 1), PANEL_CHAT + scope);
-            if (this->panel_tab != PANEL_CHAT || this->player.chat.chat != scope)
+            GameWorld::add_log(
+                rest.substr(0, space) + ": " + rest.substr(space + 1),
+                PANEL_CHAT + scope);
+            if (this->panel_tab != PANEL_CHAT ||
+                this->player.chat.chat != scope)
                 this->chat_unread[scope] = true;
         }
     }

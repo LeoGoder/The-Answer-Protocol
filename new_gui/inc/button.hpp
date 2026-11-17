@@ -17,10 +17,12 @@ private:
     Rectangle bounds;
 
 public:
-    Button(const Texture2D *arrow, const Texture2D *background, const std::string &text, std::function<void()> callback);
+    Button(const Texture2D *arrow, const Texture2D *background,
+           const std::string &text, std::function<void()> callback);
     ~Button();
 
-    void draw_button(const Texture2D &font, float x, float y, float scale = 1.0f);
+    void draw_button(const Texture2D &font, float x, float y,
+                     float scale = 1.0f);
     void on_click();
 
     float get_size_text(float scale = 1.0f) const {

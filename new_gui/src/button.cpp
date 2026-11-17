@@ -1,7 +1,8 @@
 #include "button.hpp"
 #include "helper.hpp"
 
-Button::Button(const Texture2D *arrow, const Texture2D *background, const std::string &text, std::function<void()> callback) {
+Button::Button(const Texture2D *arrow, const Texture2D *background,
+               const std::string &text, std::function<void()> callback) {
     this->arrow = arrow;
     this->background = background;
     this->text = text;
@@ -44,9 +45,11 @@ void Button::draw_button(const Texture2D &font, float x, float y, float scale) {
 
             DrawFontText(font, this->text, x, y, YELLOW, 1.0f);
             if (this->arrow != nullptr) {
-                Rectangle src = { 0, 0, (float)this->arrow->width, (float)this->arrow->height };
+                Rectangle src = {0, 0, (float)this->arrow->width,
+                                 (float)this->arrow->height};
                 Rectangle dst = { x - 16 - 10 - this->offset, y, 16.0f, 16.0f };
-                DrawTexturePro(*this->arrow, src, dst, Vector2{0, 0}, 0.0f, WHITE);
+                DrawTexturePro(*this->arrow, src, dst, Vector2{0, 0}, 0.0f,
+                               WHITE);
             }
             if (this->offset > 30)
                 this->flip_arrow_animation = true;
@@ -64,7 +67,7 @@ void Button::draw_button(const Texture2D &font, float x, float y, float scale) {
         }
 
         int frame = this->is_selected ? 1 : 0;
-        Rectangle src = { static_cast<float>(frame) * btn_w, 0.0f, btn_w, btn_h };
+        Rectangle src = {static_cast<float>(frame) * btn_w, 0.0f, btn_w, btn_h};
         Rectangle dst = { x, y, btn_w * scale, btn_h * scale };
         DrawTexturePro(*this->background, src, dst, Vector2{0, 0}, 0.0f, WHITE);
 
@@ -73,11 +76,16 @@ void Button::draw_button(const Texture2D &font, float x, float y, float scale) {
         if (this->text.length() == 1) {
             const float glyph_w = 5.0f;
             const float glyph_h = 8.0f;
-            temp_x = x + (((btn_w * scale) / 2.0f) - ((glyph_w * scale) / 2.0f));
-            temp_y = y + (((btn_h * scale) / 2.0f) - ((glyph_h * scale) / 2.0f)) - (1.0f * scale);
+            temp_x =
+                x + (((btn_w * scale) / 2.0f) - ((glyph_w * scale) / 2.0f));
+            temp_y = y +
+                     (((btn_h * scale) / 2.0f) - ((glyph_h * scale) / 2.0f)) -
+                     (1.0f * scale);
         } else {
-            temp_x = x + (((btn_w * scale) / 2.0f) - (get_size_text(scale) / 2.0f));
-            temp_y = y + ((btn_h * scale) / 2.0f) - ((CHAR_HEIGHT * scale) / 2.0f);
+            temp_x =
+                x + (((btn_w * scale) / 2.0f) - (get_size_text(scale) / 2.0f));
+            temp_y =
+                y + ((btn_h * scale) / 2.0f) - ((CHAR_HEIGHT * scale) / 2.0f);
         }
         DrawFontText(font, this->text, temp_x, temp_y, WHITE, scale);
     }

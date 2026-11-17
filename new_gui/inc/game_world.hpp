@@ -132,7 +132,8 @@ class GameWorld : public GameScene {
         void draw_world_objects();
         Vector2 world_mouse();
         void draw_exits(std::vector<std::vector<int>> &island);
-        void draw_object_row(std::vector<std::string> &ids, std::string prefix, float row_offset, Vector2 mouse);
+        void draw_object_row(std::vector<std::string> &ids, std::string prefix,
+                             float row_offset, Vector2 mouse);
         Texture2D get_object_texture(const std::string &file);
         std::string display_name(const std::string &id);
         void draw_inventory();
@@ -145,7 +146,8 @@ class GameWorld : public GameScene {
         void read_chat(std::string buffer);
         void update_group(std::string msg);
         void draw_log();
-        int draw_text_buttons(std::vector<std::string> names, int x, int y, int selected = -1);
+        int draw_text_buttons(std::vector<std::string> names, int x, int y,
+                              int selected = -1);
         Rectangle dialog_rect();
         void draw_dialog();
         void read_talk_reply(std::string buffer);
