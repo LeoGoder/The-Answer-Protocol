@@ -1,64 +1,91 @@
-CXX = g++
-TARGET = tap_client_tui
+OUTPUT ?= /dev/null
 
-# --- Colors & Styling ---
-RESET   = \033[0m
-BOLD    = \033[1m
-GREEN   = \033[32m
-YELLOW  = \033[33m
-BLUE    = \033[34m
-MAGENTA = \033[35m
-CYAN    = \033[36m
-GRAY    = \033[90m
+ifneq ($(OUT),)
+  OUTPUT := $(OUT)
+endif
 
-FTXUI_DIR = lib/FTXUI
-FTXUI_BUILD = $(FTXUI_DIR)/build
-FTXUI_LIB = $(FTXUI_BUILD)/libftxui-component.a
+ifeq ($(OUTPUT),1)
+  REDIRECT := 2>&1
+else ifeq ($(OUTPUT),/dev/stdout)
+  REDIRECT := 2>&1
+else ifeq ($(OUTPUT),2)
+  REDIRECT := 1>&2
+else ifeq ($(OUTPUT),/dev/stderr)
+  REDIRECT := 1>&2
+else ifeq ($(OUTPUT),)
+  REDIRECT :=
+else
+  REDIRECT := >> $(OUTPUT) 2>&1
+endif
 
-CXXFLAGS = -Wall -Wextra -std=c++17 -pthread -MMD -MP \
-           -I./includes -Isrc -I./lib -isystem $(FTXUI_DIR)/include
-LDFLAGS = -L$(FTXUI_BUILD)
-LDLIBS = -lftxui-component -lftxui-dom -lftxui-screen
+CXX         := g++
+TARGET      := tap_client_tui
+JOBS        ?= 4
 
-SRC = src/main.cpp \
-      src/app_state.cpp \
-      src/game_view.cpp \
-      src/image_renderer.cpp \
-      src/login_view.cpp \
-      src/map_resolver.cpp \
-      src/network_client.cpp \
-      src/protocol.cpp \
-      src/ui_helpers.cpp
-OBJ = $(SRC:src/%.cpp=.obj/%.o)
+FTXUI_DIR   := lib/FTXUI
+FTXUI_BUILD := $(FTXUI_DIR)/build
+FTXUI_LIB   := $(FTXUI_BUILD)/libftxui-component.a
+
+CXXFLAGS    := -Wall -Wextra -std=c++17 -pthread -MMD -MP \
+               -I./includes -Isrc -I./lib -isystem $(FTXUI_DIR)/include
+LDFLAGS     := -L$(FTXUI_BUILD)
+LDLIBS      := -lftxui-component -lftxui-dom -lftxui-screen
+
+OBJ_DIR     := .obj
+SRC         := src/main.cpp \
+               src/app_state.cpp \
+               src/game_view.cpp \
+               src/image_renderer.cpp \
+               src/login_view.cpp \
+               src/map_resolver.cpp \
+               src/network_client.cpp \
+               src/protocol.cpp \
+               src/ui_helpers.cpp
+
+OBJ         := $(SRC:src/%.cpp=$(OBJ_DIR)/%.o)
 TOTAL_FILES := $(words $(SRC))
+
+RESET       := \033[0m
+BOLD        := \033[1m
+GREEN       := \033[32m
+YELLOW      := \033[33m
+BLUE        := \033[34m
+MAGENTA     := \033[35m
+CYAN        := \033[36m
+GRAY        := \033[90m
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	@printf "  $(MAGENTA)[100%%]$(RESET) $(GREEN)[LD]$(RESET) Linking   $(BOLD)$(GREEN)%-25s$(RESET)\n" "$@"
-	@$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJ) $(LDFLAGS) $(LDLIBS)
+	@$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJ) $(LDFLAGS) $(LDLIBS) $(REDIRECT)
 	@printf "  $(BOLD)$(GREEN)✔  Build complete: $(TARGET)$(RESET)\n\n"
 
-.obj/%.o: src/%.cpp | $(FTXUI_LIB)
-	@mkdir -p .obj
+$(OBJ_DIR)/%.o: src/%.cpp | $(FTXUI_LIB)
+	@mkdir -p $(dir $@)
 	@IDX=$$(printf "%s\n" $(SRC) | grep -n -F "$<" | head -n1 | cut -d: -f1); \
 	PCT=$$(( IDX * 100 / $(TOTAL_FILES) )); \
 	printf "  $(BLUE)[%3d%%]$(RESET) $(CYAN)[CC]$(RESET) Compiling $(BOLD)%-25s$(RESET) $(GRAY)-> $(RESET)%-20s\n" "$$PCT" "$<" "$@"
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@ $(REDIRECT)
 
 $(FTXUI_LIB):
-	@printf "  $(YELLOW)[FTXUI]$(RESET) Cloning and building FTXUI...\n"
+	@printf "  $(YELLOW)[FTXUI]$(RESET) Downloading FTXUI...\n"
+	@mkdir -p $(dir $(FTXUI_DIR))
 	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
-		git submodule update --init --recursive $(FTXUI_DIR) 2>/dev/null || \
-		git submodule update --init --recursive 2>/dev/null || true; \
+		git submodule update --init --recursive $(REDIRECT) || true; \
 	fi
 	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
-		rm -rf $(FTXUI_DIR) && git clone --depth 1 https://github.com/ArthurSonzogni/FTXUI.git $(FTXUI_DIR); \
+		rm -rf $(FTXUI_DIR) && git clone --depth 1 https://github.com/ArthurSonzogni/FTXUI.git $(FTXUI_DIR) $(REDIRECT); \
 	fi
+	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
+		printf "  $(YELLOW)[ERROR]$(RESET) Failed to fetch FTXUI.\n" >&2; \
+		exit 1; \
+	fi
+	@printf "  $(YELLOW)[FTXUI]$(RESET) Compiling FTXUI...\n"
 	@cmake -S $(FTXUI_DIR) -B $(FTXUI_BUILD) -DCMAKE_BUILD_TYPE=Release \
-		-DFTXUI_BUILD_EXAMPLES=OFF -DFTXUI_BUILD_DOCS=OFF -DFTXUI_BUILD_TESTS=OFF > /dev/null
-	@cmake --build $(FTXUI_BUILD) -j4 > /dev/null
-	@printf "  $(GREEN)✔  FTXUI ready.$(RESET)\n"
+		-DFTXUI_BUILD_EXAMPLES=OFF -DFTXUI_BUILD_DOCS=OFF -DFTXUI_BUILD_TESTS=OFF $(REDIRECT)
+	@cmake --build $(FTXUI_BUILD) -j$(JOBS) $(REDIRECT)
+	@printf "  $(BOLD)$(GREEN)✔  FTXUI ready.$(RESET)\n"
 
 install: $(FTXUI_LIB)
 	@printf "  $(BOLD)$(GREEN)✔  FTXUI is installed.$(RESET)\n"
@@ -68,7 +95,7 @@ run: all
 
 clean:
 	@printf "  $(YELLOW)[RM]$(RESET) Cleaning object files...\n"
-	@rm -rf .obj $(TARGET)
+	@rm -rf $(OBJ_DIR) $(TARGET)
 	@printf "  $(GREEN)✔  Clean finished.$(RESET)\n"
 
 fclean: clean
@@ -85,7 +112,7 @@ re: clean all
 
 lint:
 	@printf "  $(BLUE)[LINT]$(RESET) Running cpplint...\n"
-	@cpplint --quiet --filter=-legal/copyright --recursive src includes
+	@cpplint --quiet --filter=-legal/copyright --recursive src includes $(REDIRECT)
 	@printf "  $(GREEN)✔  Linting passed with 0 errors.$(RESET)\n"
 
 -include $(OBJ:.o=.d)
