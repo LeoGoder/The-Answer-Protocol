@@ -4,15 +4,15 @@
 #include "inc/raylib.h"
 
 class Tap {
-    public:
+ public:
         Texture2D mouse_cursor;
         Tap();
         ~Tap();
-    
+
         void init();
         void loop();
         void draw_cursor();
-    
-    private:
+
+ private:
         GameState game_state;
 };

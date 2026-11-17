@@ -11,10 +11,10 @@ enum ChatService {
 };
 
 class Chat {
-    private:
+ private:
         std::string msg;
 
-    public:
+ public:
         ChatService chat;
 
         Chat();

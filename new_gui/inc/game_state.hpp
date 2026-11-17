@@ -7,16 +7,17 @@
 enum Scene {
     splash_screen = 0,
     game = 1,
-    end_screen = 2, // welcome back settings menu
+    end_screen = 2,  // welcome back settings menu
 };
 
 class GameState {
-    private:
+ private:
         Scene actual_scene;
         Scene next_scene;
         bool init_scene;
         GameScene *game_scene = nullptr;
-    public:
+
+ public:
         std::string player_name;
         float dt;
         GameState();

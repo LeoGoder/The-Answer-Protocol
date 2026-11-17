@@ -105,12 +105,10 @@ void GameWorld::draw_group_buttons(int x, int y) {
         names.push_back("CREATE");
         if (!this->group_inviter.empty())
             names.push_back("JOIN " + this->group_inviter);
-    }
-    else if (!this->inviting) {
+    } else if (!this->inviting) {
         names.push_back("LEAVE");
         names.push_back("INVITE");
-    }
-    else {
+    } else {
         for (size_t i = 0; i < this->room.player.size(); i++) {
             std::string name = this->room.player[i]->name;
 
@@ -127,22 +125,20 @@ void GameWorld::draw_group_buttons(int x, int y) {
         return;
     std::string name = names[clicked];
 
-    if (name == "CREATE")
+    if (name == "CREATE") {
         send_message(this->command.GROUP, "CREATE", this->fd);
-    else if (name == "LEAVE") {
+    } else if (name == "LEAVE") {
         send_message(this->command.GROUP, "LEAVE", this->fd);
         this->group_members.clear();
-    }
-    else if (name == "INVITE")
+    } else if (name == "INVITE") {
         this->inviting = true;
-    else if (name == "BACK")
+    } else if (name == "BACK") {
         this->inviting = false;
-    else if (this->inviting) {
+    } else if (this->inviting) {
         send_message(this->command.GROUP, "INVITE " + name, this->fd);
         GameWorld::add_log("Invitation sent to " + name, PANEL_GROUP);
         this->inviting = false;
-    }
-    else {
+    } else {
         send_message(this->command.GROUP, "JOIN " + this->group_inviter,
                      this->fd);
         this->group_inviter.clear();

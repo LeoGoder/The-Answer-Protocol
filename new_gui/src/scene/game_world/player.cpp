@@ -45,7 +45,6 @@ Player::Player() : chat() {
 }
 
 Player::~Player() {
-
 }
 
 void Player::update_animation_timer(float dt) {
@@ -103,9 +102,7 @@ void Player::draw_other_player(std::string player_name, float dt) {
                           this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_DOWN;
-    }
-
-    else if (this->last_player_pos.x > this->player_pos.x) {
+    } else if (this->last_player_pos.x > this->player_pos.x) {
         draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT;
@@ -154,47 +151,38 @@ void Player::draw_player(std::string player_name, float dt) {
                           this->walk_animation + WALK_LEFT_DIAG_UP, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT_DIAG_UP;
-    }
-    else if (IsKeyDown(KEY_A) && IsKeyDown(KEY_S)) {
+    } else if (IsKeyDown(KEY_A) && IsKeyDown(KEY_S)) {
         draw_sprite_sheet(*this->sprite,
                           this->walk_animation + WALK_LEFT_DIAG_DOWN, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT_DIAG_DOWN;
-    }
-    else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_W)) {
+    } else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_W)) {
         draw_sprite_sheet(*this->sprite,
                           this->walk_animation + WALK_RIGHT_DIAG_UP, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_UP;
-    }
-    else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_S)) {
+    } else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_S)) {
         draw_sprite_sheet(*this->sprite,
                           this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_DOWN;
-    }
-
-    else if (IsKeyDown(KEY_A)) {
+    } else if (IsKeyDown(KEY_A)) {
         draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT;
-    }
-    else if (IsKeyDown(KEY_D)) {
+    } else if (IsKeyDown(KEY_D)) {
         draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT;
-    }
-    else if (IsKeyDown(KEY_W)) {
+    } else if (IsKeyDown(KEY_W)) {
         draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_BACK, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_BACK;
-    }
-    else if (IsKeyDown(KEY_S)) {
+    } else if (IsKeyDown(KEY_S)) {
         draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_FRONT, 6,
                           this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_FRONT;
-    }
-    else {
+    } else {
         int direction;
 
         if (this->last_direction > 0)

@@ -19,7 +19,7 @@ enum State {
 };
 
 class SplashScreen : public GameScene {
-private:
+ private:
     Texture2D font;
     Texture2D mn_background;
     Texture2D arrow;
@@ -40,7 +40,7 @@ private:
     int selected_id;
     int save_slot_choice;
 
-public:
+ public:
     GameState *game_state;
 
     SplashScreen(GameState *game_state);

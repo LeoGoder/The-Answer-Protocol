@@ -3,7 +3,6 @@
 #include "inc/tap.hpp"
 
 int main(void) {
-
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "The Answer Protocol");
     SetTargetFPS(60);

@@ -53,7 +53,7 @@ void parse_look_response(std::vector<std::string> &response, Room &room,
         room.player.push_back(
             std::make_unique<Player>(font, players_extract[i], sprite));
     }
-    
+
     if (room.id == "hub")
         map = hub;
     if (room.id == "komolexos")

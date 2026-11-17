@@ -23,12 +23,10 @@ std::string receiv_msg(int fd) {
         buffer[msg_get] = '\0';
         printf("[SERVER] %s", buffer);
         return buffer;
-    }
-    else if (msg_get == 0) {
+    } else if (msg_get == 0) {
         printf("[INFO] Connection close\n");
         return "CLOSE";
-    }
-    else if (errno != EAGAIN && errno != EWOULDBLOCK){
+    } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
         printf("[INFO] Erreur with recv: %ld\n", msg_get);
     }
     return "";

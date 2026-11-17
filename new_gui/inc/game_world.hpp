@@ -57,7 +57,7 @@ enum GameWorldScene {
 };
 
 class GameWorld : public GameScene {
-    public:
+ public:
         int fd;
         std::string pending;
 

@@ -6,7 +6,7 @@
 #include "inc/raylib.h"
 
 class Button {
-private:
+ private:
     std::string text;
     bool is_selected;
     std::function<void()> callback;
@@ -17,7 +17,7 @@ private:
     float speed;
     Rectangle bounds;
 
-public:
+ public:
     Button(const Texture2D *arrow, const Texture2D *background,
            const std::string &text, std::function<void()> callback);
     ~Button();

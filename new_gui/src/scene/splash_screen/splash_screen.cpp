@@ -20,11 +20,9 @@ static void create_or_launch(State &current_state, GameState *game_state,
     if (current_state == new_game) {
         current_state = create;
         slot_choose = id;
-    }
-    else if (std::strcmp(player_name, "Empty") == 0) {
+    } else if (std::strcmp(player_name, "Empty") == 0) {
         current_state = error_screen;
-    }
-    else {
+    } else {
         game_state->player_name = player_name;
         game_state->set_init_scene(true);
         game_state->set_actual_scene(game);
