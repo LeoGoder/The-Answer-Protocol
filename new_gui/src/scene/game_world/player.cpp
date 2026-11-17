@@ -1,14 +1,16 @@
-#include "player.hpp"
-#include "chat.hpp"
-#include "helper.hpp"
-#include "map_parse.hpp"
-#include "raylib.h"
-#include "server.hpp"
+#include "inc/player.hpp"
+
 #include <cstddef>
 #include <cstdio>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "inc/chat.hpp"
+#include "inc/helper.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/raylib.h"
+#include "inc/server.hpp"
 
 void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players,
                        std::string event) {

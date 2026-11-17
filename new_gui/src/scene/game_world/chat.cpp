@@ -1,6 +1,8 @@
-#include "chat.hpp"
-#include "raylib.h"
+#include "inc/chat.hpp"
+
 #include <string>
+
+#include "inc/raylib.h"
 
 Chat::Chat() {
     this->chat = global;

@@ -1,7 +1,11 @@
-#include "splash_screen.hpp"
-#include "helper.hpp"
-#include "raylib.h"
+#include "inc/splash_screen.hpp"
+
 #include <cstring>
+#include <memory>
+#include <string>
+
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
 
 static void change_to_sub_menu(int id, State &current_state) {
     if (id == 0)

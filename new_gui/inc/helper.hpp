@@ -2,7 +2,8 @@
 
 #include <string>
 #include <vector>
-#include "raylib.h"
+
+#include "inc/raylib.h"
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480

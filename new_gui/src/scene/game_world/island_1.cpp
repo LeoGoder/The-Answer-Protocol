@@ -1,11 +1,13 @@
-#include "game_world.hpp"
-#include "map.hpp"
-#include "map_parse.hpp"
-#include "helper.hpp"
-#include "raylib.h"
 #include <cstddef>
 #include <cstdio>
+#include <string>
 #include <vector>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
+#include "inc/map.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/raylib.h"
 
 void GameWorld::draw_island(std::vector<std::vector<int>> &island) {
     Vector2 tile_size = {TILE_WIDTH, TILE_HEIGHT};

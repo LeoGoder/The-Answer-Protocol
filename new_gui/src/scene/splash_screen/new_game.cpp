@@ -1,9 +1,11 @@
-#include "raylib.h"
-#include "splash_screen.hpp"
-#include "helper.hpp"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <string>
+
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
+#include "inc/splash_screen.hpp"
 
 void SplashScreen::draw_new_game() {
     float center_x =

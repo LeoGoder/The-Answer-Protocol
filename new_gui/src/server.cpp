@@ -1,9 +1,12 @@
-#include <cerrno>
-#include <cstdio>
+#include "inc/server.hpp"
+
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <errno.h>
-#include "server.hpp"
+
+#include <cerrno>
+#include <cstdio>
+#include <string>
 
 int send_message(std::string command, std::string param, int fd) {
     std::string msg = command + param + '\n';

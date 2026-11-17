@@ -1,12 +1,17 @@
 #pragma once
 
-#include "game_scene.hpp"
-#include "game_state.hpp"
-#include "map_parse.hpp"
-#include "raylib.h"
-#include "server.hpp"
-#include "player.hpp"
 #include <netinet/in.h>
+
+#include <map>
+#include <string>
+#include <vector>
+
+#include "inc/game_scene.hpp"
+#include "inc/game_state.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/player.hpp"
+#include "inc/raylib.h"
+#include "inc/server.hpp"
 
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 4242

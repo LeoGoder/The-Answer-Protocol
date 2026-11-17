@@ -1,9 +1,11 @@
-#include "save_load.hpp"
+#include "inc/save_load.hpp"
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <cstdio>
 #include <cstring>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 int save_game(int slot_index, GameData &data) {
     mkdir("saves", 0755);

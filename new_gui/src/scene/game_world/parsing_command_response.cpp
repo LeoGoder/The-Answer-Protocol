@@ -1,13 +1,14 @@
-#include "helper.hpp"
-#include "map_parse.hpp"
-#include "player.hpp"
-#include "raylib.h"
-#include "server.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "inc/helper.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/player.hpp"
+#include "inc/raylib.h"
+#include "inc/server.hpp"
 
 void parse_look_response(std::vector<std::string> &response, Room &room,
                          Texture2D *font, Texture2D *sprite, Maps &map) {

@@ -1,9 +1,10 @@
-#include "game_world.hpp"
-#include "helper.hpp"
-#include "raylib.h"
 #include <algorithm>
 #include <string>
 #include <vector>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
 
 Rectangle GameWorld::dialog_rect() {
     return Rectangle{float(SCREEN_WIDTH - DIALOG_WIDTH) / 2,

@@ -2,11 +2,12 @@
 
 #include <memory>
 #include <vector>
-#include "raylib.h"
-#include "game_scene.hpp"
-#include "button.hpp"
-#include "game_state.hpp"
-#include "save_load.hpp"
+
+#include "inc/button.hpp"
+#include "inc/game_scene.hpp"
+#include "inc/game_state.hpp"
+#include "inc/raylib.h"
+#include "inc/save_load.hpp"
 
 enum State {
     welcome = 0,

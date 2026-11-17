@@ -1,5 +1,5 @@
-#include "splash_screen.hpp"
-#include "helper.hpp"
+#include "inc/helper.hpp"
+#include "inc/splash_screen.hpp"
 
 void SplashScreen::draw_load_game() {
     float center_x =

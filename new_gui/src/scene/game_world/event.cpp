@@ -1,12 +1,13 @@
 #include <cstddef>
-#include <memory>
-#include <vector>
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <utility>
-#include "game_world.hpp"
-#include "player.hpp"
-#include "helper.hpp"
+#include <vector>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
+#include "inc/player.hpp"
 
 void GameWorld::room_presence_enter(std::string new_player) {
     this->room.player.push_back(std::make_unique<Player>(

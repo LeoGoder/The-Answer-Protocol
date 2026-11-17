@@ -1,7 +1,7 @@
 CC=g++
 NAME=tap
 
-CPPFLAGS = -Iinc
+CPPFLAGS = -I. -Iinc
 CFLAGS   = -Wall -Wextra -Werror -g3
 
 LDFLAGS  = -Linc/lib

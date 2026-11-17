@@ -1,7 +1,7 @@
 #pragma once
 
-#include "game_state.hpp"
-#include "raylib.h"
+#include "inc/game_state.hpp"
+#include "inc/raylib.h"
 
 class Tap {
     public:

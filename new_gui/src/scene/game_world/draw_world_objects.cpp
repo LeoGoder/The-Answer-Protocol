@@ -1,12 +1,13 @@
-#include "game_world.hpp"
-#include "helper.hpp"
-#include "player.hpp"
-#include "map_parse.hpp"
-#include "raylib.h"
 #include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/player.hpp"
+#include "inc/raylib.h"
 
 std::string GameWorld::display_name(const std::string &id) {
     if (this->room.names.count(id) > 0)

@@ -1,6 +1,9 @@
-#include "game_world.hpp"
-#include "helper.hpp"
 #include <stdbool.h>
+
+#include <string>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
 
 void GameWorld::draw_hud() {
     float room_name_x =
