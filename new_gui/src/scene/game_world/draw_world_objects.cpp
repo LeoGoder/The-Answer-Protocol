@@ -33,7 +33,18 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids, std::string prefi
     for (size_t i = 0; i < ids.size(); i++) {
         Vector2 pos = slot_position(i, ids.size(), row_offset);
         Texture2D texture = GameWorld::get_object_texture(prefix + ids[i] + ".png");
-        const Vector2 sprite_size = { (float(texture.width) / 6), (float(texture.height) / 8)};
+        Vector2 sprite_size;
+        Vector2 texture_size;
+        if (prefix == "npc_") {
+            sprite_size = { (float(texture.width) / 6), (float(texture.height) / 8)};
+            texture_size.x = sprite_size.x * 2;
+            texture_size.y = sprite_size.y * 2;
+        }
+        else {
+            sprite_size = { (float(texture.width)), (float(texture.height)) };
+            texture_size.x = sprite_size.x * 2;
+            texture_size.y = sprite_size.y * 2;
+        }
         const int scale = 2;
         std::string name = GameWorld::display_name(ids[i]);
         bool owned = std::find(inventory.begin(), inventory.end(), ids[i]) != inventory.end();
@@ -43,7 +54,7 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids, std::string prefi
         float name_x = pos.x + ((sprite_size.x * scale) / 2) - (float(name_width) / 2);
         Color name_color = WHITE;
 
-        if (!owned && CheckCollisionPointRec(mouse, Rectangle{pos.x, pos.y, sprite_size.x * 2, sprite_size.y * 2})) {
+        if (!owned && CheckCollisionPointRec(mouse, Rectangle{pos.x, pos.y, texture_size.x, texture_size.y})) {
             name_color = YELLOW;
             if (prefix == "item_")
                 this->hovered_item = ids[i];
@@ -56,9 +67,9 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids, std::string prefi
             DrawText(name.c_str(), name_x, pos.y - (sprite_size.y / 2) + 8, HUD_FONT_SIZE, name_color);
         }
         else {
-            DrawTexture(texture, pos.x, pos.y, WHITE);
-            DrawRectangle(name_x - 2, pos.y + OBJECT_SIZE + 2, name_width + 4, HUD_FONT_SIZE + 2, ColorAlpha(BLACK, 0.6));
-            DrawText(name.c_str(), name_x, pos.y + OBJECT_SIZE + 3, HUD_FONT_SIZE, name_color);
+            DrawTextureEx(texture, pos, 0.0f, scale, WHITE);
+            DrawRectangle(name_x - 2, pos.y + texture.height + 2, name_width + 4, HUD_FONT_SIZE + 2, ColorAlpha(BLACK, 0.6));
+            DrawText(name.c_str(), name_x, pos.y + texture.height + 3, HUD_FONT_SIZE, name_color);
         }
     }
 }
