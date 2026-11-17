@@ -1,6 +1,8 @@
-#include "helper.hpp"
-#include "raylib.h"
-#include "splash_screen.hpp"
+#include <string>
+
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
+#include "inc/splash_screen.hpp"
 
 void SplashScreen::draw_error_screen() {
     std::string text = "Error name invalid";

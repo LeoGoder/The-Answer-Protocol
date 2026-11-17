@@ -1,7 +1,8 @@
 #pragma once
 
-#include "game_scene.hpp"
 #include <string>
+
+#include "inc/game_scene.hpp"
 
 enum Scene {
     splash_screen = 0,

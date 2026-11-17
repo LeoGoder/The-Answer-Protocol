@@ -1,8 +1,10 @@
-#include "tap.hpp"
-#include "raylib.h"
-#include "splash_screen.hpp"
-#include "game_world.hpp"
+#include "inc/tap.hpp"
+
 #include <cstdio>
+
+#include "inc/game_world.hpp"
+#include "inc/raylib.h"
+#include "inc/splash_screen.hpp"
 
 Tap::Tap() : game_state() {
     this->mouse_cursor = LoadTexture(GetAssetPath("cursor.png").c_str());

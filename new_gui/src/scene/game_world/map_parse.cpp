@@ -1,8 +1,10 @@
-#include "map_parse.hpp"
-#include "helper.hpp"
-#include <string>
+#include "inc/map_parse.hpp"
+
 #include <cstdio>
+#include <string>
 #include <vector>
+
+#include "inc/helper.hpp"
 
 static std::string get_map_string(std::string path) {
     FILE *raw_data = fopen(GetAssetPath(path).c_str(), "r");

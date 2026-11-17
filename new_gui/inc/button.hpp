@@ -1,8 +1,9 @@
 #pragma once
 #include <functional>
 #include <string>
-#include "raylib.h"
-#include "helper.hpp"
+
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
 
 class Button {
 private:

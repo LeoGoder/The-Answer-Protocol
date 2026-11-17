@@ -1,10 +1,11 @@
-#include "game_world.hpp"
-#include "helper.hpp"
-#include "raylib.h"
 #include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
 
 void GameWorld::draw_inventory() {
     std::vector<std::string> inventory = this->player.get_inventory();

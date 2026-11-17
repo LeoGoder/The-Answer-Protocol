@@ -1,7 +1,10 @@
-#include "game_world.hpp"
-#include "server.hpp"
-#include <cstdio>
 #include <unistd.h>
+
+#include <cstdio>
+#include <string>
+
+#include "inc/game_world.hpp"
+#include "inc/server.hpp"
 
 // "OK Alive" is searched in the whole buffer: the "OK" replies to POSITION
 // often arrive in the same recv.

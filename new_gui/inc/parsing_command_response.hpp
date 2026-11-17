@@ -1,8 +1,9 @@
 #pragma once
-#include <vector>
 #include <string>
-#include "game_world.hpp"
-#include "map_parse.hpp"
+#include <vector>
+
+#include "inc/game_world.hpp"
+#include "inc/map_parse.hpp"
 
 std::vector<std::string> parse_id_list(std::string &msg, std::string key);
 std::vector<std::string> parse_quests(std::string &msg);

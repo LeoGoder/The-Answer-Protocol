@@ -1,24 +1,27 @@
-#include "game_world.hpp"
-#include "map_parse.hpp"
-#include "helper.hpp"
-#include "player.hpp"
-#include "raylib.h"
-#include "server.hpp"
-#include "parsing_command_response.hpp"
+#include "inc/game_world.hpp"
+
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <vector>
+
+#include "inc/helper.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/parsing_command_response.hpp"
+#include "inc/player.hpp"
+#include "inc/raylib.h"
+#include "inc/server.hpp"
 
 GameWorld::GameWorld(GameState *game_state){
     this->font = LoadTexture(GetAssetPath("test_font.png").c_str());

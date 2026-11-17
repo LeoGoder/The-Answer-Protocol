@@ -1,6 +1,6 @@
-#include "tap.hpp"
-#include "helper.hpp"
-#include "raylib.h"
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
+#include "inc/tap.hpp"
 
 int main(void) {
 

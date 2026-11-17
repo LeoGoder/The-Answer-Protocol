@@ -1,11 +1,11 @@
 #pragma once
 
-#include "player.hpp"
-
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "inc/player.hpp"
 
 #define MAX_DATA 1024
 

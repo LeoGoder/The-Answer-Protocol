@@ -1,11 +1,12 @@
 #pragma once
 
-#include "chat.hpp"
-#include "map_parse.hpp"
-#include "raylib.h"
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "inc/chat.hpp"
+#include "inc/map_parse.hpp"
+#include "inc/raylib.h"
 
 #define NORTH 86
 #define EAST 90

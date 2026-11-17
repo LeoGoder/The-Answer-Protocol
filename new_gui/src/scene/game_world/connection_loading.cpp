@@ -1,5 +1,5 @@
-#include "game_world.hpp"
-#include "helper.hpp"
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
 
 void GameWorld::draw_loading_screen() {
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(GREEN, 0.30));

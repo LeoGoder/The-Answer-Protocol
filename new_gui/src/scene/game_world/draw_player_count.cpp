@@ -1,6 +1,7 @@
-#include "game_world.hpp"
-#include "raylib.h"
 #include <string>
+
+#include "inc/game_world.hpp"
+#include "inc/raylib.h"
 
 // "Players <room>/<server>", centered under the minimap grid.
 void GameWorld::draw_player_count(int x, int y, int width) {

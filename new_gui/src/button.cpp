@@ -1,5 +1,8 @@
-#include "button.hpp"
-#include "helper.hpp"
+#include "inc/button.hpp"
+
+#include <string>
+
+#include "inc/helper.hpp"
 
 Button::Button(const Texture2D *arrow, const Texture2D *background,
                const std::string &text, std::function<void()> callback) {

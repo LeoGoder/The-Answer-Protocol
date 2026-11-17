@@ -1,8 +1,9 @@
-#include "game_world.hpp"
-#include "helper.hpp"
-#include "raylib.h"
 #include <map>
 #include <string>
+
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
+#include "inc/raylib.h"
 
 // Grid cell of each room, laid out from the exits of world.json.
 static std::map<std::string, Vector2> room_cells = {

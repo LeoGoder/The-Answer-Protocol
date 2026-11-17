@@ -1,4 +1,4 @@
-#include "game_state.hpp"
+#include "inc/game_state.hpp"
 
 GameState::GameState() {
     actual_scene = splash_screen;

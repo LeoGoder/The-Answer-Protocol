@@ -1,10 +1,12 @@
-#include "helper.hpp"
-#include "raylib.h"
+#include "inc/helper.hpp"
+
 #include <cstddef>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
+
+#include "inc/raylib.h"
 
 std::string GetAssetPath(const std::string &path) {
     if (FileExists(path.c_str())) return path;

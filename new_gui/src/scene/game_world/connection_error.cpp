@@ -1,5 +1,5 @@
-#include "game_world.hpp"
-#include "helper.hpp"
+#include "inc/game_world.hpp"
+#include "inc/helper.hpp"
 
 void GameWorld::draw_connection_error() {
     DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, ColorAlpha(RED, 0.30));
