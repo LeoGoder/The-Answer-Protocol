@@ -12,7 +12,7 @@ static std::map<std::string, Vector2> room_cells = {
     {"komolexos", {0, 2}}, {"hub", {1, 2}}, {"fugoumitak", {2, 2}},
 };
 
-static std::string room_links[][2] = {
+static const char *room_links[][2] = {
     {"hub", "komolexos"},       {"hub", "jeetomal"},
     {"hub", "fugoumitak"},      {"komolexos", "vinterfint"},
     {"vinterfint", "jeetomal"}, {"vinterfint", "fejka"},

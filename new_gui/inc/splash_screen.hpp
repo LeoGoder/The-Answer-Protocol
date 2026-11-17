@@ -43,7 +43,7 @@ class SplashScreen : public GameScene {
  public:
     GameState *game_state;
 
-    SplashScreen(GameState *game_state);
+    explicit SplashScreen(GameState *game_state);
     ~SplashScreen();
 
     void update() override;

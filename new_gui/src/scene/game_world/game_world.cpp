@@ -179,7 +179,6 @@ void GameWorld::net_update() {
                     int res = send_message(this->command.LOOK, "", this->fd);
 
                     if (res < 0) {
-                        // TODO: change to notify system for ux enhanced
                         std::cout << "Error send\n";
                     }
                     send_message(this->command.WHO, "", this->fd);

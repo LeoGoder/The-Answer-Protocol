@@ -18,7 +18,7 @@ std::string GetAssetPath(const std::string &path) {
 }
 
 void kill_return_line(std::string &str) {
-    for (long unsigned int i = 0; i < str.size(); i++) {
+    for (size_t i = 0; i < str.size(); i++) {
         if (str[i] == '\n') {
             str[i] = ' ';
         }

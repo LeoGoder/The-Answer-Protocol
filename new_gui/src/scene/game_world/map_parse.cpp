@@ -1,5 +1,6 @@
 #include "inc/map_parse.hpp"
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -14,7 +15,7 @@ static std::string get_map_string(std::string path) {
             return "";
     }
     fseek(raw_data, 0, SEEK_END);
-    long size = ftell(raw_data);
+    int64_t size = ftell(raw_data);
 
     rewind(raw_data);
     std::string string_data(size, '\0');
