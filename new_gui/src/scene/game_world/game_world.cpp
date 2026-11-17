@@ -249,8 +249,14 @@ void GameWorld::net_update() {
                 }
                 // A defeated or respawned enemy changes the NPCs of the room.
                 if (msg_copy.find(R"("status":"victory")") != std::string::npos
-                    || msg_copy.find("EVT ROOM NPC SPAWN ") != std::string::npos)
+                    || msg_copy.find("EVT ROOM NPC SPAWN ") != std::string::npos) {
+                        send_message(this->command.LOOK, "", this->fd);
+                        send_message(this->command.INVENTORY, "", this->fd);
+                    }
+                if (msg_copy.find(R"("status":"defeated")") != std::string::npos) {
                     send_message(this->command.LOOK, "", this->fd);
+                    this->player.player_pos = PLAYER_DEFAULT_POS;
+                }
                 size_t attack_pos = msg_copy.find(R"(OK {"attacker")");
                 if (attack_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(attack_pos));
