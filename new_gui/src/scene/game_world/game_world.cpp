@@ -62,8 +62,8 @@ GameWorld::GameWorld(GameState *game_state) {
     this->inviting = false;
     this->wait_talk = false;
     this->player = Player(&this->font, "", &this->player_sprite);
-    this->player.cam.offset = {float(SCREEN_WIDTH) / 2,
-                               float(SCREEN_HEIGHT) / 2};
+    this->player.cam.offset = {static_cast<float>(SCREEN_WIDTH) / 2,
+                               static_cast<float>(SCREEN_HEIGHT) / 2};
     this->player.cam.rotation = 0.0;
     this->player.cam.target = this->player.player_pos;
     this->player.cam.zoom = 1.0;
@@ -300,8 +300,12 @@ void GameWorld::net_update() {
                 this->timer = 0.0;
                 std::string p_pos = "";
 
-                p_pos += std::to_string(int(this->player.player_pos.x)) + " " +
-                         std::to_string(int(this->player.player_pos.y)) + '\n';
+                p_pos += std::to_string(
+                             static_cast<int>(this->player.player_pos.x)) +
+                         " " +
+                         std::to_string(
+                             static_cast<int>(this->player.player_pos.y)) +
+                         '\n';
                 send_message(this->command.POSITION, p_pos, this->fd);
             }
             break;

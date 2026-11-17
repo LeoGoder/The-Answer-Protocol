@@ -16,8 +16,9 @@
 #define PLAYER_WIDTH 28
 #define PLAYER_HEIGHT 28
 #define PLAYER_OFFSET 16
-#define PLAYER_DEFAULT_POS \
-    {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT}
+#define PLAYER_DEFAULT_POS                             \
+    {(static_cast<float>(MAP_WIDTH) / 2) * TILE_WIDTH, \
+     (static_cast<float>(MAP_HEIGHT) / 2) * TILE_HEIGHT}
 
 #define PLAYER_IDLE_ANIMATION 6
 #define PLAYER_WALKING_ANIMATION 4

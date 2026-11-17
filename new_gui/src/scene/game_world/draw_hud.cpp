@@ -6,8 +6,8 @@
 #include "inc/helper.hpp"
 
 void GameWorld::draw_hud() {
-    float room_name_x =
-        (float(SCREEN_WIDTH) / 2) - (GetFontTextWidth(this->room.name) / 2);
+    float room_name_x = (static_cast<float>(SCREEN_WIDTH) / 2) -
+                        (GetFontTextWidth(this->room.name) / 2);
 
     DrawFontText(this->font, this->room.name, room_name_x, 20);
     GameWorld::draw_player_info();
@@ -34,16 +34,18 @@ int GameWorld::draw_text_buttons(std::vector<std::string> names, int x, int y,
     int clicked = -1;
 
     for (size_t i = 0; i < names.size(); i++) {
-        Rectangle box = {float(x), float(y),
-                         float(MeasureText(names[i].c_str(), HUD_FONT_SIZE) +
+        Rectangle box = {
+            static_cast<float>(x), static_cast<float>(y),
+            static_cast<float>(MeasureText(names[i].c_str(), HUD_FONT_SIZE) +
                                BUTTON_PADDING * 2),
-                         BUTTON_HEIGHT};
+            BUTTON_HEIGHT};
         bool hovered = CheckCollisionPointRec(mouse, box);
-        Color color = hovered || int(i) == selected ? YELLOW : WHITE;
+        Color color =
+            hovered || static_cast<int>(i) == selected ? YELLOW : WHITE;
 
         DrawRectangleRec(box, ColorAlpha(BLACK, 0.6));
-        DrawRectangleLinesEx(box, 1,
-                             hovered || int(i) == selected ? YELLOW : GRAY);
+        DrawRectangleLinesEx(
+            box, 1, hovered || static_cast<int>(i) == selected ? YELLOW : GRAY);
         DrawText(names[i].c_str(), x + BUTTON_PADDING, y + BUTTON_PADDING,
                  HUD_FONT_SIZE, color);
         if (hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))

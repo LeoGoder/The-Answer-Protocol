@@ -66,14 +66,15 @@ void Player::update_animation_timer(float dt) {
 
 void Player::draw_other_player(std::string player_name, float dt) {
     float player_center = 32;
-    float text_len_full = float(GetFontTextWidth(player_name));
-    float text_len =
-        float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
+    float text_len_full = static_cast<float>(GetFontTextWidth(player_name));
+    float text_len = static_cast<float>(GetFontTextWidth(player_name) / 2.0f -
+                                        (static_cast<float>(CHAR_WIDTH) / 2));
 
     DrawRectangle(
-        this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4),
-        this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full,
-        CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
+        this->player_pos.x - text_len + player_center -
+            (static_cast<float>(CHAR_WIDTH) / 4),
+        this->player_pos.y - 20 - (static_cast<float>(CHAR_WIDTH) / 6),
+        text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
     DrawFontText(*this->font, player_name,
                  this->player_pos.x - text_len + player_center,
                  this->player_pos.y - 20);
@@ -134,14 +135,15 @@ void Player::draw_other_player(std::string player_name, float dt) {
 
 void Player::draw_player(std::string player_name, float dt) {
     float player_center = 32;
-    float text_len_full = float(GetFontTextWidth(player_name));
-    float text_len =
-        float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
+    float text_len_full = static_cast<float>(GetFontTextWidth(player_name));
+    float text_len = static_cast<float>(GetFontTextWidth(player_name) / 2.0f -
+                                        (static_cast<float>(CHAR_WIDTH) / 2));
 
     DrawRectangle(
-        this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4),
-        this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full,
-        CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
+        this->player_pos.x - text_len + player_center -
+            (static_cast<float>(CHAR_WIDTH) / 4),
+        this->player_pos.y - 20 - (static_cast<float>(CHAR_WIDTH) / 6),
+        text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
     DrawFontText(*this->font, player_name,
                  this->player_pos.x - text_len + player_center,
                  this->player_pos.y - 20);
