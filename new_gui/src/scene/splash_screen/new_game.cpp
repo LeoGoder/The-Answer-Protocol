@@ -33,7 +33,7 @@ void SplashScreen::draw_create_player() {
     DrawFontText(
         this->font, temp_str,
         (SCREEN_WIDTH / 2.0f) - (GetFontTextWidth(temp_str, 2.0f) / 2.0f),
-        float(SCREEN_HEIGHT) / 2, this->font_color, 2.0f);
+        static_cast<float>(SCREEN_HEIGHT) / 2, this->font_color, 2.0f);
     input_hint(this->font, this->mouse_keyboard_icons, "back");
 }
 

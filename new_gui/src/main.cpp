@@ -14,13 +14,14 @@ int main(void) {
         RenderTexture2D target = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
         int resolutionLoc = GetShaderLocation(post_process, "resolution");
         int timeLoc       = GetShaderLocation(post_process, "time");
-        Vector2 screenRes = { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT };
+        Vector2 screenRes = {static_cast<float>(SCREEN_WIDTH),
+                             static_cast<float>(SCREEN_HEIGHT)};
 
         SetShaderValue(post_process, resolutionLoc, &screenRes,
                        SHADER_UNIFORM_VEC2);
         game.init();
         while (!WindowShouldClose()) {
-            float time = (float)GetTime();
+            float time = static_cast<float>(GetTime());
 
             SetShaderValue(post_process, timeLoc, &time, SHADER_UNIFORM_FLOAT);
             BeginTextureMode(target);
@@ -31,12 +32,13 @@ int main(void) {
             BeginDrawing();
                 ClearBackground(Color{ 32, 32, 32, 255 });
                 BeginShaderMode(post_process);
-                DrawTexturePro(target.texture,
-                               (Rectangle){0, 0, (float)target.texture.width,
-                                           (float)-target.texture.height},
-                               (Rectangle){0, 0, (float)GetScreenWidth(),
-                                           (float)-GetScreenHeight()},
-                               Vector2{0, 0}, 0.0f, WHITE);
+                DrawTexturePro(
+                    target.texture,
+                    (Rectangle){0, 0, static_cast<float>(target.texture.width),
+                                static_cast<float>(-target.texture.height)},
+                    (Rectangle){0, 0, static_cast<float>(GetScreenWidth()),
+                                static_cast<float>(-GetScreenHeight())},
+                    Vector2{0, 0}, 0.0f, WHITE);
                 EndShaderMode();
             EndDrawing();
         }

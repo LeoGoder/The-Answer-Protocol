@@ -48,8 +48,8 @@ void Button::draw_button(const Texture2D &font, float x, float y, float scale) {
 
             DrawFontText(font, this->text, x, y, YELLOW, 1.0f);
             if (this->arrow != nullptr) {
-                Rectangle src = {0, 0, (float)this->arrow->width,
-                                 (float)this->arrow->height};
+                Rectangle src = {0, 0, static_cast<float>(this->arrow->width),
+                                 static_cast<float>(this->arrow->height)};
                 Rectangle dst = { x - 16 - 10 - this->offset, y, 16.0f, 16.0f };
                 DrawTexturePro(*this->arrow, src, dst, Vector2{0, 0}, 0.0f,
                                WHITE);

@@ -166,8 +166,8 @@ void SplashScreen::draw_main_menu() {
     const float scale = 2.0f;
     float width = mn_background.width * scale;
     float height = mn_background.height * scale;
-    Rectangle src = {0, 0, (float)mn_background.width,
-                     (float)mn_background.height};
+    Rectangle src = {0, 0, static_cast<float>(mn_background.width),
+                     static_cast<float>(mn_background.height)};
     Rectangle dst = {(SCREEN_WIDTH - width) / 2.0f,
                      (SCREEN_HEIGHT - height) / 2.0f, width, height};
     float step = height / (this->button_list.size() + 1);

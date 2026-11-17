@@ -61,18 +61,20 @@ void GameWorld::draw_log() {
     int shown = header.empty() ? LOG_LINES : LOG_LINES - 1;
     int lines_y = header.empty() ? log_y + HUD_PADDING
                                  : log_y + HUD_PADDING + LOG_LINE_HEIGHT;
-    int max_scroll = std::max(0, int(lines.size()) - shown);
+    int max_scroll = std::max(0, static_cast<int>(lines.size()) - shown);
     int first;
 
     if (CheckCollisionPointRec(
-            mouse, Rectangle{10, float(log_y), LOG_WIDTH, float(log_height)}))
-        this->log_scroll += int(GetMouseWheelMove());
+            mouse, Rectangle{10, static_cast<float>(log_y), LOG_WIDTH,
+                             static_cast<float>(log_height)}))
+        this->log_scroll += static_cast<int>(GetMouseWheelMove());
     this->log_scroll = std::clamp(this->log_scroll, 0, max_scroll);
     first = max_scroll - this->log_scroll;
     if (!header.empty())
         DrawText(header.c_str(), text_x, log_y + HUD_PADDING, HUD_FONT_SIZE,
                  YELLOW);
-    for (int i = 0; i < shown && first + i < int(lines.size()); i++)
+    for (int i = 0; i < shown && first + i < static_cast<int>(lines.size());
+         i++)
         DrawText(lines[first + i].c_str(), text_x,
                  lines_y + i * LOG_LINE_HEIGHT, HUD_FONT_SIZE, WHITE);
     if (this->panel_tab == PANEL_GROUP) {
@@ -165,8 +167,8 @@ void GameWorld::draw_chat_buttons(int x, int y) {
         this->chat_unread[clicked] = false;
         this->log_scroll = 0;
     }
-    Rectangle box = {box_x, float(y), 10 + LOG_WIDTH - HUD_PADDING - box_x,
-                     BUTTON_HEIGHT};
+    Rectangle box = {box_x, static_cast<float>(y),
+                     10 + LOG_WIDTH - HUD_PADDING - box_x, BUTTON_HEIGHT};
     std::string text =
         this->player.chat.get_msg() + (this->player.show_chat ? "_" : "");
 

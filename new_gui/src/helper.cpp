@@ -182,7 +182,8 @@ void DrawFontText(const Texture2D &font, const std::string &text, float x,
 
         Rectangle src = {static_cast<float>(col * CHAR_WIDTH),
                          static_cast<float>(row * CHAR_HEIGHT),
-                         (float)CHAR_WIDTH, (float)CHAR_HEIGHT};
+                         static_cast<float>(CHAR_WIDTH),
+                         static_cast<float>(CHAR_HEIGHT)};
         Rectangle dst = { temp_x, temp_y, scaled_w, scaled_h };
         DrawTexturePro(font, src, dst, Vector2{0, 0}, 0.0f, color);
         temp_x += scaled_w;
@@ -203,8 +204,8 @@ void draw_sprite_sheet(Texture2D &spritesheet, int frame, int nb_col,
 
 void input_hint(Texture2D &font, Texture2D &spritesheet, std::string text) {
     float text_size = GetFontTextWidth(text);
-    float text_x = float(SCREEN_WIDTH - SPRITE_SIZE.x - text_size);
-    float text_y = float(SCREEN_HEIGHT - SPRITE_SIZE.y - 10);
+    float text_x = static_cast<float>(SCREEN_WIDTH - SPRITE_SIZE.x - text_size);
+    float text_y = static_cast<float>(SCREEN_HEIGHT - SPRITE_SIZE.y - 10);
 
     draw_sprite_sheet(spritesheet, 1, 2, Vector2{text_x, text_y}, SPRITE_SIZE,
                       1.0f);
@@ -214,8 +215,8 @@ void input_hint(Texture2D &font, Texture2D &spritesheet, std::string text) {
 
 Vector2 get_virtual_mouse_position() {
     Vector2 mouse = GetMousePosition();
-    return Vector2{
-        mouse.x * ((float)SCREEN_WIDTH / (float)GetScreenWidth()),
-        mouse.y * ((float)SCREEN_HEIGHT / (float)GetScreenHeight())
-    };
+    return Vector2{mouse.x * (static_cast<float>(SCREEN_WIDTH) /
+                              static_cast<float>(GetScreenWidth())),
+                   mouse.y * (static_cast<float>(SCREEN_HEIGHT) /
+                              static_cast<float>(GetScreenHeight()))};
 }

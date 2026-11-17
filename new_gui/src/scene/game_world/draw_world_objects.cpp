@@ -41,12 +41,13 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids,
         Vector2 sprite_size;
         Vector2 texture_size;
         if (prefix == "npc_") {
-            sprite_size = {(float(texture.width) / 6),
-                           (float(texture.height) / 8)};
+            sprite_size = {(static_cast<float>(texture.width) / 6),
+                           (static_cast<float>(texture.height) / 8)};
             texture_size.x = sprite_size.x * 2;
             texture_size.y = sprite_size.y * 2;
         } else {
-            sprite_size = { (float(texture.width)), (float(texture.height)) };
+            sprite_size = {(static_cast<float>(texture.width)),
+                           (static_cast<float>(texture.height))};
             texture_size.x = sprite_size.x * 2;
             texture_size.y = sprite_size.y * 2;
         }
@@ -57,8 +58,8 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids,
         if (owned)
             name += " (have)";
         int name_width = MeasureText(name.c_str(), HUD_FONT_SIZE);
-        float name_x =
-            pos.x + ((sprite_size.x * scale) / 2) - (float(name_width) / 2);
+        float name_x = pos.x + ((sprite_size.x * scale) / 2) -
+                       (static_cast<float>(name_width) / 2);
         Color name_color = WHITE;
 
         if (!owned && CheckCollisionPointRec(
@@ -133,7 +134,7 @@ void GameWorld::draw_exits(std::vector<std::vector<int>> &island) {
         int width = MeasureText(name.c_str(), HUD_FONT_SIZE);
         Rectangle label = {center.x / count - width / 2 - 2,
                            center.y / count - HUD_FONT_SIZE / 2 - 1,
-                           float(width + 4), HUD_FONT_SIZE + 2};
+                           static_cast<float>(width + 4), HUD_FONT_SIZE + 2};
         bool hovered = CheckCollisionPointRec(mouse, label);
 
         if (hovered)

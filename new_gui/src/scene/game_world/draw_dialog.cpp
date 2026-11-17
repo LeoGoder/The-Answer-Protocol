@@ -7,9 +7,9 @@
 #include "inc/raylib.h"
 
 Rectangle GameWorld::dialog_rect() {
-    return Rectangle{float(SCREEN_WIDTH - DIALOG_WIDTH) / 2,
-                     float(SCREEN_HEIGHT - DIALOG_HEIGHT) / 2, DIALOG_WIDTH,
-                     DIALOG_HEIGHT};
+    return Rectangle{static_cast<float>(SCREEN_WIDTH - DIALOG_WIDTH) / 2,
+                     static_cast<float>(SCREEN_HEIGHT - DIALOG_HEIGHT) / 2,
+                     DIALOG_WIDTH, DIALOG_HEIGHT};
 }
 
 // TALK replies "OK <text>": read before kill_return_line, as the bare "OK" of

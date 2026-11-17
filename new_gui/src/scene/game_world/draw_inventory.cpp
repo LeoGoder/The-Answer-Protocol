@@ -15,7 +15,8 @@ void GameWorld::draw_inventory() {
 
     this->hovered_slot.clear();
     for (size_t i = 0; i < INVENTORY_SLOTS; i++) {
-        Rectangle slot = {INVENTORY_X, float(INVENTORY_Y + i * SLOT_SIZE),
+        Rectangle slot = {INVENTORY_X,
+                          static_cast<float>(INVENTORY_Y + i * SLOT_SIZE),
                           SLOT_SIZE - 2, SLOT_SIZE - 2};
 
         DrawRectangleRec(slot, ColorAlpha(BLACK, 0.6));
