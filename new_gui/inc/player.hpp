@@ -15,7 +15,8 @@
 #define PLAYER_WIDTH 28
 #define PLAYER_HEIGHT 28
 #define PLAYER_OFFSET 16
-#define PLAYER_DEFAULT_POS {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT}
+#define PLAYER_DEFAULT_POS \
+    {(float(MAP_WIDTH) / 2) * TILE_WIDTH, (float(MAP_HEIGHT) / 2) * TILE_HEIGHT}
 
 #define PLAYER_IDLE_ANIMATION 6
 #define PLAYER_WALKING_ANIMATION 4
@@ -76,6 +77,8 @@ class Player {
         void update_animation_timer(float dt);
 };
 
-std::string player_change_room(std::vector<std::vector<int>> &data, Vector2 player_pos);
+std::string player_change_room(std::vector<std::vector<int>> &data,
+                               Vector2 player_pos);
 
-void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::string event);
+void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players,
+                       std::string event);

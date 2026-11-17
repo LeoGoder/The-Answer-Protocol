@@ -6,14 +6,17 @@
 #include <cstring>
 
 void SplashScreen::draw_new_game() {
-    float center_x = (SCREEN_WIDTH / 2.0f) - (this->btn_save[0]->get_sprite_width() / 2.0f);
+    float center_x =
+        (SCREEN_WIDTH / 2.0f) - (this->btn_save[0]->get_sprite_width() / 2.0f);
     float sprite_height = this->btn_save[0]->get_sprite_height();
     int pos_x = -15;
 
     this->btn_save[0]->draw_button(font, center_x, pos_x, 1.0f);
     this->btn_save[1]->draw_button(font, center_x, pos_x + sprite_height, 1.0f);
-    this->btn_save[2]->draw_button(font, center_x, pos_x + (sprite_height * 2), 1.0f);
-    this->btn_save[3]->draw_button(font, center_x, pos_x + (sprite_height * 3), 1.0f);
+    this->btn_save[2]->draw_button(font, center_x, pos_x + (sprite_height * 2),
+                                   1.0f);
+    this->btn_save[3]->draw_button(font, center_x, pos_x + (sprite_height * 3),
+                                   1.0f);
     input_hint(this->font, this->mouse_keyboard_icons, "back");
 }
 
@@ -21,8 +24,14 @@ void SplashScreen::draw_create_player() {
     std::string temp_str = this->save_lst[this->save_slot_choice]->player_name;
     std::string enter_name = "Enter your name:";
 
-    DrawFontText(this->font, enter_name, (SCREEN_WIDTH / 2.0f) - (GetFontTextWidth(enter_name, 2.0f) / 2.0f), 20, WHITE, 2.0f);
-    DrawFontText(this->font, temp_str, (SCREEN_WIDTH / 2.0f) - (GetFontTextWidth(temp_str, 2.0f) / 2.0f), float(SCREEN_HEIGHT) / 2, this->font_color, 2.0f);
+    DrawFontText(
+        this->font, enter_name,
+        (SCREEN_WIDTH / 2.0f) - (GetFontTextWidth(enter_name, 2.0f) / 2.0f), 20,
+        WHITE, 2.0f);
+    DrawFontText(
+        this->font, temp_str,
+        (SCREEN_WIDTH / 2.0f) - (GetFontTextWidth(temp_str, 2.0f) / 2.0f),
+        float(SCREEN_HEIGHT) / 2, this->font_color, 2.0f);
     input_hint(this->font, this->mouse_keyboard_icons, "back");
 }
 
@@ -40,15 +49,18 @@ static int last_character(char player_name[P_NAME_LEN]) {
 void SplashScreen::keyboard_input() {
     int key_got = GetKeyPressed();
     if (key_got > 0) {
-        int char_position = last_character(this->save_lst[this->save_slot_choice]->player_name);
+        int char_position =
+            last_character(this->save_lst[this->save_slot_choice]->player_name);
 
         if (key_got == KEY_BACKSPACE && char_position > 0) {
-            this->save_lst[this->save_slot_choice]->player_name[char_position - 1] = '\0';
+            this->save_lst[this->save_slot_choice]
+                ->player_name[char_position - 1] = '\0';
         }
         else if (key_got == KEY_ENTER || key_got == KEY_SPACE) {
 
         }
         else if (char_position < P_NAME_LEN - 1)
-            this->save_lst[this->save_slot_choice]->player_name[char_position] = key_got;
+            this->save_lst[this->save_slot_choice]->player_name[char_position] =
+                key_got;
     }
 }

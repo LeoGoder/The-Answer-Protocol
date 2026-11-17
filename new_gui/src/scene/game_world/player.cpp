@@ -10,9 +10,11 @@
 #include <string>
 #include <vector>
 
-void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players, std::string event) {
+void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players,
+                       std::string event) {
     for (size_t i = 0; i < vect_players.size(); i++) {
-        std::string new_position = extract_position(event, vect_players[i]->name);
+        std::string new_position =
+            extract_position(event, vect_players[i]->name);
         std::vector<std::string> position_split;
 
         if (new_position == "")
@@ -64,52 +66,68 @@ void Player::update_animation_timer(float dt) {
 void Player::draw_other_player(std::string player_name, float dt) {
     float player_center = 32;
     float text_len_full = float(GetFontTextWidth(player_name));
-    float text_len = float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
+    float text_len =
+        float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
 
-    DrawRectangle(this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4), this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
-    DrawFontText(*this->font, player_name, this->player_pos.x - text_len + player_center, this->player_pos.y - 20);
+    DrawRectangle(
+        this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4),
+        this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full,
+        CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
+    DrawFontText(*this->font, player_name,
+                 this->player_pos.x - text_len + player_center,
+                 this->player_pos.y - 20);
 
-    if ((this->last_player_pos.x > this->player_pos.x) && (this->last_player_pos.y > this->player_pos.y)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT_DIAG_UP, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    if ((this->last_player_pos.x > this->player_pos.x) &&
+        (this->last_player_pos.y > this->player_pos.y)) {
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_LEFT_DIAG_UP, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT_DIAG_UP;
-    }
-    else if ((this->last_player_pos.x > this->player_pos.x) && (this->last_player_pos.y < this->player_pos.y)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT_DIAG_DOWN, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    } else if ((this->last_player_pos.x > this->player_pos.x) &&
+               (this->last_player_pos.y < this->player_pos.y)) {
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_LEFT_DIAG_DOWN, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT_DIAG_DOWN;
-    }
-    else if ((this->last_player_pos.x < this->player_pos.x) && (this->last_player_pos.y > this->player_pos.y)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT_DIAG_UP, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    } else if ((this->last_player_pos.x < this->player_pos.x) &&
+               (this->last_player_pos.y > this->player_pos.y)) {
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_RIGHT_DIAG_UP, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_UP;
-    }
-    else if ((this->last_player_pos.x < this->player_pos.x) && (this->last_player_pos.y < this->player_pos.y)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    } else if ((this->last_player_pos.x < this->player_pos.x) &&
+               (this->last_player_pos.y < this->player_pos.y)) {
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_DOWN;
     }
 
     else if (this->last_player_pos.x > this->player_pos.x) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT;
-    }
-    else if (this->last_player_pos.x < this->player_pos.x) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    } else if (this->last_player_pos.x < this->player_pos.x) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT;
-    }
-    else if (this->last_player_pos.y > this->player_pos.y) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_BACK, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    } else if (this->last_player_pos.y > this->player_pos.y) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_BACK, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_BACK;
-    }
-    else if (this->last_player_pos.y < this->player_pos.y) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_FRONT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+    } else if (this->last_player_pos.y < this->player_pos.y) {
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_FRONT, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_FRONT;
-    }
-    else {
+    } else {
         int direction;
 
         if (this->last_direction > 0)
             direction = this->last_direction - (8 * 6);
         else
             direction = 0;
-        draw_sprite_sheet(*this->sprite, this->idle_animation + direction, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->idle_animation + direction, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
     }
     this->last_player_pos = this->player_pos;
     update_animation_timer(dt);
@@ -118,42 +136,60 @@ void Player::draw_other_player(std::string player_name, float dt) {
 void Player::draw_player(std::string player_name, float dt) {
     float player_center = 32;
     float text_len_full = float(GetFontTextWidth(player_name));
-    float text_len = float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
+    float text_len =
+        float(GetFontTextWidth(player_name) / 2.0f - (float(CHAR_WIDTH) / 2));
 
-    DrawRectangle(this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4), this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full, CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
-    DrawFontText(*this->font, player_name, this->player_pos.x - text_len + player_center, this->player_pos.y - 20);
+    DrawRectangle(
+        this->player_pos.x - text_len + player_center - (float(CHAR_WIDTH) / 4),
+        this->player_pos.y - 20 - (float(CHAR_WIDTH) / 6), text_len_full,
+        CHAR_HEIGHT, ColorAlpha(BLACK, 0.6));
+    DrawFontText(*this->font, player_name,
+                 this->player_pos.x - text_len + player_center,
+                 this->player_pos.y - 20);
 
     if (IsKeyDown(KEY_A) && IsKeyDown(KEY_W)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT_DIAG_UP, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_LEFT_DIAG_UP, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT_DIAG_UP;
     }
     else if (IsKeyDown(KEY_A) && IsKeyDown(KEY_S)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT_DIAG_DOWN, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_LEFT_DIAG_DOWN, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT_DIAG_DOWN;
     }
     else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_W)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT_DIAG_UP, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_RIGHT_DIAG_UP, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_UP;
     }
     else if (IsKeyDown(KEY_D) && IsKeyDown(KEY_S)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite,
+                          this->walk_animation + WALK_RIGHT_DIAG_DOWN, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT_DIAG_DOWN;
     }
 
     else if (IsKeyDown(KEY_A)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_LEFT, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_LEFT;
     }
     else if (IsKeyDown(KEY_D)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_RIGHT, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_RIGHT;
     }
     else if (IsKeyDown(KEY_W)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_BACK, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_BACK, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_BACK;
     }
     else if (IsKeyDown(KEY_S)) {
-        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_FRONT, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->walk_animation + WALK_FRONT, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
         this->last_direction = WALK_FRONT;
     }
     else {
@@ -163,7 +199,8 @@ void Player::draw_player(std::string player_name, float dt) {
             direction = this->last_direction - (8 * 6);
         else
             direction = 0;
-        draw_sprite_sheet(*this->sprite, this->idle_animation + direction, 6, this->player_pos, SPRITE_SIZE, 2.0f);
+        draw_sprite_sheet(*this->sprite, this->idle_animation + direction, 6,
+                          this->player_pos, SPRITE_SIZE, 2.0f);
     }
     update_animation_timer(dt);
 }
@@ -181,8 +218,10 @@ bool player_overlap(std::vector<std::vector<int>> &data, Vector2 player_pos) {
             tile_pos.y += TILE_HEIGHT;
         }
         if (data[layer][y] != 0) {
-            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x - PLAYER_OFFSET && player_pos.x + PLAYER_OFFSET <= tile_pos.x + TILE_WIDTH) &&
-                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y - PLAYER_OFFSET && player_pos.y + PLAYER_OFFSET <= tile_pos.y + TILE_HEIGHT)) {
+            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x - PLAYER_OFFSET &&
+                 player_pos.x + PLAYER_OFFSET <= tile_pos.x + TILE_WIDTH) &&
+                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y - PLAYER_OFFSET &&
+                 player_pos.y + PLAYER_OFFSET <= tile_pos.y + TILE_HEIGHT)) {
                 return true;
             }
         }
@@ -221,7 +260,8 @@ bool can_move(MapData &data, Maps &map, Vector2 player_pos) {
     return false;
 }
 
-std::string player_change_room(std::vector<std::vector<int>> &data, Vector2 player_pos) {
+std::string player_change_room(std::vector<std::vector<int>> &data,
+                               Vector2 player_pos) {
     if (data.empty()) return "";
 
     int max_x = TILE_WIDTH * MAP_WIDTH;
@@ -236,8 +276,10 @@ std::string player_change_room(std::vector<std::vector<int>> &data, Vector2 play
             tile_pos.y += TILE_HEIGHT;
         }
         if (tile != 0) {
-            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x && player_pos.x <= tile_pos.x + TILE_WIDTH) &&
-                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y && player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
+            if ((player_pos.x + PLAYER_WIDTH >= tile_pos.x &&
+                 player_pos.x <= tile_pos.x + TILE_WIDTH) &&
+                (player_pos.y + PLAYER_HEIGHT >= tile_pos.y &&
+                 player_pos.y <= tile_pos.y + TILE_HEIGHT)) {
                 if (tile == NORTH)
                     return "NORTH";
                 if (tile == SOUTH)
@@ -313,7 +355,8 @@ void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
             this->player_pos.y = next_pos.y;
     }
     if (IsKeyPressed(KEY_E) && this->show_chat == false) {
-        std::string new_room = data_change_room(map_data, map, this->player_pos);
+        std::string new_room =
+            data_change_room(map_data, map, this->player_pos);
 
         if (new_room != "") {
             std::string command = "MOVE " + new_room + '\n';

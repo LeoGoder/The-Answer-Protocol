@@ -21,19 +21,41 @@ void GameWorld::draw_island(std::vector<std::vector<int>> &island) {
                 position.y = y * TILE_HEIGHT;
 
                 if (tile_id >= 1 && tile_id < EXTERIOR_FIRSTGRID)
-                    draw_sprite_sheet(this->ground, tile_id - MAP_FIRSTGRID, this->ground.width / TILE_WIDTH, position, tile_size, 1);
-                if (tile_id >= EXTERIOR_FIRSTGRID && tile_id < SHEEP_WITH_SHADOW_FIRSTGRID)
-                    draw_sprite_sheet(this->exterior, tile_id - EXTERIOR_FIRSTGRID, this->exterior.width / TILE_WIDTH, position, tile_size, 1);
-                if (tile_id >= SHEEP_WITH_SHADOW_FIRSTGRID && tile_id < COW_WITH_SHADOW_FIRSTGRID)
-                    draw_sprite_sheet(this->sheep, tile_id - SHEEP_WITH_SHADOW_FIRSTGRID, this->sheep.width / TILE_WIDTH, position, tile_size, 1);
-                if (tile_id >= COW_WITH_SHADOW_FIRSTGRID && tile_id < TREES_FIRSTGRID)
-                    draw_sprite_sheet(this->calf, tile_id - COW_WITH_SHADOW_FIRSTGRID, this->calf.width / TILE_WIDTH, position, tile_size, 1);
-                if (tile_id >= TREES_FIRSTGRID && tile_id < ROCK_AND_FLOWERS_FIRSTGRID)
-                    draw_sprite_sheet(this->trees, tile_id - TREES_FIRSTGRID, this->trees.width / TILE_WIDTH, position, tile_size, 1);
-                if (tile_id >= ROCK_AND_FLOWERS_FIRSTGRID && tile_id < FOX_WITH_SHADOW_FIRSTGRID)
-                    draw_sprite_sheet(this->rock_flowers, tile_id - ROCK_AND_FLOWERS_FIRSTGRID, this->rock_flowers.width / TILE_WIDTH, position, tile_size, 1);
-                if (tile_id >= FOX_WITH_SHADOW_FIRSTGRID && tile_id < HARE_IDLE_WITH_SHADOW_FIRSTGRID)
-                    draw_sprite_sheet(this->fox, tile_id - FOX_WITH_SHADOW_FIRSTGRID, this->fox.width / TILE_WIDTH, position, tile_size, 1);
+                    draw_sprite_sheet(this->ground, tile_id - MAP_FIRSTGRID,
+                                      this->ground.width / TILE_WIDTH, position,
+                                      tile_size, 1);
+                if (tile_id >= EXTERIOR_FIRSTGRID &&
+                    tile_id < SHEEP_WITH_SHADOW_FIRSTGRID)
+                    draw_sprite_sheet(this->exterior,
+                                      tile_id - EXTERIOR_FIRSTGRID,
+                                      this->exterior.width / TILE_WIDTH,
+                                      position, tile_size, 1);
+                if (tile_id >= SHEEP_WITH_SHADOW_FIRSTGRID &&
+                    tile_id < COW_WITH_SHADOW_FIRSTGRID)
+                    draw_sprite_sheet(
+                        this->sheep, tile_id - SHEEP_WITH_SHADOW_FIRSTGRID,
+                        this->sheep.width / TILE_WIDTH, position, tile_size, 1);
+                if (tile_id >= COW_WITH_SHADOW_FIRSTGRID &&
+                    tile_id < TREES_FIRSTGRID)
+                    draw_sprite_sheet(
+                        this->calf, tile_id - COW_WITH_SHADOW_FIRSTGRID,
+                        this->calf.width / TILE_WIDTH, position, tile_size, 1);
+                if (tile_id >= TREES_FIRSTGRID &&
+                    tile_id < ROCK_AND_FLOWERS_FIRSTGRID)
+                    draw_sprite_sheet(this->trees, tile_id - TREES_FIRSTGRID,
+                                      this->trees.width / TILE_WIDTH, position,
+                                      tile_size, 1);
+                if (tile_id >= ROCK_AND_FLOWERS_FIRSTGRID &&
+                    tile_id < FOX_WITH_SHADOW_FIRSTGRID)
+                    draw_sprite_sheet(this->rock_flowers,
+                                      tile_id - ROCK_AND_FLOWERS_FIRSTGRID,
+                                      this->rock_flowers.width / TILE_WIDTH,
+                                      position, tile_size, 1);
+                if (tile_id >= FOX_WITH_SHADOW_FIRSTGRID &&
+                    tile_id < HARE_IDLE_WITH_SHADOW_FIRSTGRID)
+                    draw_sprite_sheet(
+                        this->fox, tile_id - FOX_WITH_SHADOW_FIRSTGRID,
+                        this->fox.width / TILE_WIDTH, position, tile_size, 1);
             }
         }
     }
@@ -73,7 +95,8 @@ void GameWorld::draw_game() {
         for (size_t i = 0; i < this->room.player.size(); i++) {
             std::string player_room_name = this->room.player[i]->name;
             if (player_room_name != this->player_name)
-                room.player[i]->draw_other_player(player_room_name, this->game_state->dt);
+                room.player[i]->draw_other_player(player_room_name,
+                                                  this->game_state->dt);
         }
     }
 }

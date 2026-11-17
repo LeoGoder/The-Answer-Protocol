@@ -29,7 +29,8 @@ int load_data(int slot_index, GameData &data) {
     char file_path[128];
     memset(&data, 0, sizeof(GameData));
 
-    snprintf(file_path, sizeof(file_path), "saves/TAP_%02d/save.bin", slot_index);
+    snprintf(file_path, sizeof(file_path), "saves/TAP_%02d/save.bin",
+             slot_index);
     int fd = open(file_path, O_RDONLY);
     if (fd < 0) return LOAD_FAIL;
 
@@ -43,7 +44,8 @@ int load_data(int slot_index, GameData &data) {
 
 bool is_slot_used(int slot_index) {
     char file_path[128];
-    snprintf(file_path, sizeof(file_path), "saves/TAP_%02d/save.bin", slot_index);
+    snprintf(file_path, sizeof(file_path), "saves/TAP_%02d/save.bin",
+             slot_index);
     int fd = open(file_path, O_RDONLY);
     if (fd >= 0) {
         close(fd);

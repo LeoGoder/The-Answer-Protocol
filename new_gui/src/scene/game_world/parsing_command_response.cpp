@@ -9,11 +9,14 @@
 #include <string>
 #include <vector>
 
-void parse_look_response(std::vector<std::string> &response, Room &room, Texture2D *font, Texture2D *sprite, Maps &map) {
+void parse_look_response(std::vector<std::string> &response, Room &room,
+                         Texture2D *font, Texture2D *sprite, Maps &map) {
     std::vector<std::string> response_split;
     std::string exits = extract_sub_tab(response[1], "exits");
-    std::vector<std::string> players_extract = extract_vector(response[1], "players");
-    std::vector<std::string> items_extract = extract_vector(response[1], "items");
+    std::vector<std::string> players_extract =
+        extract_vector(response[1], "players");
+    std::vector<std::string> items_extract =
+        extract_vector(response[1], "items");
     std::vector<std::string> npcs_extract = extract_vector(response[1], "npcs");
 
     room.player.clear();
@@ -38,13 +41,16 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
 
         if (value_end == std::string::npos)
             break;
-        std::string key = names_tab.substr(key_start + 1, key_end - key_start - 1);
+        std::string key =
+            names_tab.substr(key_start + 1, key_end - key_start - 1);
 
-        room.names[key] = names_tab.substr(value_start + 1, value_end - value_start - 1);
+        room.names[key] =
+            names_tab.substr(value_start + 1, value_end - value_start - 1);
         key_start = names_tab.find('"', value_end + 1);
     }
     for (size_t i = 0; i < players_extract.size(); i++) {
-        room.player.push_back(std::make_unique<Player>(font, players_extract[i], sprite));
+        room.player.push_back(
+            std::make_unique<Player>(font, players_extract[i], sprite));
     }
     
     if (room.id == "hub")
@@ -65,7 +71,8 @@ void parse_look_response(std::vector<std::string> &response, Room &room, Texture
         map = fugoumitak;
 }
 
-void parse_move_response(std::string &player_name, Room &room, NetCommand &command, int fd) {
+void parse_move_response(std::string &player_name, Room &room,
+                         NetCommand &command, int fd) {
     (void) room;
     (void) player_name;
 

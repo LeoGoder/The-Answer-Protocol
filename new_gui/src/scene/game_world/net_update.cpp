@@ -3,7 +3,8 @@
 #include <cstdio>
 #include <unistd.h>
 
-// "OK Alive" is searched in the whole buffer: the "OK" replies to POSITION often arrive in the same recv.
+// "OK Alive" is searched in the whole buffer: the "OK" replies to POSITION
+// often arrive in the same recv.
 void GameWorld::server_alive(std::string msg) {
     if (this->alive_timer > ALIVE_CHECK_TIMER) {
         if (send_message(command.ALIVE, "", this->fd) < 0) {

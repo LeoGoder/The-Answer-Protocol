@@ -12,9 +12,11 @@ static std::map<std::string, Vector2> room_cells = {
 };
 
 static std::string room_links[][2] = {
-    {"hub", "komolexos"}, {"hub", "jeetomal"}, {"hub", "fugoumitak"},
-    {"komolexos", "vinterfint"}, {"vinterfint", "jeetomal"}, {"vinterfint", "fejka"},
-    {"jeetomal", "smycka"}, {"jeetomal", "kuggis"}, {"smycka", "fejka"}, {"smycka", "kuggis"},
+    {"hub", "komolexos"},       {"hub", "jeetomal"},
+    {"hub", "fugoumitak"},      {"komolexos", "vinterfint"},
+    {"vinterfint", "jeetomal"}, {"vinterfint", "fejka"},
+    {"jeetomal", "smycka"},     {"jeetomal", "kuggis"},
+    {"smycka", "fejka"},        {"smycka", "kuggis"},
 };
 
 static Vector2 cell_center(const std::string &room) {
@@ -26,14 +28,20 @@ static Vector2 cell_center(const std::string &room) {
 }
 
 void GameWorld::draw_minimap() {
-    DrawRectangle(SCREEN_WIDTH - 10 - MINIMAP_SIZE, 10, MINIMAP_SIZE, MINIMAP_HEIGHT, ColorAlpha(BLACK, 0.6));
-    GameWorld::draw_player_count(SCREEN_WIDTH - 10 - MINIMAP_SIZE, 10 + MINIMAP_SIZE - HUD_PADDING, MINIMAP_SIZE);
+    DrawRectangle(SCREEN_WIDTH - 10 - MINIMAP_SIZE, 10, MINIMAP_SIZE,
+                  MINIMAP_HEIGHT, ColorAlpha(BLACK, 0.6));
+    GameWorld::draw_player_count(SCREEN_WIDTH - 10 - MINIMAP_SIZE,
+                                 10 + MINIMAP_SIZE - HUD_PADDING, MINIMAP_SIZE);
     for (size_t i = 0; i < sizeof(room_links) / sizeof(room_links[0]); i++)
-        DrawLineV(cell_center(room_links[i][0]), cell_center(room_links[i][1]), GRAY);
-    for (std::map<std::string, Vector2>::iterator it = room_cells.begin(); it != room_cells.end(); it++) {
+        DrawLineV(cell_center(room_links[i][0]), cell_center(room_links[i][1]),
+                  GRAY);
+    for (std::map<std::string, Vector2>::iterator it = room_cells.begin();
+         it != room_cells.end(); it++) {
         Vector2 center = cell_center(it->first);
 
-        DrawRectangle(center.x - MINIMAP_CELL / 2, center.y - MINIMAP_CELL / 2, MINIMAP_CELL, MINIMAP_CELL, it->first == this->room.id ? YELLOW : GRAY);
+        DrawRectangle(center.x - MINIMAP_CELL / 2, center.y - MINIMAP_CELL / 2,
+                      MINIMAP_CELL, MINIMAP_CELL,
+                      it->first == this->room.id ? YELLOW : GRAY);
     }
 }
 
@@ -45,5 +53,7 @@ void GameWorld::draw_quests() {
     DrawRectangle(x, y, QUESTS_WIDTH, height, ColorAlpha(BLACK, 0.6));
     DrawText("Quests", x + HUD_PADDING, y + HUD_PADDING, HUD_FONT_SIZE, YELLOW);
     for (size_t i = 0; i < this->quests.size(); i++)
-        DrawText(this->quests[i].c_str(), x + HUD_PADDING, y + HUD_PADDING + (i + 1) * LOG_LINE_HEIGHT, HUD_FONT_SIZE, WHITE);
+        DrawText(this->quests[i].c_str(), x + HUD_PADDING,
+                 y + HUD_PADDING + (i + 1) * LOG_LINE_HEIGHT, HUD_FONT_SIZE,
+                 WHITE);
 }

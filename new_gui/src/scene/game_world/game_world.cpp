@@ -27,10 +27,13 @@ GameWorld::GameWorld(GameState *game_state){
     this->ground = LoadTexture(GetAssetPath("Map.png").c_str());
     this->fox = LoadTexture(GetAssetPath("Fox_Idle_with_shadow.png").c_str());
     this->hare = LoadTexture(GetAssetPath("Hare_Idle_with_shadow.png").c_str());
-    this->sheep = LoadTexture(GetAssetPath("Sheep_animation_with_shadow.png").c_str());
-    this->calf = LoadTexture(GetAssetPath("Calf_animation_with_shadow.png").c_str());
+    this->sheep =
+        LoadTexture(GetAssetPath("Sheep_animation_with_shadow.png").c_str());
+    this->calf =
+        LoadTexture(GetAssetPath("Calf_animation_with_shadow.png").c_str());
     this->trees = LoadTexture(GetAssetPath("trees.png").c_str());
-    this->rock_flowers = LoadTexture(GetAssetPath("rock_and_flowers.png").c_str());
+    this->rock_flowers =
+        LoadTexture(GetAssetPath("rock_and_flowers.png").c_str());
     this->exterior = LoadTexture(GetAssetPath("exterior.png").c_str());
     this->game_state = game_state;
     this->intern_scene = connection;
@@ -56,7 +59,8 @@ GameWorld::GameWorld(GameState *game_state){
     this->inviting = false;
     this->wait_talk = false;
     this->player = Player(&this->font, "", &this->player_sprite);
-    this->player.cam.offset = {float(SCREEN_WIDTH) / 2, float(SCREEN_HEIGHT) / 2};
+    this->player.cam.offset = {float(SCREEN_WIDTH) / 2,
+                               float(SCREEN_HEIGHT) / 2};
     this->player.cam.rotation = 0.0;
     this->player.cam.target = this->player.player_pos;
     this->player.cam.zoom = 1.0;
@@ -67,7 +71,9 @@ GameWorld::GameWorld(GameState *game_state){
 GameWorld::~GameWorld() {
     UnloadTexture(this->font);
     UnloadTexture(this->player_sprite);
-    for (std::map<std::string, Texture2D>::iterator it = this->object_textures.begin(); it != this->object_textures.end(); it++)
+    for (std::map<std::string, Texture2D>::iterator it =
+             this->object_textures.begin();
+         it != this->object_textures.end(); it++)
         UnloadTexture(it->second);
     if (this->fd >= 0) {
         close(this->fd);
@@ -81,8 +87,10 @@ void GameWorld::update() {
         game_state->set_actual_scene(splash_screen);
     }
     if (this->intern_scene == in_game) {
-        this->player.input_player(this->game_state->dt, this->map, this->map_data, this->fd);
-        // show_chat: the player is typing in the CHAT tab (ESC cancels, Enter sends).
+        this->player.input_player(this->game_state->dt, this->map,
+                                  this->map_data, this->fd);
+        // show_chat: the player is typing in the CHAT tab (ESC cancels, Enter
+        // sends).
         if (this->player.show_chat) {
             if (IsKeyPressed(KEY_ESCAPE))
                 this->player.show_chat = false;
@@ -104,10 +112,12 @@ void GameWorld::update() {
                 this->wait_talk = true;
                 send_message(this->command.TALK, this->hovered_npc, this->fd);
             }
-            if (left && !this->hovered_slot.empty()
-                && std::find(this->usable.begin(), this->usable.end(), this->hovered_slot) != this->usable.end())
+            if (left && !this->hovered_slot.empty() &&
+                std::find(this->usable.begin(), this->usable.end(),
+                          this->hovered_slot) != this->usable.end())
                 send_message(this->command.USE, this->hovered_slot, this->fd);
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && !this->hovered_slot.empty())
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) &&
+                !this->hovered_slot.empty())
                 send_message(this->command.DROP, this->hovered_slot, this->fd);
             if (left && !this->hovered_exit.empty()) {
                 send_message("MOVE ", this->hovered_exit, this->fd);
@@ -124,7 +134,8 @@ void GameWorld::net_update() {
     std::string look;
 
     if (this->fd > 0) {
-        // Only complete lines are read: the end of a long line can come in the next recv.
+        // Only complete lines are read: the end of a long line can come in the
+        // next recv.
         this->pending += receiv_msg(this->fd);
         size_t end = this->pending.rfind('\n');
 
@@ -132,11 +143,13 @@ void GameWorld::net_update() {
             buffer = this->pending.substr(0, end + 1);
             this->pending.erase(0, end + 1);
         }
-        // The last LOOK line of the buffer: the "OK" replies to POSITION often come before it.
+        // The last LOOK line of the buffer: the "OK" replies to POSITION often
+        // come before it.
         size_t look_pos = ("\n" + buffer).rfind("\n" R"(OK {"room")");
 
         if (look_pos != std::string::npos)
-            look = buffer.substr(look_pos, buffer.find('\n', look_pos) - look_pos);
+            look =
+                buffer.substr(look_pos, buffer.find('\n', look_pos) - look_pos);
     }
     if (this->fd == 0) {
         close(fd);
@@ -156,7 +169,8 @@ void GameWorld::net_update() {
             break;
         case connection_loading:
             if (!msg_split.empty()) {
-                // "OK hello" can arrive alone before "OK connected": wait until one of them or an ERR.
+                // "OK hello" can arrive alone before "OK connected": wait until
+                // one of them or an ERR.
                 if (msg_copy.find("OK connected") != std::string::npos) {
                     this->intern_scene = in_game;
                     int res = send_message(this->command.LOOK, "", this->fd);
@@ -184,12 +198,14 @@ void GameWorld::net_update() {
                 if (!look.empty()) {
                     std::vector<std::string> look_split = split(look, ' ', 1);
 
-                    parse_look_response(look_split, this->room, &this->font, &this->player_sprite, this->map);
+                    parse_look_response(look_split, this->room, &this->font,
+                                        &this->player_sprite, this->map);
                     GameWorld::add_log(look);
                 }
                 size_t move = msg_copy.find("OK room=");
                 if (move != std::string::npos) {
-                    parse_move_response(this->player_name, this->room, this->command, this->fd);
+                    parse_move_response(this->player_name, this->room,
+                                        this->command, this->fd);
                 }
                 size_t enter_pos = msg_copy.find("EVT ROOM PRESENCE ENTER ");
                 if (enter_pos != std::string::npos) {
@@ -212,7 +228,8 @@ void GameWorld::net_update() {
                 }
                 GameWorld::update_server_players(msg_copy);
                 GameWorld::update_hp(msg_copy);
-                // QUESTS replies "OK [{...}]", INVENTORY "OK ["..."]": only the empty "OK []" needs wait_quests.
+                // QUESTS replies "OK [{...}]", INVENTORY "OK ["..."]": only the
+                // empty "OK []" needs wait_quests.
                 size_t quests_pos = msg_copy.find("OK [{");
                 size_t inventory_pos = msg_copy.find("OK [\"");
                 size_t empty_pos = msg_copy.find("OK []");
@@ -242,17 +259,21 @@ void GameWorld::net_update() {
                 size_t quest_pos = msg_copy.find(R"(OK {"quest_id")");
                 if (quest_pos != std::string::npos)
                     GameWorld::add_log(msg_copy.substr(quest_pos));
-                // A completed quest raises HP and takes the delivered item, without telling it.
-                if (quest_pos != std::string::npos && msg_copy.find(R"("status":"completed")", quest_pos) != std::string::npos) {
+                // A completed quest raises HP and takes the delivered item,
+                // without telling it.
+                if (quest_pos != std::string::npos &&
+                    msg_copy.find(R"("status":"completed")", quest_pos) !=
+                        std::string::npos) {
                     send_message(this->command.STATUS, "", this->fd);
                     send_message(this->command.INVENTORY, "", this->fd);
                 }
                 // A defeated or respawned enemy changes the NPCs of the room.
-                if (msg_copy.find(R"("status":"victory")") != std::string::npos
-                    || msg_copy.find("EVT ROOM NPC SPAWN ") != std::string::npos) {
-                        send_message(this->command.LOOK, "", this->fd);
-                        send_message(this->command.INVENTORY, "", this->fd);
-                    }
+                if (msg_copy.find(R"("status":"victory")") !=
+                        std::string::npos ||
+                    msg_copy.find("EVT ROOM NPC SPAWN ") != std::string::npos) {
+                    send_message(this->command.LOOK, "", this->fd);
+                    send_message(this->command.INVENTORY, "", this->fd);
+                }
                 if (msg_copy.find(R"("status":"defeated")") != std::string::npos) {
                     send_message(this->command.LOOK, "", this->fd);
                     this->player.player_pos = PLAYER_DEFAULT_POS;
@@ -278,7 +299,8 @@ void GameWorld::net_update() {
                 this->timer = 0.0;
                 std::string p_pos = "";
 
-                p_pos += std::to_string(int(this->player.player_pos.x)) + " " + std::to_string(int(this->player.player_pos.y)) + '\n';
+                p_pos += std::to_string(int(this->player.player_pos.x)) + " " +
+                         std::to_string(int(this->player.player_pos.y)) + '\n';
                 send_message(this->command.POSITION, p_pos, this->fd);
             }
             break;
@@ -298,7 +320,8 @@ void GameWorld::draw() {
 
             int flags = fcntl(this->fd, F_GETFL, 0);
             fcntl(this->fd, F_SETFL, flags | O_NONBLOCK);
-            int cret = connect(this->fd, (struct sockaddr *)&this->server, sizeof(this->server));
+            int cret = connect(this->fd, (struct sockaddr *)&this->server,
+                               sizeof(this->server));
             bool connected = false;
 
             if (cret == 0) {
@@ -320,7 +343,8 @@ void GameWorld::draw() {
                 }
             }
             if (connected) {
-                int res = send_message(this->command.CONNECT, this->player_name, this->fd);
+                int res = send_message(this->command.CONNECT, this->player_name,
+                                       this->fd);
                 if (res > 0) {
                     this->intern_scene = connection_loading;
                 }
@@ -341,7 +365,8 @@ void GameWorld::draw() {
         case in_game:
             // float player_center = (float(this->player_sprite.width) / 2);
 
-            this->player.cam.target.x = this->player.player_pos.x + SPRITE_SIZE.x;
+            this->player.cam.target.x =
+                this->player.player_pos.x + SPRITE_SIZE.x;
             this->player.cam.target.y = this->player.player_pos.y;
             BeginMode2D(this->player.cam);
                 draw_game();
