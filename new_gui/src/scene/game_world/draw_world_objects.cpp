@@ -45,8 +45,7 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids,
                            (float(texture.height) / 8)};
             texture_size.x = sprite_size.x * 2;
             texture_size.y = sprite_size.y * 2;
-        }
-        else {
+        } else {
             sprite_size = { (float(texture.width)), (float(texture.height)) };
             texture_size.x = sprite_size.x * 2;
             texture_size.y = sprite_size.y * 2;
@@ -79,8 +78,7 @@ void GameWorld::draw_object_row(std::vector<std::string> &ids,
                           ColorAlpha(BLACK, 0.6));
             DrawText(name.c_str(), name_x, pos.y - (sprite_size.y / 2) + 8,
                      HUD_FONT_SIZE, name_color);
-        }
-        else {
+        } else {
             DrawTextureEx(texture, pos, 0.0f, scale, WHITE);
             DrawRectangle(name_x - 2, pos.y + texture.height + 2,
                           name_width + 4, HUD_FONT_SIZE + 2,

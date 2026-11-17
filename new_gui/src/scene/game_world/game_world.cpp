@@ -23,7 +23,7 @@
 #include "inc/raylib.h"
 #include "inc/server.hpp"
 
-GameWorld::GameWorld(GameState *game_state){
+GameWorld::GameWorld(GameState *game_state) {
     this->font = LoadTexture(GetAssetPath("test_font.png").c_str());
     SetTextureFilter(this->font, TEXTURE_FILTER_POINT);
     this->player_sprite = LoadTexture(GetAssetPath("player.png").c_str());
@@ -95,15 +95,15 @@ void GameWorld::update() {
         // show_chat: the player is typing in the CHAT tab (ESC cancels, Enter
         // sends).
         if (this->player.show_chat) {
-            if (IsKeyPressed(KEY_ESCAPE))
+            if (IsKeyPressed(KEY_ESCAPE)) {
                 this->player.show_chat = false;
-            else if (this->player.chat.chat_input()) {
+            } else if (this->player.chat.chat_input()) {
                 GameWorld::send_chat();
                 this->player.show_chat = false;
             }
-        }
-        else if (IsKeyPressed(KEY_SLASH))
+        } else if (IsKeyPressed(KEY_SLASH)) {
             GameWorld::open_chat();
+        }
         if (!this->player.show_chat) {
             bool left = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
@@ -187,8 +187,7 @@ void GameWorld::net_update() {
                     send_message(this->command.WORLD, "", this->fd);
                     send_message(this->command.STATUS, "", this->fd);
                     send_message(this->command.QUESTS, "", this->fd);
-                }
-                else if (msg_copy.find("ERR") != std::string::npos) {
+                } else if (msg_copy.find("ERR") != std::string::npos) {
                     this->intern_scene = connection_error;
                     this->error_log = msg_copy;
                 }
@@ -351,8 +350,7 @@ void GameWorld::draw() {
                 if (res > 0) {
                     this->intern_scene = connection_loading;
                 }
-            }
-            else {
+            } else {
                 close(this->fd);
                 this->fd = -1;
                 this->intern_scene = connection_error;

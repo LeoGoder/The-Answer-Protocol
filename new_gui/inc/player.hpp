@@ -40,10 +40,10 @@
 #define WALK_RIGHT_DIAG_DOWN (6 * 9)
 
 class Player {
-    private:
+ private:
         std::vector<std::string> inventory;
 
-    public:
+ public:
         bool show_chat;
         float speed = 200.0;
         float time;

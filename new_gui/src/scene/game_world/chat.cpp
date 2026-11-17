@@ -9,7 +9,6 @@ Chat::Chat() {
 }
 
 Chat::~Chat() {
-
 }
 
 // Reads the typed characters; returns true on Enter (typing is over).

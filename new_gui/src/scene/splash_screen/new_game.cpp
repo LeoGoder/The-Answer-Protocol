@@ -57,12 +57,10 @@ void SplashScreen::keyboard_input() {
         if (key_got == KEY_BACKSPACE && char_position > 0) {
             this->save_lst[this->save_slot_choice]
                 ->player_name[char_position - 1] = '\0';
-        }
-        else if (key_got == KEY_ENTER || key_got == KEY_SPACE) {
-
-        }
-        else if (char_position < P_NAME_LEN - 1)
+        } else if (key_got == KEY_ENTER || key_got == KEY_SPACE) {
+        } else if (char_position < P_NAME_LEN - 1) {
             this->save_lst[this->save_slot_choice]->player_name[char_position] =
                 key_got;
+        }
     }
 }

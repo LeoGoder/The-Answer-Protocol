@@ -18,7 +18,7 @@ void GameWorld::server_alive(std::string msg) {
     if (msg.find("OK Alive") != std::string::npos)
         this->alive_last_time = 0.0;
     this->alive_last_time += this->game_state->dt;
-    if (this->alive_last_time > ALIVE_MAX_TIME){
+    if (this->alive_last_time > ALIVE_MAX_TIME) {
         this->intern_scene = connection_error;
         close(this->fd);
         this->fd = -1;
