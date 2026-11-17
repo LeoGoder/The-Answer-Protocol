@@ -100,7 +100,6 @@ fclean: clean
 re: fclean build-raylib $(NAME)
 
 lint:
-	cd src/ && cpplint --filter=-legal/copyright --recursive .
-	cd inc/ && cpplint --filter=-legal/copyright --recursive .
+	cpplint --filter=-legal/copyright --recursive src inc/*.hpp
 
 .PHONY: all clean fclean re
