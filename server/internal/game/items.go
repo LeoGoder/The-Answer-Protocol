@@ -346,10 +346,9 @@ func (s *State) Tick() []Event {
 		s.queue(s.toRoom(point.Room, "EVT ROOM ITEM SPAWN "+point.ItemID, ""))
 	}
 
+	// isAlive respawns the enemies whose time has come and queues EVT ROOM NPC SPAWN.
 	for _, npc := range s.npcs {
-		if npc.Def.Hostile && npc.HP <= 0 && s.isAlive(npc) {
-			s.queue(s.toRoom(npc.Room, "EVT ROOM NPC SPAWN "+npc.Def.ID, ""))
-		}
+		s.isAlive(npc)
 	}
 
 	return s.flush()
