@@ -39,59 +39,59 @@
             "scaleInDock": 1
         },
         "fejka.json": {
-            "scale": 0.75,
-            "selectedLayer": 5,
+            "scale": 0.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 960.6666666666667,
-                "y": 639.3333333333333
+                "x": 816,
+                "y": 770
             }
         },
         "fugoumitak.json": {
             "scale": 1,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1036.5,
-                "y": 669.5
+                "x": 1037,
+                "y": 670
             }
         },
         "hub.json": {
             "scale": 0.75,
             "selectedLayer": 13,
             "viewCenter": {
-                "x": 691.3333333333333,
-                "y": 607.3333333333333
+                "x": 690.6666666666667,
+                "y": 606.6666666666667
             }
         },
         "jeetomal.json": {
-            "scale": 0.75,
-            "selectedLayer": 5,
+            "scale": 0.33,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 507.33333333333326,
-                "y": 820.6666666666666
+                "x": 1284.8484848484848,
+                "y": 545.4545454545454
             }
         },
         "komolexos.json": {
-            "scale": 1,
-            "selectedLayer": 5,
+            "scale": 0.75,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 960.5,
-                "y": 640.5
+                "x": 934.6666666666667,
+                "y": 491.99999999999994
             }
         },
         "kuggis.json": {
             "scale": 0.5,
-            "selectedLayer": 5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 959,
-                "y": 639
+                "x": 1104,
+                "y": 706
             }
         },
         "smycka.json": {
-            "scale": 0.75,
-            "selectedLayer": 5,
+            "scale": 0.33,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 960.6666666666667,
-                "y": 639.3333333333333
+                "x": 1306.0606060606062,
+                "y": 442.4242424242424
             }
         },
         "tsx/Cow_with_shadow.tsx": {
@@ -125,11 +125,11 @@
             "scaleInDock": 1
         },
         "vinterfint.json": {
-            "scale": 0.5,
-            "selectedLayer": 5,
+            "scale": 1.5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1095,
-                "y": 725
+                "x": 993.9999999999999,
+                "y": 626
             }
         }
     },
