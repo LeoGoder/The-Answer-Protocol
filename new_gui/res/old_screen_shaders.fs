@@ -36,6 +36,7 @@ void main() {
     final_color.r = texture(texture0, curved_uv - split).r;
     final_color.g = texture(texture0, curved_uv).g;
     final_color.b = texture(texture0, curved_uv + split).b;
+    final_color.a = 1.0;
     // final_color.rgb *= distance(curved_uv, vec2(-0.5));
     float dist = distance(curved_uv, vec2(0.5));
     float vignette = smoothstep(0.85, 0.4, dist);
