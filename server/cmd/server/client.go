@@ -4,11 +4,16 @@ import (
 	"bufio"
 	"net"
 	"sync/atomic"
+	"time"
 
 	"tap/server/internal/game"
 	"tap/server/internal/logger"
 	"tap/server/internal/protocol"
 )
+
+// A connection that sends nothing for this long before CONNECT is closed, so silent
+// sockets cannot keep the MaxClients slots. There is no limit after CONNECT.
+const AuthTimeout = 60 * time.Second
 
 // client is one connection; username stays empty until a successful CONNECT.
 type client struct {
@@ -47,6 +52,10 @@ func handleClient(conn net.Conn, state *game.State, hub *ClientHub) {
 	flood := &floodDetector{}
 
 	for {
+		if c.username == "" {
+			_ = conn.SetReadDeadline(time.Now().Add(AuthTimeout))
+		}
+
 		line, tooLong, err := readLine(reader)
 		if err != nil {
 			logger.Info("connection_closed", logger.Fields{
@@ -136,6 +145,7 @@ func (c *client) connect(name string) bool {
 
 	c.username = name
 	c.hub.Add(name, c.conn)
+	_ = c.conn.SetReadDeadline(time.Time{}) // authenticated: no read timeout
 
 	logger.Info("player_authenticated", logger.Fields{"player": name, "ip": c.ip})
 
