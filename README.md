@@ -440,7 +440,7 @@ The world story, the islands and the quests were designed together.
 | Part | Needs |
 |---|---|
 | Server | Go **1.18** or later |
-| CLI client | `g++` (C++17), `make`, `cmake`, `git` and network access the first time (FTXUI is fetched by `make install`) |
+| CLI client | `g++` (C++17), `make`, `cmake`; FTXUI is vendored in `tui/lib/FTXUI/` and built by `make install` |
 | GUI client | `g++`, `make`, X11 and OpenGL headers; raylib is vendored in `new_gui/raylib/` |
 | `make lint` | `gofmt` / `go vet` (with Go), `cpplint` |
 
@@ -448,7 +448,7 @@ The world story, the islands and the quests were designed together.
 
 | Target | Effect |
 |---|---|
-| `make install` | prepare the Go modules (`go mod tidy`), fetch and build FTXUI |
+| `make install` | prepare the Go modules (`go mod tidy`), build FTXUI for the CLI client |
 | `make run-server` | start the server (`go run ./cmd/server`) on port 4242 |
 | `make run-server-quiet` | same, full log saved to `server/server.log`, screen without the `POSITION` / `ALIVE` traffic |
 | `make run-client` | build and start the CLI client |
@@ -456,7 +456,6 @@ The world story, the islands and the quests were designed together.
 | `make run-client-gui-quiet` | same, without the `POSITION` / `ALIVE` lines |
 | `make lint` | `gofmt` + `go vet` on the server, `cpplint` on both clients |
 | `make clean` | remove build outputs of the three parts and `server/server.log` |
-| `make distclean` | `clean` + remove the downloaded FTXUI sources |
 
 ### Server options
 

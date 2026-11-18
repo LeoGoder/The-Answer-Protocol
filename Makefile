@@ -9,7 +9,7 @@ SERVER_QUIET_FILTER = "command":"(POSITION|ALIVE)"|"message":"OK( Alive)?"|EVT R
 GUI_QUIET_FILTER = EVT ROOM POSITION|^(\[SERVER\] )?OK( Alive)?$$
 
 install:
-	cd $(SERVER_DIR) && go mod download
+	cd $(SERVER_DIR) && go mod tidy
 	@$(MAKE) -C $(TUI_DIR) install
 
 run-server:
