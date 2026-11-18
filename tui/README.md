@@ -120,14 +120,14 @@ This module manages all low-level TCP network communications:
 1. **Connection & Authentication** (`connectToServer`):
    - Creates the TCP socket connecting to the specified IP address and port.
    - Immediately sends the initial protocol handshake: `CONNECT <nickname>\n`.
-   - Waits for and validates the server's welcome banner and initial `OK` acknowledgment.
+   - Reads two lines: the server greeting (`OK hello proto=1`), then the answer to `CONNECT` (`OK connected`, or an error such as `ERR 201 NAME_IN_USE`, shown on the login screen).
 2. **Asynchronous Listening** (`startListener` / `listenerLoop`):
    - Runs a dedicated background thread (`std::thread`) continuously receiving the TCP stream.
    - Reassembles received bytes into complete `\n`-terminated lines (framing).
    - Forwards each line to `processIncomingLine`.
    - Notifies the FTXUI rendering engine via `screen.PostEvent(ftxui::Event::Custom)` to trigger redraws without blocking.
 3. **Server Response Dispatching**:
-   - Movement responses (`handleMoveResponse`): updates the current room or sends an automatic `LOOK` if the server returns a simple `OK`.
+   - Movement responses (`handleMoveResponse`): the server answers `OK room=<id>`, so the client sends an automatic `LOOK` to refresh the room and the map.
    - Inventory responses (`handleInventoryResponse`): updates the inventory following `TAKE`, `DROP`, or `INVENTORY`.
    - Combat responses (`handleAttackResponse`, `EVT ROOM COMBAT`).
    - Chat responses (`handleChatAck`, `EVT ... CHAT`).
@@ -240,9 +240,6 @@ make clean
 # Clean object files (.obj) and the tap_client_tui binary (preserves FTXUI build)
 make fclean
 
-# Alias for fclean
-make distclean
-
 # Fast rebuild of the client (fclean + all, without rebuilding FTXUI)
 make re
 
@@ -280,13 +277,16 @@ make lint
 | `TAKE <item>` | `TAKE sword` | Picks up an item from the floor and updates the inventory. |
 | `DROP <item>` | `DROP stone` | Drops an item onto the floor and updates the inventory. |
 | `USE <item>` | `USE potion` | Consumes or activates an item from the inventory. |
-| `QUESTS` | `QUESTS` | Retrieves the list of all active quests. |
-| `QUEST <id>` | `QUEST 1` | Displays full details for a specific quest. |
-| `ATTACK <target>` | `ATTACK goblin` | Attacks a monster or NPC in the current room. |
-| `TALK <npc>` | `TALK guard` | Talks to an NPC in the current room. |
+| `QUESTS` | `QUESTS` | Lists the player's quests (`active` with their progress, and `completed`). |
+| `QUEST <npc>` | `QUEST chef` | Asks an NPC of the room for a quest: gives the next one, shows the current one, or completes it if its goal is reached. |
+| `ATTACK <npc>` | `ATTACK queen` | Attacks a hostile NPC in the current room. |
+| `TALK <npc>` | `TALK waiter` | Talks to an NPC in the current room. |
+| `STATUS` | `STATUS` | Shows HP, max HP, attack, defense and state (`healthy`, `wounded`, `combat`). |
+| `WHO` | `WHO` | Number of connected players. |
+| `GROUP CREATE` / `INVITE <player>` / `JOIN <player>` / `LEAVE` | `GROUP INVITE bob` | Creates a group, invites a player, joins the group of the player who invited you, leaves the group. |
 | `CHAT ROOM <msg>` | `CHAT ROOM Hello everyone!` | Sends a chat message visible only in the current room. |
 | `CHAT GLOBAL <msg>`| `CHAT GLOBAL Greetings all` | Sends a broadcast message to all connected players. |
-| `CHAT PARTY <msg>` | `CHAT PARTY Let's go` | Sends a message to your party/group (`GROUP`). |
+| `CHAT GROUP <msg>` | `CHAT GROUP Let's go` | Sends a message to your group. `CHAT PARTY <msg>` also works: the client sends it as `CHAT GROUP`. |
 | `CLEAR` / `CLEAN` | `CLEAR` | *(TUI client command)* Clears the terminal log buffer and completed quests. |
 | `QUIT` / `EXIT` | `QUIT` | Sends `QUIT` to the server and exits the application cleanly. |
 
@@ -305,20 +305,21 @@ The TUI client is completely agnostic to server implementation details, as long 
    Client                             Server
      |                                   |
      | ------ TCP Connection (SYN) ----> |
-     | <--- 1. Welcome banner ---------- | (e.g. "WELCOME to TAP Server v1.0\n")
-     | ------ 2. CONNECT <nickname>\n -> | (e.g. "CONNECT Alice\n")
-     | <--- 3. OK Welcome Alice\n ------ | (or "ERR Nickname already taken\n")
+     | <--- 1. OK hello proto=1\n ------ | (greeting, sent on connection)
+     | ------ 2. CONNECT <nickname>\n -> | (e.g. "CONNECT alice\n")
+     | <--- 3. OK connected\n ---------- | (or "ERR 201 NAME_IN_USE\n")
      |                                   |
    ```
 3. **Synchronous Response Format**:
    - Success: `OK <json_payload_or_text>\n`
-     - Room example: `OK {"room":{"id":"hub","name":"Central Hub","description":"A vast chamber...","exits":{"north":"room_1"}},"players":["Bob"],"items":["key"],"npcs":[]}\n`
-     - Inventory example: `OK ["potion","key"]\n`
-     - Quest example: `OK [{"quest_id":"1","description":"Find the sword","status":"in_progress"}]\n`
-   - Error: `ERR <error_message>\n`
+     - Room example (`LOOK`): `OK {"room":{"id":"hub","name":"Hub - The Restaurant and Farm","description":"...","exits":{"east":"fugoumitak","north":"jeetomal","west":"komolexos"}},"players":["alice"],"items":["flour"],"npcs":["chef","waiter"],"names":{"chef":"Chef Gusto","flour":"Flour",...}}\n`
+     - Inventory example: `OK ["flour","egg"]\n`
+     - Quest example (`QUEST chef`): `OK {"quest_id":"fetch_beef","description":"...","reward":"...","status":"active","progress":"..."}\n`
+     - Quest list example (`QUESTS`): `OK [{"quest_id":"defeat_cow_queen","status":"completed"},{"quest_id":"fetch_beef","status":"active","progress":"..."}]\n`
+   - Error: `ERR <code> <NAME>\n` (e.g. `ERR 301 NO_EXIT`)
 4. **Asynchronous Events (Broadcasts)**:
-   - Chat: `EVT <SCOPE> CHAT <nickname> <message>\n` (where `<SCOPE>` is `ROOM`, `GLOBAL`, or `PARTY`)
-   - Combat: `EVT ROOM COMBAT {"attacker":"Alice","target":"goblin","damage":12,"attacker_hp":100,"target_hp":18,"status":"in_combat"}\n`
+   - Chat: `EVT <SCOPE> CHAT <nickname> <message>\n` (where `<SCOPE>` is `ROOM`, `GLOBAL`, or `GROUP`)
+   - Combat: `EVT ROOM COMBAT {"attacker":"alice","target":"queen","attacker_hp":85,"target_hp":18,"damage":12,"damage_taken":5,"status":"combat"}\n` (`status` is `combat`, `victory` or `defeated`)
 
 ---
 
@@ -330,7 +331,7 @@ If you have access to the complete TAP repository (including the Go server in `.
    ```bash
    cd ../server
    go run ./cmd/server
-   # The server listens on 127.0.0.1:4242 by default
+   # The server listens on port 4242 (all interfaces) by default
    ```
    *(Or via the root Makefile: `make run-server`)*
 
