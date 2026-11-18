@@ -210,15 +210,21 @@ void GameWorld::net_update() {
                 if (line.rfind("EVT ROOM POSITION ", 0) == 0)
                     update_player_pos(this->room.player, line);
             }
-            for (std::string &msg_split: msg_splits) {
-                if (!msg_split.empty()) {
-                    if (!look.empty()) {
-                        std::vector<std::string> look_split = split(look, ' ', 1);
+            if (!look.empty()) {
+                std::vector<std::string> look_split = split(look, ' ', 1);
 
-                        parse_look_response(look_split, this->room, &this->font,
-                                        &this->player_sprite, this->map);
-                        GameWorld::add_log(look);
-                    }
+                parse_look_response(look_split, this->room, &this->font,
+                                    &this->player_sprite, this->map);
+                GameWorld::add_log(look);
+            }
+            // One server message at a time. Chat lines are skipped: read_chat
+            // already showed them, and their text must never be read as protocol.
+            for (std::string &msg_split: lines) {
+                if (msg_split.rfind("EVT GLOBAL CHAT ", 0) == 0 ||
+                    msg_split.rfind("EVT ROOM CHAT ", 0) == 0 ||
+                    msg_split.rfind("EVT GROUP CHAT ", 0) == 0)
+                    continue;
+                if (!msg_split.empty()) {
                     size_t move = msg_split.find("OK room=");
                     if (move != std::string::npos) {
                         parse_move_response(this->player_name, this->room,
@@ -288,7 +294,10 @@ void GameWorld::net_update() {
                             send_message(this->command.LOOK, "", this->fd);
                             send_message(this->command.INVENTORY, "", this->fd);
                         }
-                    if (msg_split.find(R"("status":"defeated")") != std::string::npos) {
+                    // Only our own ATTACK reply: "defeated" in another player's
+                    // EVT ROOM COMBAT is not about us.
+                    if (msg_split.rfind(R"(OK {"attacker")", 0) == 0 &&
+                        msg_split.find(R"("status":"defeated")") != std::string::npos) {
                         send_message(this->command.LOOK, "", this->fd);
                         this->player.player_pos = PLAYER_DEFAULT_POS;
                     }
