@@ -10,7 +10,9 @@
 
 int send_message(std::string command, std::string param, int fd) {
     std::string msg = command + param + '\n';
-    ssize_t res = send(fd, msg.data(), msg.size(), 0);
+    // MSG_NOSIGNAL: a closed server gives an error, not a SIGPIPE that kills
+    // the GUI.
+    ssize_t res = send(fd, msg.data(), msg.size(), MSG_NOSIGNAL);
 
     return res;
 }

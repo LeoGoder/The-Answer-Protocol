@@ -140,7 +140,17 @@ void GameWorld::net_update() {
     if (this->fd > 0) {
         // Only complete lines are read: the end of a long line can come in the
         // next recv.
-        this->pending += receiv_msg(this->fd);
+        std::string received = receiv_msg(this->fd);
+
+        // recv() returned 0: the server closed the connection.
+        if (received == "CLOSE") {
+            close(this->fd);
+            this->fd = -1;
+            this->error_log = "Server closed the connection";
+            this->intern_scene = connection_error;
+            return;
+        }
+        this->pending += received;
         size_t end = this->pending.rfind('\n');
 
         if (end != std::string::npos) {
@@ -154,11 +164,6 @@ void GameWorld::net_update() {
         if (look_pos != std::string::npos)
             look =
                 buffer.substr(look_pos, buffer.find('\n', look_pos) - look_pos);
-    }
-    if (this->fd == 0) {
-        close(fd);
-        this->fd = -1;
-        this->intern_scene = connection_error;
     }
     if (buffer != "") {
         // The real lines, before kill_return_line joins them: a chat message
