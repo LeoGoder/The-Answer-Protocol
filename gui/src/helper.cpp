@@ -83,7 +83,7 @@ std::string extract_position(const std::string &src, std::string player_name) {
     start += pattern.length();
 
     size_t end = src.find("]", start);
-    if (start == std::string::npos) return "";
+    if (end == std::string::npos) return "";
 
     return src.substr(start, end - start);
 }

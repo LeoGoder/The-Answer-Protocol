@@ -132,6 +132,7 @@ void GameWorld::update() {
 
 void GameWorld::net_update() {
     std::vector<std::string> msg_splits;
+    std::vector<std::string> lines;
     std::string msg_copy;
     std::string buffer;
     std::string look;
@@ -160,6 +161,9 @@ void GameWorld::net_update() {
         this->intern_scene = connection_error;
     }
     if (buffer != "") {
+        // The real lines, before kill_return_line joins them: a chat message
+        // must never be read as an EVT ROOM POSITION.
+        lines = split(buffer, '\n');
         if (this->wait_talk)
             GameWorld::read_talk_reply(buffer);
         GameWorld::read_chat(buffer);
@@ -197,6 +201,10 @@ void GameWorld::net_update() {
         case connection_error:
             break;
         case in_game:
+            for (const std::string &line: lines) {
+                if (line.rfind("EVT ROOM POSITION ", 0) == 0)
+                    update_player_pos(this->room.player, line);
+            }
             for (std::string &msg_split: msg_splits) {
                 if (!msg_split.empty()) {
                     if (!look.empty()) {
@@ -226,9 +234,6 @@ void GameWorld::net_update() {
 
                         if (parts.size() >= 5)
                             GameWorld::room_presence_leave(parts[4]);
-                    }
-                    if (msg_split.find("EVT ROOM POSITION {") != std::string::npos) {
-                        update_player_pos(this->room.player, msg_split);
                     }
                     GameWorld::update_server_players(msg_split);
                     GameWorld::update_hp(msg_split);
