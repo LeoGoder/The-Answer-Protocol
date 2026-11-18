@@ -80,7 +80,7 @@ func tickItems(state *game.State, hub *ClientHub) {
 	}
 }
 
-const PositionRate = 10
+const PositionRate = 24
 
 func broadcastPositions(state *game.State, hub *ClientHub) {
 	ticker := time.NewTicker(time.Second / PositionRate)
