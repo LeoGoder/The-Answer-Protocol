@@ -95,4 +95,4 @@ lint:
 
 -include $(OBJ:.o=.d)
 
-.PHONY: all clean fclean distclean run lint re install
+.PHONY: all clean fclean run lint re install
