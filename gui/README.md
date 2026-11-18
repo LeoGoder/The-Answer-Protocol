@@ -61,7 +61,9 @@ files that include it are rebuilt).
    `CONNECT <name>`. **Load** reconnects with a name saved earlier; a slot can also be
    deleted there. Saves only keep the name (`saves/TAP_xx/save.bin`); the game state
    lives on the server.
-2. In the menus: `Enter` / `Space` / left click to confirm, `Esc` / right click to go back.
+2. In the menus: `Enter` / `Space` / left click leaves the title screen; menu entries and
+   save slots are chosen with a left click; the name is confirmed with `Enter`.
+   `Esc` / right click goes back.
 
 ### Controls in game
 
@@ -81,15 +83,19 @@ files that include it are rebuilt).
 The dialog closes by itself when you click outside it, or when its NPC is no longer in the
 room (you moved, or the enemy was defeated).
 
+There is no separate action bar: every action is a click on what it applies to (an item,
+an NPC, an exit, an inventory slot) or a button of the LOG / GROUP / CHAT panel, and each
+one sends the RFC command shown above.
+
 ### Screen layout
 
-- **Top left**: HP and number of players online, `QUIT` button, inventory (7 slots,
-  item name on hover).
+- **Top left**: HP, `QUIT` button, inventory (7 slots, item name on hover).
 - **Bottom left**: panel with three tabs
   - `LOG`: replies and events, plus `LOOK`, `STATUS`, `QUESTS`, `WHO` buttons;
   - `GROUP`: create, invite, join or leave a group, list of members;
   - `CHAT`: choose the channel (`GLOBAL`, `ROOM`, `GROUP`) and type.
-- **Right**: minimap of the neighbouring islands and the quest log.
+- **Right**: minimap of the neighbouring islands, the player counter under it
+  (`Players <in the room>/<on the server>`), and the quest log.
 - Other players in the room are drawn at the position they send (`EVT ROOM POSITION`).
 
 ## Architecture
@@ -155,8 +161,18 @@ enough for it:
 - [Tiled documentation](https://doc.mapeditor.org/) — JSON map format
 - [The Book of Shaders](https://thebookofshaders.com/) — fragment shaders
 - `man 2 connect`, `man 2 recv`, `man 2 select` — non-blocking sockets
-- TODO(Leo): credits of the sprite packs used in `res/` (author, link, licence)
+- Graphics in `res/`: the island tilesets (`Map.png`, `exterior.png`, `trees.png`,
+  `rock_and_flowers.png`, `chests_crates.png`) and the animal sprites (calf, sheep, fox,
+  hare) come from third-party pixel-art asset packs, used for this school project only;
+  the item, NPC and player sprites, the menu art and the CRT shader were added by lgoderne.
 
 ### AI usage
 
-TODO(Leo): which tasks and which parts of the GUI used AI.
+AI was used as an assistant, never as a replacement for understanding: everything it
+produced was read, tested by hand, and can be explained by the team.
+
+- Reviewing the client for crashes and protocol issues: message framing (one line per
+  command, line-by-line handling of the server messages), a closed server connection
+  (`SIGPIPE`), chat text that must never be read as protocol, name input.
+- Helping write the corresponding fixes.
+- Drafting this README from the code.
