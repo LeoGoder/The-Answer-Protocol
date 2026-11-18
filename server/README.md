@@ -63,8 +63,7 @@ cmd/server/          network: connections, sending, monitoring
   hub.go             username → connection map; Deliver sends events outside the game lock
   monitor.go         command flood (per connection) and rapid connections (per IP) detection
 internal/protocol/   text: no game, no network
-  parser.go          CheckLine (UTF-8, control characters), Parse (name, arguments, raw line),
-                     After (raw text of a chat message), MaxLineLength
+  parser.go          CheckLine (UTF-8, control characters), Parse (name, arguments, raw line), MaxLineLength
   validator.go       argument count of each command, CHAT scope, GROUP action
   username.go        username rules
   response.go        every OK / ERR line as a constant

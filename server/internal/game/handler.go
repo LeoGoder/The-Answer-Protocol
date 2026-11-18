@@ -227,7 +227,7 @@ func (s *State) changeRoom(player *Player, target string) []Event {
 // The message is sent as typed: CHAT GLOBAL "a  b" stays "a  b".
 func (s *State) chat(player *Player, cmd protocol.Command) Result {
 	scope := strings.ToUpper(cmd.Args[0])
-	message := cmd.After(2)
+	message := cmd.Raw[strings.Index(cmd.Raw, cmd.Args[0])+len(cmd.Args[0])+1:]
 
 	logger.Info("chat", logger.Fields{
 		"player": player.Username, "scope": scope, "message": message,
