@@ -86,8 +86,9 @@ recipients). This keeps every layer small and testable on its own.
   lock order, and a command holds it for microseconds only.
 - **Sending happens after the lock is released.** The goroutine that caused an event
   writes it to the recipients' connections through the hub, with a 2-second write
-  deadline. A slow or dead client only delays that one goroutine, never the game; a
-  failed send is logged and delivery goes on to the other recipients.
+  deadline. A failed or timed-out send is logged, the server closes that connection
+  (its own goroutine then removes the player) and delivery goes on to the other
+  recipients: a client that stops reading delays the others once, by at most 2 s.
 - The number of open connections is an atomic counter (limit 64).
 
 ### Clients
@@ -121,15 +122,18 @@ codes, so a client written only from the RFC still works with this server.
   in a row, and no `admin` in any case. Otherwise `ERR 400 BAD_REQUEST`.
 - **Items and NPCs** can be named by ID (`beef_wellington`) or display name
   (`Beef Wellington`), in any case, with any spacing (RFC 8.3, 8.4).
+- **Chat messages** are forwarded as typed: the spaces and tabs inside a message are kept.
 - **IDs** are plain words (`beef`, `chef`, `hub`); the RFC's `item.` / `npc.` prefixes are
   only examples.
 - **WHO** follows the RFC: `OK players=<count>`.
 - **`CONNECT` twice** on the same connection → `ERR 400 BAD_REQUEST`; any other command
   before `CONNECT` → `ERR 202 NOT_AUTHENTICATED`.
-- **`ERR 901 SEND_FAILED`** is never sent: when a send fails, the connection is broken
-  and nothing can reach the client any more. The failure is logged (`send_failed`).
-- **QUEST** returns `"status": "active"` instead of the RFC example's `"available"`: asking
-  an NPC for a quest **accepts** it at once (see [Quest System](#quest-system)).
+- **`ERR 901 SEND_FAILED`** is never sent: when a send fails or times out, the server
+  closes that connection, so nothing can reach the client any more. The failure is
+  logged (`send_failed`).
+- **QUEST** returns `"status": "available"` for a new quest, as in the RFC example. Asking
+  an NPC for a quest **accepts** it at once (see [Quest System](#quest-system)), so the
+  following `QUEST` and `QUESTS` replies show it `"active"`.
 
 ### Added commands
 
@@ -236,7 +240,7 @@ get the quest credit and the drop.
 1. If the player has an **active quest from this NPC**: when the objective is done the
    quest is **completed** and rewarded, otherwise the quest and its progress are shown.
 2. Otherwise the NPC **gives its next quest** (in the order of `world.json`), which is
-   accepted at once.
+   accepted at once: the reply says `"available"`, the next ones `"active"`.
 3. Otherwise: `ERR 406 NO_QUEST_AVAILABLE`.
 
 We chose this over separate `ACCEPT` / `COMPLETE` commands: the RFC already defines
@@ -407,9 +411,12 @@ One **JSON object per line**, written by `server/internal/logger`:
   (sliding window) → `rapid_connections`.
 - **Connection limit**: beyond **64** open connections, a new one gets
   `ERR 900 CONNECTION_FAILED` and is logged as `connection_refused`.
+- **Silent connections**: a connection that sends nothing for **60 seconds** before
+  `CONNECT` is closed (`connection_closed`, reason `i/o timeout`), so idle sockets cannot
+  keep the 64 slots. There is no time limit once the player is connected.
 
-These patterns are logged, not blocked, so a legitimate fast client (the GUI sends
-`POSITION` 24 times per second) is never cut off.
+Flooding and rapid connections are logged, not blocked, so a legitimate fast client (the
+GUI sends `POSITION` 24 times per second) is never cut off.
 
 ### Monitoring
 
@@ -516,13 +523,13 @@ same protocol.
 
 ```
 MOVE north           (Jeetomal: the Butcher and the Queen are here)
-QUEST butcher        → defeat_cow_queen, active, 0/1
+QUEST butcher        → defeat_cow_queen, available, 0/1
 ATTACK queen         (until "victory")
 QUEST butcher        → completed: +15 HP, +3 attack, Beef in the inventory
 MOVE south
-QUEST chef           → fetch_beef, active, 1/1 (Beef is already carried)
+QUEST chef           → fetch_beef, available, 1/1 (Beef is already carried)
 QUEST chef           → completed, Beef delivered; INVENTORY no longer lists it
-QUEST chef           → fetch_egg, active, 0/1
+QUEST chef           → fetch_egg, available, 0/1
 QUESTS               → defeat_cow_queen and fetch_beef completed, fetch_egg active
 QUEST waiter         → ERR 406 NO_QUEST_AVAILABLE
 ```

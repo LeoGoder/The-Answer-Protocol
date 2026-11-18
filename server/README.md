@@ -63,7 +63,8 @@ cmd/server/          network: connections, sending, monitoring
   hub.go             username → connection map; Deliver sends events outside the game lock
   monitor.go         command flood (per connection) and rapid connections (per IP) detection
 internal/protocol/   text: no game, no network
-  parser.go          CheckLine (UTF-8, control characters), Parse (name + arguments), MaxLineLength
+  parser.go          CheckLine (UTF-8, control characters), Parse (name, arguments, raw line),
+                     After (raw text of a chat message), MaxLineLength
   validator.go       argument count of each command, CHAT scope, GROUP action
   username.go        username rules
   response.go        every OK / ERR line as a constant
@@ -87,7 +88,8 @@ Suggested reading order: `main.go` → `client.go` → `protocol/` → `hub.go` 
 ## Life of a command
 
 ```
-client.go   ReadSlice('\n')              line > 1024 bytes      → ERR 400 LINE_TOO_LONG
+client.go   ReadSlice('\n')              no line for 60 s       → connection closed (before CONNECT only)
+                                         line > 1024 bytes      → ERR 400 LINE_TOO_LONG
             protocol.CheckLine           bad UTF-8 / control    → ERR 400 BAD_REQUEST
             protocol.Parse               empty line             → ignored
             log command_received
@@ -109,7 +111,8 @@ Rules that keep the code simple:
   `Leave`, `Tick`, `PositionEvents`) lock it; unexported methods expect it held and never
   call an exported one, because Go mutexes are not reentrant.
 - **Send after unlock.** `hub.Deliver` writes each event with a 2-second deadline. A
-  slow client delays only the goroutine that sends to it, never the game.
+  failed or timed-out write closes that connection, so a client that stops reading
+  delays the others once (at most 2 s), and its own goroutine removes the player.
 - **Leave removes first, then announces.** On QUIT or disconnect, the player is removed
   from the state before the `PRESENCE LEAVE` and `STATS` events are built, so the count is
   right and nothing is sent to the closed connection.
@@ -225,6 +228,7 @@ The events sent by the server are listed in the
 |---|---|---|
 | `MaxLineLength` | 1024 bytes | `protocol/parser.go` |
 | `MaxClients` | 64 connections | `cmd/server/main.go` |
+| `AuthTimeout` | 60 s without a line before `CONNECT` | `cmd/server/client.go` |
 | `WriteTimeout` | 2 s | `cmd/server/hub.go` |
 | `PositionRate` | 24 per second | `cmd/server/main.go` |
 | `FloodLimit` / `FloodWindow` | 60 commands / 1 s | `cmd/server/monitor.go` |
