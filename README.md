@@ -15,7 +15,7 @@ defined by **RFC 42TAP** (the protocol given with the subject):
 |---|---|---|---|
 | Server | Go | [`server/`](server/) | owns the whole world state, applies the rules, pushes events |
 | CLI client | C++ / [FTXUI](https://github.com/ArthurSonzogni/FTXUI) | [`tui/`](tui/) | terminal interface |
-| GUI client | C++ / [raylib](https://www.raylib.com/) | [`new_gui/`](new_gui/) | graphical top-down interface |
+| GUI client | C++ / [raylib](https://www.raylib.com/) | [`gui/`](gui/) | graphical top-down interface |
 
 The world is **the Culinary Archipelago**: eight islands around a restaurant. Chef Gusto
 needs ingredients from the islands to cook his Beef Wellington; the players collect them,
@@ -24,7 +24,7 @@ defeat the creatures that guard them, and finally face the Supreme Critic.
 More detail on each part:
 
 - Server internals: [`server/README.md`](server/README.md)
-- GUI client (controls, screens, rendering, networking): [`new_gui/README.md`](new_gui/README.md)
+- GUI client (controls, screens, rendering, networking): [`gui/README.md`](gui/README.md)
 - CLI client: [`tui/README.md`](tui/README.md)
 
 ## Instructions
@@ -99,7 +99,7 @@ Both clients stay responsive while events arrive:
   turns the JSON replies into readable text, and adds a few local shortcuts (`CLEAR`,
   `CHAT PARTY` as an alias of `CHAT GROUP`). Details: [`tui/README.md`](tui/README.md).
 - **GUI**: single thread, non-blocking socket polled once per frame, only complete lines
-  are handled. → **Described in [`new_gui/README.md`](new_gui/README.md#architecture).**
+  are handled. → **Described in [`gui/README.md`](gui/README.md#architecture).**
 
 ## Protocol Implementation
 
@@ -441,7 +441,7 @@ The world story, the islands and the quests were designed together.
 |---|---|
 | Server | Go **1.18** or later |
 | CLI client | `g++` (C++17), `make`, `cmake`; FTXUI is vendored in `tui/lib/FTXUI/` and built by `make install` |
-| GUI client | `g++`, `make`, X11 and OpenGL headers; raylib is vendored in `new_gui/raylib/` |
+| GUI client | `g++`, `make`, X11 and OpenGL headers; raylib is vendored in `gui/raylib/` |
 | `make lint` | `gofmt` / `go vet` (with Go), `cpplint` |
 
 ### Root Makefile
@@ -466,9 +466,9 @@ cd server && go run ./cmd/server -port 4242 -world data/world.json
 ### Clients
 
 - **CLI**: the login screen asks for the server IP, the port and the player name.
-- **GUI**: the server address is `SERVER_IP` in `new_gui/inc/game_world.hpp`
+- **GUI**: the server address is `SERVER_IP` in `gui/inc/game_world.hpp`
   (`127.0.0.1` by default); the name is typed in the *New game* menu.
-  → **Controls and details in [`new_gui/README.md`](new_gui/README.md#build-and-run).**
+  → **Controls and details in [`gui/README.md`](gui/README.md#build-and-run).**
 
 To play from several computers, start the server on one of them and point the clients to
 its IP address (port 4242 must be reachable on the local network).
@@ -562,7 +562,7 @@ UNKNOWN_COMMAND`), a broken `world.json` (the server refuses to start and says w
 - [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/) — sockets
 - [MUD — Wikipedia](https://en.wikipedia.org/wiki/Multi-user_dungeon) — history of the genre
 - [raylib](https://www.raylib.com/) and [Tiled](https://doc.mapeditor.org/) — GUI client,
-  see [`new_gui/README.md`](new_gui/README.md#resources)
+  see [`gui/README.md`](gui/README.md#resources)
 - [FTXUI](https://arthursonzogni.github.io/FTXUI/) — CLI client
 
 ### AI usage

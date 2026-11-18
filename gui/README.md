@@ -29,7 +29,7 @@ make run-client-gui         # terminal 2: build and start the GUI
 make run-client-gui-quiet   # same, without the 24-per-second POSITION / ALIVE lines
 ```
 
-From `new_gui/`:
+From `gui/`:
 
 | Target | Effect |
 |---|---|
