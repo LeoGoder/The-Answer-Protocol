@@ -40,11 +40,42 @@ class ShrinkableNode : public ftxui::Node {
     }
 };
 
+/*
+ * Custom FTXUI DOM node that overrides vertical layout constraints.
+ * Clamps min_y = 1 and enables flex_shrink_y to prevent scrollable containers
+ * (such as chat logs or message lists) from expanding and starving neighboring elements
+ * when content grows.
+ */
+class ShrinkableYNode : public ftxui::Node {
+ public:
+    explicit ShrinkableYNode(ftxui::Element child)
+        : ftxui::Node({std::move(child)}) {}
+
+    void ComputeRequirement() override {
+        ftxui::Node::ComputeRequirement();
+        requirement_.min_y = 1;
+        requirement_.flex_shrink_y = 1;
+        requirement_.flex_grow_y = 1;
+    }
+
+    void SetBox(ftxui::Box box) override {
+        ftxui::Node::SetBox(box);
+        if (!children_.empty()) {
+            children_[0]->SetBox(box);
+        }
+    }
+};
+
 }  // namespace
 
-// Wraps an element into a ShrinkableNode to permit dynamic window compression
+// Wraps an element into a ShrinkableNode to permit dynamic window compression horizontally
 ftxui::Element shrinkable(ftxui::Element child) {
     return std::make_shared<ShrinkableNode>(std::move(child));
+}
+
+// Wraps an element into a ShrinkableYNode to clamp min_y and permit dynamic window compression vertically
+ftxui::Element shrinkableY(ftxui::Element child) {
+    return std::make_shared<ShrinkableYNode>(std::move(child));
 }
 
 // Constructs an auto-wrapping element with channel and colored pseudo

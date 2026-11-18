@@ -176,7 +176,7 @@ bool runGameView(NetworkClient& client,
         }
         Element items_panel =
             window(text(" Items "),
-                   vbox(item_elements) | yframe | flex) | flex;
+                   shrinkableY(vbox(item_elements) | yframe) | flex) | flex;
 
         // --- 3. Active Quests Panel ---
         Elements quest_elements;
@@ -213,7 +213,7 @@ bool runGameView(NetworkClient& client,
         }
         Element quests_panel =
             window(text(" Quests "),
-                   vbox(quest_elements) | yframe | flex) | flex;
+                   shrinkableY(vbox(quest_elements) | yframe) | flex) | flex;
         Element left_column =
             vbox({items_panel, quests_panel}) | flex;
 
@@ -281,7 +281,7 @@ bool runGameView(NetworkClient& client,
 
         Element terminal_panel = vbox({
             window(text(title),
-                   vbox(msg_elements) | yframe | flex) | flex,
+                   shrinkableY(vbox(msg_elements) | yframe) | flex) | flex,
             input_box,
         }) | flex;
 
@@ -311,7 +311,7 @@ bool runGameView(NetworkClient& client,
 
         Element chat_panel =
             window(text(" Chat "),
-                   vbox(chat_elements) | yframe | flex) | flex;
+                   shrinkableY(vbox(chat_elements) | yframe) | flex) | flex;
         Element right_column =
             vbox({map_panel, chat_panel}) | flex;
 

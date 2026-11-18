@@ -10,8 +10,20 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
 
-// Wraps an element into a ShrinkableNode to allow window shrinking
+// Wraps an element into a ShrinkableNode to allow window shrinking horizontally
 ftxui::Element shrinkable(ftxui::Element child);
+
+/**
+ * @brief Wraps an element into a ShrinkableYNode to clamp min_y to 1 and enable flex_shrink_y.
+ *
+ * Prevents scrollable containers (like chat logs or message lists) from expanding
+ * their layout requirement as items are added, ensuring sibling panels (like the map)
+ * are not crushed by message spam while allowing responsive terminal window resizing.
+ *
+ * @param child Child element (typically a yframe element).
+ * @return Wrapped FTXUI Element with min_y = 1 and flex_shrink_y / flex_grow_y enabled.
+ */
+ftxui::Element shrinkableY(ftxui::Element child);
 
 // String trimming and prefix manipulation utilities
 std::string trim(const std::string& str);
