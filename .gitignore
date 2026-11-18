@@ -1,7 +1,6 @@
-gui/tyra/tap/bin/
-new_gui/saves/
-new_gui/tap
-new_gui/obj/
+gui/saves/
+gui/tap
+gui/obj/
+*.tiled-session
 .vscode
 server/server.log
-.venv/
