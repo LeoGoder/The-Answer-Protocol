@@ -3,6 +3,9 @@
 #include "inc/tap.hpp"
 
 int main(void) {
+    // Assets and saves are relative paths: work from the binary's folder, so
+    // ./gui/tap also works from the repository root.
+    ChangeDirectory(GetApplicationDirectory());
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, "The Answer Protocol");
     SetTargetFPS(60);
