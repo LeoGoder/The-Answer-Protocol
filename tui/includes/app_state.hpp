@@ -29,14 +29,14 @@ class AppState {
     AppState();
     ~AppState() = default;
 
-    // Terminal log messages
+    // Terminal log messages (bounded to the 500 most recent entries)
     void addMessage(const std::string& pseudo,
                     const std::string& content,
                     bool is_local = false);
     std::vector<ChatMessage> getMessages();
     void clearMessages();
 
-    // Multi-channel chat messages
+    // Multi-channel chat messages (bounded to the 500 most recent entries)
     void addChatMessage(const std::string& pseudo,
                         const std::string& content,
                         const std::string& channel,

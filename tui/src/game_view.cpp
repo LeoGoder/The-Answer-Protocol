@@ -53,20 +53,54 @@ using ftxui::xframe;
 using ftxui::xflex;
 using ftxui::yframe;
 
+// Checks whether cmd matches verb as a full word
+// (exact match or followed by a space ' ')
+static bool isCommandWord(const std::string& cmd, const std::string& verb) {
+    if (cmd == verb) return true;
+    if (cmd.size() > verb.size() && cmd[verb.size()] == ' ' &&
+        cmd.rfind(verb, 0) == 0) {
+        return true;
+    }
+    return false;
+}
+
+// Slices a UTF-8 string into a sequence of individual codepoint strings
+static std::vector<std::string> getUtf8Codepoints(const std::string& str) {
+    std::vector<std::string> codepoints;
+    size_t i = 0;
+    while (i < str.size()) {
+        unsigned char c = static_cast<unsigned char>(str[i]);
+        size_t len = 1;
+        if ((c & 0x80) == 0) {
+            len = 1;
+        } else if ((c & 0xE0) == 0xC0) {
+            len = 2;
+        } else if ((c & 0xF0) == 0xE0) {
+            len = 3;
+        } else if ((c & 0xF8) == 0xF0) {
+            len = 4;
+        }
+        if (i + len > str.size()) {
+            len = str.size() - i;
+        }
+        codepoints.push_back(str.substr(i, len));
+        i += len;
+    }
+    return codepoints;
+}
+
 // Helper mapping uppercase input command verbs to PendingCommand states
 static int detectPendingCommand(const std::string& cmd) {
     if (cmd == "LOOK") return CMD_LOOK;
     if (cmd == "QUESTS") return CMD_QUESTS;
     if (cmd == "INVENTORY") return CMD_INVENTORY;
-    if (startsWith(cmd, "MOVE")) return CMD_MOVE;
+    if (isCommandWord(cmd, "MOVE")) return CMD_MOVE;
     if (startsWith(cmd, "QUEST ")) return CMD_QUEST;
-    if (startsWith(cmd, "TAKE")) return CMD_TAKE;
-    if (startsWith(cmd, "DROP")) return CMD_DROP;
-    if (startsWith(cmd, "USE")) return CMD_USE;
-    if (startsWith(cmd, "ATTACK")) return CMD_ATTACK;
+    if (isCommandWord(cmd, "TAKE")) return CMD_TAKE;
+    if (isCommandWord(cmd, "DROP")) return CMD_DROP;
+    if (isCommandWord(cmd, "USE")) return CMD_USE;
+    if (isCommandWord(cmd, "ATTACK")) return CMD_ATTACK;
     if (cmd == "STATUS" || startsWith(cmd, "TALK ")) return CMD_OTHER_JSON;
-    if (cmd == "QUIT" || cmd == "/QUIT" || cmd == "EXIT" || cmd == "/EXIT")
-        return CMD_QUIT;
     return CMD_NONE;
 }
 
@@ -88,6 +122,7 @@ bool runGameView(NetworkClient& client,
     state.setUserPseudo(config.pseudo);
 
     auto screen = ScreenInteractive::Fullscreen();
+    screen.ForceHandleCtrlC(false);
 
     std::string user_input;
     int cursor_pos = 0;
@@ -141,7 +176,7 @@ bool runGameView(NetworkClient& client,
         }
         Element items_panel =
             window(text(" Items "),
-                   vbox(item_elements) | yframe | flex) | flex;
+                   shrinkableY(vbox(item_elements) | yframe) | flex) | flex;
 
         // --- 3. Active Quests Panel ---
         Elements quest_elements;
@@ -178,13 +213,26 @@ bool runGameView(NetworkClient& client,
         }
         Element quests_panel =
             window(text(" Quests "),
-                   vbox(quest_elements) | yframe | flex) | flex;
+                   shrinkableY(vbox(quest_elements) | yframe) | flex) | flex;
         Element left_column =
             vbox({items_panel, quests_panel}) | flex;
 
         // --- 4. Command Input Box with Custom Cursor ---
-        int pos = std::max(0, std::min(cursor_pos,
-                                       static_cast<int>(user_input.size())));
+        std::vector<std::string> codepoints = getUtf8Codepoints(user_input);
+        size_t cursor_codepoint_idx = 0;
+        size_t current_byte_offset = 0;
+        for (size_t i = 0; i < codepoints.size(); ++i) {
+            if (current_byte_offset >=
+                static_cast<size_t>(std::max(0, cursor_pos))) {
+                break;
+            }
+            current_byte_offset += codepoints[i].size();
+            cursor_codepoint_idx = i + 1;
+        }
+        if (cursor_codepoint_idx > codepoints.size()) {
+            cursor_codepoint_idx = codepoints.size();
+        }
+
         Elements content_parts;
 
         // Custom cursor: highlight char under cursor with cyan background
@@ -192,11 +240,18 @@ bool runGameView(NetworkClient& client,
             content_parts.push_back(text("█") | color(Color::Cyan));
             content_parts.push_back(
                 text(" Type your command here...") | color(Color::GrayDark));
-        } else if (pos < static_cast<int>(user_input.size())) {
+        } else if (cursor_codepoint_idx < codepoints.size()) {
             // Split input into before-cursor, active char, and after-cursor
-            std::string before = user_input.substr(0, pos);
-            std::string at_char = user_input.substr(pos, 1);
-            std::string after = user_input.substr(pos + 1);
+            std::string before;
+            for (size_t i = 0; i < cursor_codepoint_idx; ++i) {
+                before += codepoints[i];
+            }
+            std::string at_char = codepoints[cursor_codepoint_idx];
+            std::string after;
+            for (size_t i = cursor_codepoint_idx + 1; i < codepoints.size();
+                 ++i) {
+                after += codepoints[i];
+            }
             if (!before.empty()) {
                 content_parts.push_back(text(before));
             }
@@ -212,8 +267,8 @@ bool runGameView(NetworkClient& client,
             content_parts.push_back(text("█") | color(Color::Cyan));
         }
 
-        std::string pos_str = " [" + std::to_string(pos) + "/" +
-                              std::to_string(user_input.size()) + "] ";
+        std::string pos_str = " [" + std::to_string(cursor_codepoint_idx) +
+                              "/" + std::to_string(codepoints.size()) + "] ";
 
         Elements bar_parts;
         bar_parts.push_back(text(" > ") | color(Color::Cyan) | bold);
@@ -226,7 +281,7 @@ bool runGameView(NetworkClient& client,
 
         Element terminal_panel = vbox({
             window(text(title),
-                   vbox(msg_elements) | yframe | flex) | flex,
+                   shrinkableY(vbox(msg_elements) | yframe) | flex) | flex,
             input_box,
         }) | flex;
 
@@ -256,7 +311,7 @@ bool runGameView(NetworkClient& client,
 
         Element chat_panel =
             window(text(" Chat "),
-                   vbox(chat_elements) | yframe | flex) | flex;
+                   shrinkableY(vbox(chat_elements) | yframe) | flex) | flex;
         Element right_column =
             vbox({map_panel, chat_panel}) | flex;
 
@@ -268,8 +323,31 @@ bool runGameView(NetworkClient& client,
         });
     });
 
+    auto initiateGracefulQuit = [&] {
+        if (client.isUserQuit()) {
+            screen.Exit();
+            return;
+        }
+        client.setUserQuit(true);
+        state.setPendingCommand(CMD_NONE);
+        state.addMessage(config.pseudo, "QUIT", true);
+        client.sendLine("QUIT");
+
+        // Watchdog timeout to prevent hang if server is unresponsive
+        std::thread([exit_loop = screen.ExitLoopClosure()] {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            exit_loop();
+        }).detach();
+    };
+
     // Handle keyboard events (history navigation & command dispatch)
     renderer |= CatchEvent([&](Event event) {
+        // Ctrl+C: Graceful quit identical to typing QUIT command
+        if (event == Event::CtrlC) {
+            initiateGracefulQuit();
+            return true;
+        }
+
         // ArrowUp: Navigate older commands in history
         if (event == Event::ArrowUp) {
             std::vector<std::string> history = state.getCommandHistory();
@@ -315,10 +393,7 @@ bool runGameView(NetworkClient& client,
             // Graceful quit handling (RFC 5.1.4 & RFC 3.3)
             if (trimmed == "QUIT" || trimmed == "/QUIT" ||
                 trimmed == "EXIT" || trimmed == "/EXIT") {
-                client.setUserQuit(true);
-                state.setPendingCommand(CMD_QUIT);
-                state.addMessage(config.pseudo, user_input, true);
-                client.sendLine("QUIT");
+                initiateGracefulQuit();
                 user_input.clear();
                 return true;
             }
