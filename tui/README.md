@@ -2,6 +2,8 @@
 
 A rich interactive terminal client in C++17 developed for **The Answer Protocol (TAP)**, a text-based multiplayer RPG/MUD universe. This client offers a full graphical terminal interface powered by **FTXUI**, featuring 24-bit TrueColor minimap rendering (Unicode half-blocks), multi-channel chat management, dynamic inventory, quest tracking, and an asynchronous non-blocking TCP client.
 
+The project overview, the server, and the protocol specifications are described in the [root README](../README.md) and the [server README](../server/README.md).
+
 ---
 
 ## Table of Contents
@@ -38,7 +40,7 @@ The **TAP TUI** module is a complete client that connects over TCP to a game ser
 
 Key features:
 - **Interactive login**: Input modal for server IP, port, and nickname with connection error handling.
-- **Dynamic room and map display (Hub & rooms)**: 24-bit ANSI TrueColor rendering of PNG images representing explored rooms (Hub, fejka, smycka, etc.).
+- **Dynamic room and map display (Hub & rooms)**: 24-bit ANSI TrueColor rendering of PNG images representing explored rooms (e.g., `hub.png`, `fejka.png`, `smycka.png`, etc.).
 - **Auto-scrolling terminal log**: Syntax-highlighted, colored output for server messages, room descriptions, combat logs, and local notifications.
 - **Smart input bar**: Interactive visual cursor, command history navigation (Up / Down arrow keys), game command and chat input.
 - **Multi-channel chat**: Visual separation of global, local (`ROOM`), and party (`PARTY` / `GROUP`) discussions.
@@ -64,12 +66,12 @@ The main game screen (`runGameView`) is organized into three responsive columns 
 | LEFT COLUMN       | CENTER COLUMN                           | RIGHT COLUMN       |
 +-------------------+-----------------------------------------+--------------------+
 | [ Items ]         | [ Terminal - Nickname @ IP:Port ]       | [ Map ]            |
-| - item_1          | > Hero: LOOK                            |   ▄▄▄▄▄▄▄▄▄▄▄▄     |
-| - item_2          | Room: Hub                               |   █ Minimap  █     |
-|                   | Description: The central lobby...       |   ▀▀▀▀▀▀▀▀▀▀▀▀     |
+| - flour           | > Arthur: LOOK                          |   ▄▄▄▄▄▄▄▄▄▄▄▄     |
+| - egg             | Room: Hub - The Restaurant and Farm     |   █ Minimap  █     |
+|                   | Description: The central hub of...      |   ▀▀▀▀▀▀▀▀▀▀▀▀     |
 | [ Quests ]        |                                         | [ Chat ]           |
-| - Quest 1         |                                         | Alice (GLOBAL): hi |
-|   (1/3 required)  +-----------------------------------------+ Bob (ROOM): hello  |
+| - fetch_beef      |                                         | Alice (GLOBAL): hi |
+|   (1 required)    +-----------------------------------------+ Bob (ROOM): hello  |
 |                   | > command_here... [cursor]              |                    |
 +-------------------+-----------------------------------------+--------------------+
 ```
@@ -142,7 +144,7 @@ This module converts raw TAP protocol strings into typed C++ objects:
 1. **JSON Deserialization**:
    - `parseLookResponse`: Deserializes `OK { "room": { "id", "name", "description", "exits": {...} }, "players": [...], "items": [...], "npcs": [...] }` into the `RoomInfo` struct.
    - `parseQuestResponse` / `parseQuestsResponse`: Parses individual quests or quest lists (`QuestInfo`), automatically extracting goals (e.g., required item counts, target NPC).
-   - `parseInventoryResponse`: Parses `OK [ "item1", "item2" ]` into `std::vector<std::string>`.
+   - `parseInventoryResponse`: Parses `OK [ "flour", "egg" ]` into `std::vector<std::string>`.
    - `parseUseResponse`: Parses consumable item effects (`UseInfo`: HP, max HP, attack bonus, received item).
    - `parseCombatResponse`: Parses attack rounds and damage (`CombatInfo`).
    - `parseGenericOkJson`: Recursive fallback parser that flattens any unknown JSON object for clean display.
@@ -274,9 +276,9 @@ make lint
 | `LOOK` | `LOOK` | Inspects the current room, refreshing exits, items, players, and the minimap. |
 | `MOVE <direction>` | `MOVE north` | Moves the player toward an exit (e.g., `north`, `south`, `east`, `west`). |
 | `INVENTORY` | `INVENTORY` | Requests the inventory item list (updates the left panel). |
-| `TAKE <item>` | `TAKE sword` | Picks up an item from the floor and updates the inventory. |
-| `DROP <item>` | `DROP stone` | Drops an item onto the floor and updates the inventory. |
-| `USE <item>` | `USE potion` | Consumes or activates an item from the inventory. |
+| `TAKE <item>` | `TAKE flour` | Picks up an item from the floor and updates the inventory. |
+| `DROP <item>` | `DROP flour` | Drops an item onto the floor and updates the inventory. |
+| `USE <item>` | `USE egg` | Consumes or activates an item from the inventory (+25 HP). |
 | `QUESTS` | `QUESTS` | Lists the player's quests (`active` with their progress, and `completed`). |
 | `QUEST <npc>` | `QUEST chef` | Asks an NPC of the room for a quest: gives the next one, shows the current one, or completes it if its goal is reached. |
 | `ATTACK <npc>` | `ATTACK queen` | Attacks a hostile NPC in the current room. |
@@ -340,6 +342,7 @@ If you have access to the complete TAP repository (including the Go server in `.
    cd ../tui
    make run
    ```
+   *(Or via the root Makefile: `make run-client`)*
 3. In the login modal, keep `127.0.0.1` and `4242`, choose a nickname, and confirm.
 
 ---
