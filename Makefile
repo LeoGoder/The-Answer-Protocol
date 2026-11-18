@@ -39,11 +39,4 @@ clean:
 	@$(MAKE) -C $(TUI_DIR) fclean
 	rm -f $(SERVER_DIR)/server.log
 
-<<<<<<< Updated upstream
-distclean:
-	@$(MAKE) -C $(TUI_DIR) distclean
-
-.PHONY: install run-server run-server-quiet run-client run-client-gui run-client-gui-quiet lint clean distclean
-=======
-.PHONY: install run-server run-client run-client-gui lint clean
->>>>>>> Stashed changes
+.PHONY: install run-server run-server-quiet run-client run-client-gui run-client-gui-quiet lint clean
