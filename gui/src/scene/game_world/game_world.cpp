@@ -318,8 +318,7 @@ void GameWorld::net_update() {
                              static_cast<int>(this->player.player_pos.x)) +
                          " " +
                          std::to_string(
-                             static_cast<int>(this->player.player_pos.y)) +
-                         '\n';
+                             static_cast<int>(this->player.player_pos.y));
                 send_message(this->command.POSITION, p_pos, this->fd);
             }
             break;

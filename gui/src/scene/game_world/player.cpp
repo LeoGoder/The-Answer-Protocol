@@ -361,7 +361,7 @@ void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
             data_change_room(map_data, map, this->player_pos);
 
         if (new_room != "") {
-            std::string command = "MOVE " + new_room + '\n';
+            std::string command = "MOVE " + new_room;
 
             send_message(command, "", fd);
             this->player_pos = PLAYER_DEFAULT_POS;

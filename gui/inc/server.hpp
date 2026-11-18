@@ -11,23 +11,23 @@
 
 struct NetCommand {
     std::string CONNECT = "CONNECT ";
-    std::string LOOK = "LOOK\n";
-    std::string ALIVE = "ALIVE\n";
-    std::string MOVE = "MOVE\n";
-    std::string WHO = "WHO\n";
-    std::string INVENTORY = "INVENTORY\n";
+    std::string LOOK = "LOOK";
+    std::string ALIVE = "ALIVE";
+    std::string MOVE = "MOVE";
+    std::string WHO = "WHO";
+    std::string INVENTORY = "INVENTORY";
     std::string TAKE = "TAKE ";
     std::string DROP = "DROP ";
     std::string USE = "USE ";
-    std::string STATUS = "STATUS\n";
-    std::string QUESTS = "QUESTS\n";
-    std::string WORLD = "WORLD\n";
+    std::string STATUS = "STATUS";
+    std::string QUESTS = "QUESTS";
+    std::string WORLD = "WORLD";
     std::string TALK = "TALK ";
     std::string QUEST = "QUEST ";
     std::string ATTACK = "ATTACK ";
     std::string GROUP = "GROUP ";
     std::string CHAT = "CHAT ";
-    std::string QUIT = "QUIT\n";
+    std::string QUIT = "QUIT";
     std::string POSITION = "POSITION ";
 };
 
