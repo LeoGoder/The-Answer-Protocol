@@ -3,3 +3,5 @@ new_gui/saves/
 new_gui/tap
 new_gui/obj/
 .vscode
+server/server.log
+.venv/
