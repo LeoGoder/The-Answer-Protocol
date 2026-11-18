@@ -1,0 +1,92 @@
+name: Conan
+
+on:
+  # On new commits to main:
+  push:
+    branches:
+      - main
+    paths:
+      - 'conanfile.py'
+      - 'test_package/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'tools/ci_matrix.json'
+      - 'tools/select_ci_matrix.sh'
+      - '.github/workflows/conan.yaml'
+
+  # On pull requests:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+    paths:
+      - 'conanfile.py'
+      - 'test_package/**'
+      - 'include/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'tools/ci_matrix.json'
+      - 'tools/select_ci_matrix.sh'
+      - '.github/workflows/conan.yaml'
+
+  # Weekly, with the full matrix:
+  schedule:
+    - cron: '0 3 * * 1'
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Which platforms run for this event is defined in tools/ci_matrix.json.
+  select_matrix:
+    name: "Select matrix"
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    outputs:
+      conan: ${{ steps.select.outputs.conan }}
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Select the matrices for ${{ github.event_name }}"
+        id: select
+        run: ./tools/select_ci_matrix.sh >> "$GITHUB_OUTPUT"
+
+  test_conan:
+    name: "Conan, ${{ matrix.os }}, shared=${{ matrix.shared }}"
+    needs: select_matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.select_matrix.outputs.conan) }}
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Setup Python"
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+
+      - name: "Install Conan"
+        run: pip install conan ninja
+
+      - name: "Detect Conan profile"
+        run: conan profile detect
+
+      - name: "conan create ."
+        run: >
+          conan create .
+          --build=missing
+          -o "&:shared=${{ matrix.shared }}"

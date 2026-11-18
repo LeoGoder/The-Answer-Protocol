@@ -4,13 +4,9 @@ ifneq ($(OUT),)
   OUTPUT := $(OUT)
 endif
 
-ifeq ($(OUTPUT),1)
+ifneq ($(filter $(OUTPUT),1 /dev/stdout),)
   REDIRECT := 2>&1
-else ifeq ($(OUTPUT),/dev/stdout)
-  REDIRECT := 2>&1
-else ifeq ($(OUTPUT),2)
-  REDIRECT := 1>&2
-else ifeq ($(OUTPUT),/dev/stderr)
+else ifneq ($(filter $(OUTPUT),2 /dev/stderr),)
   REDIRECT := 1>&2
 else ifeq ($(OUTPUT),)
   REDIRECT :=
@@ -69,21 +65,8 @@ $(OBJ_DIR)/%.o: src/%.cpp | $(FTXUI_LIB)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@ $(REDIRECT)
 
 $(FTXUI_LIB):
-	@printf "  $(YELLOW)[FTXUI]$(RESET) Downloading FTXUI...\n"
-	@mkdir -p $(dir $(FTXUI_DIR))
-	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
-		git submodule update --init --recursive $(REDIRECT) || true; \
-	fi
-	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
-		rm -rf $(FTXUI_DIR) && git clone --depth 1 https://github.com/ArthurSonzogni/FTXUI.git $(FTXUI_DIR) $(REDIRECT); \
-	fi
-	@if [ ! -f $(FTXUI_DIR)/CMakeLists.txt ]; then \
-		printf "  $(YELLOW)[ERROR]$(RESET) Failed to fetch FTXUI.\n" >&2; \
-		exit 1; \
-	fi
 	@printf "  $(YELLOW)[FTXUI]$(RESET) Compiling FTXUI...\n"
-	@cmake -S $(FTXUI_DIR) -B $(FTXUI_BUILD) -DCMAKE_BUILD_TYPE=Release \
-		-DFTXUI_BUILD_EXAMPLES=OFF -DFTXUI_BUILD_DOCS=OFF -DFTXUI_BUILD_TESTS=OFF $(REDIRECT)
+	@cmake -S $(FTXUI_DIR) -B $(FTXUI_BUILD) -DCMAKE_BUILD_TYPE=Release $(REDIRECT)
 	@cmake --build $(FTXUI_BUILD) -j$(JOBS) $(REDIRECT)
 	@printf "  $(BOLD)$(GREEN)✔  FTXUI ready.$(RESET)\n"
 
@@ -95,20 +78,15 @@ run: all
 
 clean:
 	@printf "  $(YELLOW)[RM]$(RESET) Cleaning object files...\n"
-	@rm -rf $(OBJ_DIR) $(TARGET)
+	@rm -rf $(OBJ_DIR)
 	@printf "  $(GREEN)✔  Clean finished.$(RESET)\n"
 
 fclean: clean
-	@printf "  $(YELLOW)[RM]$(RESET) Removing FTXUI build...\n"
-	@rm -rf $(FTXUI_BUILD)
+	@printf "  $(YELLOW)[RM]$(RESET) Removing binary...\n"
+	@rm -rf $(TARGET)
 	@printf "  $(GREEN)✔  Full clean finished.$(RESET)\n"
 
-distclean: fclean
-	@printf "  $(YELLOW)[RM]$(RESET) Removing FTXUI library source...\n"
-	@rm -rf $(FTXUI_DIR)
-	@printf "  $(GREEN)✔  Distclean finished.$(RESET)\n"
-
-re: clean all
+re: fclean all
 
 lint:
 	@printf "  $(BLUE)[LINT]$(RESET) Running cpplint...\n"

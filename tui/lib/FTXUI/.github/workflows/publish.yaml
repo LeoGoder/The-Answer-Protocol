@@ -1,0 +1,471 @@
+name: "Publish"
+
+on:
+  # Manual kick-off (you type the tag)
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag to publish"
+        required: true
+        type: string
+      publish_bcr:
+        description: "Publish to Bazel Central Registry (BCR)"
+        required: true
+        type: boolean
+        default: true
+      publish_vcpkg:
+        description: "Publish to vcpkg"
+        required: true
+        type: boolean
+        default: true
+      publish_conan:
+        description: "Publish to Conan Center Index"
+        required: true
+        type: boolean
+        default: true
+      publish_xmake:
+        description: "Publish to xmake-repo"
+        required: true
+        type: boolean
+        default: true
+      publish_aur:
+        description: "Publish to the AUR (ftxui)"
+        required: true
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: publish-${{ inputs.tag_name }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  prepare:
+    name: "Prepare release metadata"
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+      sha256: ${{ steps.meta.outputs.sha256 }}
+      sha512: ${{ steps.meta.outputs.sha512 }}
+    steps:
+      - name: "Fetch archive and compute checksums"
+        id: meta
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          TAG="${TAG_NAME}"
+          VERSION="${TAG#v}"
+          TAG="v${VERSION}"
+
+          if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid tag '${TAG_NAME}': expected v<major>.<minor>.<patch>"
+            exit 1
+          fi
+
+          echo "Preparing metadata for FTXUI version ${VERSION} (tag: ${TAG})"
+
+          ARCHIVE_URL="https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/${TAG}.tar.gz"
+          echo "Fetching release archive from ${ARCHIVE_URL}..."
+          TMP_FILE=$(mktemp)
+          # -f is required: without it curl exits 0 on a 404 and we would hash
+          # (and publish) the "404: Not Found" error page instead of the archive.
+          curl -fsSL --retry 3 "${ARCHIVE_URL}" -o "${TMP_FILE}"
+
+          if ! gzip -t "${TMP_FILE}"; then
+            echo "Downloaded archive is not a valid gzip file"
+            exit 1
+          fi
+
+          SHA256=$(sha256sum "${TMP_FILE}" | awk '{print $1}')
+          SHA512=$(sha512sum "${TMP_FILE}" | awk '{print $1}')
+          rm "${TMP_FILE}"
+
+          if [ -z "${SHA256}" ] || [ "${#SHA256}" -ne 64 ]; then
+            echo "Failed to calculate valid SHA256 hash"
+            exit 1
+          fi
+          if [ -z "${SHA512}" ] || [ "${#SHA512}" -ne 128 ]; then
+            echo "Failed to calculate valid SHA512 hash"
+            exit 1
+          fi
+
+          echo "Archive SHA256: ${SHA256}"
+          echo "Archive SHA512: ${SHA512}"
+
+          {
+            echo "tag=${TAG}"
+            echo "version=${VERSION}"
+            echo "sha256=${SHA256}"
+            echo "sha512=${SHA512}"
+          } >> "$GITHUB_OUTPUT"
+
+  bcr:
+    name: "Publish to Bazel Central Registry"
+    needs: prepare
+    if: ${{ inputs.publish_bcr }}
+    permissions:
+      contents: write
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.6.0
+    with:
+      tag_name: ${{ needs.prepare.outputs.tag }}
+      registry_fork: ArthurSonzogni/bazel-central-registry
+      attest: false
+
+    secrets:
+      publish_token: ${{ secrets.PUBLISH_TOKEN }}
+
+  vcpkg:
+    name: "Publish to vcpkg"
+    needs: prepare
+    if: ${{ inputs.publish_vcpkg }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Push to vcpkg"
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          SHA512: ${{ needs.prepare.outputs.sha512 }}
+        run: |
+          echo "Publishing FTXUI version ${VERSION} (tag: ${TAG}) to vcpkg"
+          echo "Archive SHA512: ${SHA512}"
+
+          # Authenticate git through gh, so the token never lands in a remote URL.
+          gh auth setup-git --hostname github.com
+
+          # Ensure fork exists. Forking is asynchronous: wait for it to show up.
+          echo "Forking microsoft/vcpkg if needed..."
+          gh repo fork microsoft/vcpkg --clone=false || true
+          for _ in $(seq 30); do
+            if gh repo view ArthurSonzogni/vcpkg > /dev/null 2>&1; then
+              break
+            fi
+            echo "Waiting for the fork to become available..."
+            sleep 5
+          done
+
+          # Blobless clone: historical file contents dominate the size of these
+          # registries and none of them are needed here.
+          git clone --filter=blob:none https://github.com/ArthurSonzogni/vcpkg.git vcpkg
+          cd vcpkg
+          git remote add upstream https://github.com/microsoft/vcpkg.git
+          git fetch --filter=blob:none upstream master
+
+          # Create new branch from upstream master
+          BRANCH_NAME="ftxui-${VERSION}"
+          git checkout -b "${BRANCH_NAME}" upstream/master
+
+          # Configure git author
+          git config user.name "ArthurSonzogni"
+          git config user.email "sonzogniarthur@gmail.com"
+
+          # Bootstrap vcpkg CLI for x-add-version
+          ./bootstrap-vcpkg.sh
+
+          # Update portfile.cmake and vcpkg.json
+          python3 -c '
+          import re, sys
+          path = "ports/ftxui/portfile.cmake"
+          with open(path, "r") as f:
+              content = f.read()
+          content = re.sub(r"SHA512 [0-9a-fA-F]+", f"SHA512 {sys.argv[1]}", content)
+          with open(path, "w") as f:
+              f.write(content)
+          ' "${SHA512}"
+
+          python3 -c '
+          import re, sys
+          path = "ports/ftxui/vcpkg.json"
+          with open(path, "r") as f:
+              content = f.read()
+          content = re.sub(r"\"(version|version-semver|version-date|version-string)\": \"[^\"]+\"", f"\"\\1\": \"{sys.argv[1]}\"", content)
+          # A port-version only qualifies the version it was published against,
+          # and vcpkg rejects a version bump that keeps it.
+          content = re.sub(r",?\n\s*\"port-version\": \d+", "", content)
+          with open(path, "w") as f:
+              f.write(content)
+          ' "${VERSION}"
+
+          # Normalize the manifest the way vcpkg CI expects it
+          ./vcpkg format-manifest ports/ftxui/vcpkg.json
+
+          # Commit port changes (required before running x-add-version)
+          git add ports/ftxui/
+          git commit -m "[ftxui] update to ${VERSION}"
+
+          # Run x-add-version to update version database
+          ./vcpkg x-add-version ftxui
+
+          # Commit version database changes
+          git add versions/
+          git commit -m "Update version database for ftxui ${VERSION}"
+
+          # Push branch to fork
+          git push origin "${BRANCH_NAME}" --force
+
+          # Create PR against microsoft/vcpkg. Re-running the job after a partial
+          # failure must not choke on the PR it already opened: the force-push
+          # above has updated it.
+          EXISTING=$(gh pr list --repo microsoft/vcpkg --state open --head "${BRANCH_NAME}" --json url --jq ".[].url")
+          if [ -n "${EXISTING}" ]; then
+            echo "Pull request already open, updated by the push above: ${EXISTING}"
+          else
+            gh pr create \
+              --repo microsoft/vcpkg \
+              --head "ArthurSonzogni:${BRANCH_NAME}" \
+              --base master \
+              --title "[ftxui] update to ${VERSION}" \
+              --body "Automated update of ftxui to version ${VERSION}."
+          fi
+
+  conan:
+    name: "Publish to Conan Center Index"
+    needs: prepare
+    if: ${{ inputs.publish_conan }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Push to Conan Center Index"
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          SHA256: ${{ needs.prepare.outputs.sha256 }}
+        run: |
+          echo "Publishing FTXUI version ${VERSION} (tag: ${TAG}) to Conan Center Index"
+          echo "Archive SHA256: ${SHA256}"
+
+          # Authenticate git through gh, so the token never lands in a remote URL.
+          gh auth setup-git --hostname github.com
+
+          # Ensure fork exists. Forking is asynchronous: wait for it to show up.
+          echo "Forking conan-io/conan-center-index if needed..."
+          gh repo fork conan-io/conan-center-index --clone=false || true
+          for _ in $(seq 30); do
+            if gh repo view ArthurSonzogni/conan-center-index > /dev/null 2>&1; then
+              break
+            fi
+            echo "Waiting for the fork to become available..."
+            sleep 5
+          done
+
+          # Blobless clone: historical file contents dominate the size of these
+          # registries and none of them are needed here.
+          git clone --filter=blob:none https://github.com/ArthurSonzogni/conan-center-index.git conan-center-index
+          cd conan-center-index
+          git remote add upstream https://github.com/conan-io/conan-center-index.git
+          git fetch --filter=blob:none upstream master
+
+          # Create new branch from upstream master
+          BRANCH_NAME="ftxui-${VERSION}"
+          git checkout -b "${BRANCH_NAME}" upstream/master
+
+          # Configure git author
+          git config user.name "ArthurSonzogni"
+          git config user.email "sonzogniarthur@gmail.com"
+
+          # Update recipes/ftxui/config.yml and recipes/ftxui/all/conandata.yml
+          python3 -c '
+          import re, sys
+          version, sha256 = sys.argv[1], sys.argv[2]
+          tag = f"v{version}"
+
+          # Update config.yml
+          cfg_path = "recipes/ftxui/config.yml"
+          with open(cfg_path, "r") as f:
+              cfg = f.read()
+          cfg = re.sub(r"^versions:\n", f"versions:\n  \"{version}\":\n    folder: all\n", cfg, flags=re.MULTILINE)
+          with open(cfg_path, "w") as f:
+              f.write(cfg)
+
+          # Update conandata.yml
+          data_path = "recipes/ftxui/all/conandata.yml"
+          with open(data_path, "r") as f:
+              data = f.read()
+          entry = f"sources:\n  \"{version}\":\n    url: \"https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/{tag}.tar.gz\"\n    sha256: \"{sha256}\"\n"
+          data = re.sub(r"^sources:\n", entry, data, flags=re.MULTILINE)
+
+          # The recipe calls apply_conandata_patches(), so a version missing from
+          # the patches section silently builds unpatched. Carry the newest entry
+          # over to the new version.
+          lines = data.splitlines(keepends=True)
+          if "patches:\n" in lines:
+              start = lines.index("patches:\n") + 1
+              if start < len(lines) and re.match(r"^  \"", lines[start]):
+                  end = start + 1
+                  while end < len(lines) and not re.match(r"^(  \"|\S)", lines[end]):
+                      end += 1
+                  block = lines[start:end]
+                  print("Carried the patches entry over from " + block[0].strip() + " verify it still applies.")
+                  block[0] = f"  \"{version}\":\n"
+                  lines[start:start] = block
+                  data = "".join(lines)
+
+          with open(data_path, "w") as f:
+              f.write(data)
+          ' "${VERSION}" "${SHA256}"
+
+          # Commit changes
+          git add recipes/ftxui/
+          git commit -m "ftxui: add ${VERSION}"
+
+          # Push branch to fork
+          git push origin "${BRANCH_NAME}" --force
+
+          # Create PR against conan-io/conan-center-index. Re-running the job
+          # after a partial failure must not choke on the PR it already opened:
+          # the force-push above has updated it.
+          EXISTING=$(gh pr list --repo conan-io/conan-center-index --state open --head "${BRANCH_NAME}" --json url --jq ".[].url")
+          if [ -n "${EXISTING}" ]; then
+            echo "Pull request already open, updated by the push above: ${EXISTING}"
+          else
+            gh pr create \
+              --repo conan-io/conan-center-index \
+              --head "ArthurSonzogni:${BRANCH_NAME}" \
+              --base master \
+              --title "ftxui: add ${VERSION}" \
+              --body "Automated update of ftxui to version ${VERSION}."
+          fi
+
+  xmake:
+    name: "Publish to xmake-repo"
+    needs: prepare
+    if: ${{ inputs.publish_xmake }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Push to xmake-repo"
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          SHA256: ${{ needs.prepare.outputs.sha256 }}
+        run: |
+          echo "Publishing FTXUI version ${VERSION} (tag: ${TAG}) to xmake-repo"
+          echo "Archive SHA256: ${SHA256}"
+
+          # Authenticate git through gh, so the token never lands in a remote URL.
+          gh auth setup-git --hostname github.com
+
+          # Ensure fork exists. Forking is asynchronous: wait for it to show up.
+          echo "Forking xmake-io/xmake-repo if needed..."
+          gh repo fork xmake-io/xmake-repo --clone=false || true
+          for _ in $(seq 30); do
+            if gh repo view ArthurSonzogni/xmake-repo > /dev/null 2>&1; then
+              break
+            fi
+            echo "Waiting for the fork to become available..."
+            sleep 5
+          done
+
+          # Blobless clone: historical file contents dominate the size of these
+          # registries and none of them are needed here.
+          git clone --filter=blob:none https://github.com/ArthurSonzogni/xmake-repo.git xmake-repo
+          cd xmake-repo
+          git remote add upstream https://github.com/xmake-io/xmake-repo.git
+          git fetch --filter=blob:none upstream master
+
+          # Create new branch from upstream master
+          BRANCH_NAME="ftxui-${VERSION}"
+          git checkout -b "${BRANCH_NAME}" upstream/master
+
+          # Configure git author
+          git config user.name "ArthurSonzogni"
+          git config user.email "sonzogniarthur@gmail.com"
+
+          # Update packages/f/ftxui/xmake.lua
+          python3 -c '
+          import re, sys
+          version, sha256 = sys.argv[1], sys.argv[2]
+          tag = f"v{version}"
+
+          lua_path = "packages/f/ftxui/xmake.lua"
+          with open(lua_path, "r") as f:
+              content = f.read()
+          new_entry = f"    add_versions(\"{tag}\", \"{sha256}\")\n"
+          content = re.sub(r"^(    add_versions\()", f"{new_entry}\\1", content, count=1, flags=re.MULTILINE)
+          with open(lua_path, "w") as f:
+              f.write(content)
+          ' "${VERSION}" "${SHA256}"
+
+          # Commit changes
+          git add packages/f/ftxui/xmake.lua
+          git commit -m "update ftxui ${TAG}"
+
+          # Push branch to fork
+          git push origin "${BRANCH_NAME}" --force
+
+          # Create PR against xmake-io/xmake-repo. Re-running the job after a
+          # partial failure must not choke on the PR it already opened: the
+          # force-push above has updated it.
+          EXISTING=$(gh pr list --repo xmake-io/xmake-repo --state open --head "${BRANCH_NAME}" --json url --jq ".[].url")
+          if [ -n "${EXISTING}" ]; then
+            echo "Pull request already open, updated by the push above: ${EXISTING}"
+          else
+            gh pr create \
+              --repo xmake-io/xmake-repo \
+              --head "ArthurSonzogni:${BRANCH_NAME}" \
+              --base master \
+              --title "update ftxui ${TAG}" \
+              --body "Automated update of ftxui to version ${VERSION}."
+          fi
+
+  # The AUR's ftxui package is maintained by vitaliikuzhdin, with
+  # ArthurSonzogni as co-maintainer. This job only bumps the version: pkgver,
+  # pkgrel and the checksums. The rest of the PKGBUILD (patches, split
+  # packages, options) stays as its maintainer wrote it. The package is built
+  # before anything is pushed: if a patch no longer applies to the new
+  # version, the job fails and the AUR is left alone.
+  #
+  # AUR_SSH_PRIVATE_KEY: the private key of an SSH key registered on
+  # ArthurSonzogni's AUR account.
+  aur:
+    name: "Publish to the AUR"
+    needs: prepare
+    if: ${{ inputs.publish_aur }}
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: "Bump and push ftxui"
+        env:
+          AUR_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          [ -n "${AUR_KEY}" ] || { echo "::error::The AUR_SSH_PRIVATE_KEY secret is missing"; exit 1; }
+          pacman -Syu --noconfirm git openssh pacman-contrib
+
+          # makepkg refuses to run as root; -s installs the makedepends.
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          install -d -m 700 -o builder ~builder/.ssh
+          printf '%s\n' "${AUR_KEY}" > ~builder/.ssh/aur
+          ssh-keyscan aur.archlinux.org > ~builder/.ssh/known_hosts
+          printf 'Host aur.archlinux.org\n  IdentityFile ~/.ssh/aur\n  User aur\n' > ~builder/.ssh/config
+          chown -R builder ~builder/.ssh
+          chmod 600 ~builder/.ssh/*
+
+          cat > /tmp/bump.sh <<'SCRIPT'
+          set -euo pipefail
+          cd ~
+          git clone ssh://aur@aur.archlinux.org/ftxui.git
+          cd ftxui
+          git config user.name "ArthurSonzogni"
+          git config user.email "sonzogniarthur@gmail.com"
+          if grep -qx "pkgver=${VERSION}" PKGBUILD; then
+            echo "The AUR already has ftxui ${VERSION}."
+            exit 0
+          fi
+          sed -i -e "s/^pkgver=.*/pkgver=${VERSION}/" -e "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+          updpkgsums
+          makepkg --printsrcinfo > .SRCINFO
+          git diff
+          makepkg --syncdeps --noconfirm --cleanbuild
+          git add PKGBUILD .SRCINFO
+          git commit -m "Update to ${VERSION}"
+          git push origin HEAD:master
+          SCRIPT
+          chmod +r /tmp/bump.sh
+          su builder -c "VERSION=${VERSION} bash /tmp/bump.sh"

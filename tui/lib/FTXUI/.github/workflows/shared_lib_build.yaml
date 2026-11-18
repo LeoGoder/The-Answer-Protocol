@@ -1,0 +1,83 @@
+name: Shared Library Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'include/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'tools/ci_matrix.json'
+      - 'tools/select_ci_matrix.sh'
+      - '.github/workflows/shared_lib_build.yaml'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+    paths:
+      - 'include/**'
+      - 'src/**'
+      - 'examples/**'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'tools/ci_matrix.json'
+      - 'tools/select_ci_matrix.sh'
+      - '.github/workflows/shared_lib_build.yaml'
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Which platforms run for this event is defined in tools/ci_matrix.json.
+  select_matrix:
+    name: "Select matrix"
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    outputs:
+      shared_lib: ${{ steps.select.outputs.shared_lib }}
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Select the matrices for ${{ github.event_name }}"
+        id: select
+        run: ./tools/select_ci_matrix.sh >> "$GITHUB_OUTPUT"
+
+  build-shared:
+    needs: select_matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.select_matrix.outputs.shared_lib) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: shared-lib-${{ matrix.os }}
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake -B build \
+            -DBUILD_SHARED_LIBS=ON \
+            -DFTXUI_BUILD_EXAMPLES=ON \
+            -DFTXUI_BUILD_TESTS=OFF \
+            -DFTXUI_BUILD_DOCS=OFF
+
+      - name: Build one example
+        run: |
+          cmake --build build --target ftxui_example_text

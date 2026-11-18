@@ -1,0 +1,774 @@
+// Copyright 2020 Arthur Sonzogni. All rights reserved.
+// Use of this source code is governed by the MIT license that can be found in
+// the LICENSE file.
+#include <cstddef>  // for size_t
+#include <cstdint>
+#include <iostream>  // for cout, flush
+#include <limits>
+#include <map>     // for _Rb_tree_const_iterator, map, operator!=, operator==
+#include <string>  // for string
+#include <string_view>  // for string_view
+#include <utility>      // for pair
+#include <vector>       // for vector
+
+#include "ftxui/screen/cell.hpp"  // for Cell
+#include "ftxui/screen/screen.hpp"
+#include "ftxui/screen/string.hpp"    // for string_width
+#include "ftxui/screen/surface.hpp"   // for Surface
+#include "ftxui/screen/terminal.hpp"  // for Dimensions, Size
+
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
+
+// Macro for hinting that an expression is likely to be false.
+#if !defined(FTXUI_UNLIKELY)
+#if defined(COMPILER_GCC) || defined(__clang__)
+#define FTXUI_UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define FTXUI_UNLIKELY(x) (x)
+#endif  // defined(COMPILER_GCC)
+#endif  // !defined(FTXUI_UNLIKELY)
+
+#if !defined(FTXUI_LIKELY)
+#if defined(COMPILER_GCC) || defined(__clang__)
+#define FTXUI_LIKELY(x) __builtin_expect(!!(x), 1)
+#else
+#define FTXUI_LIKELY(x) (x)
+#endif  // defined(COMPILER_GCC)
+#endif  // !defined(FTXUI_LIKELY)
+
+namespace ftxui {
+
+namespace {
+
+#if defined(_WIN32)
+void WindowsEmulateVT100Terminal() {
+  static bool done = false;
+  if (done) {
+    return;
+  }
+  done = true;
+
+  // Enable VT processing on stdout and stdin
+  auto stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+  DWORD out_mode = 0;
+  if (!GetConsoleMode(stdout_handle, &out_mode)) {
+    // The output is not a console (e.g. redirected to a file or a pipe). Keep
+    // the detected color support and let the consumer of the stream interpret
+    // the escape sequences.
+    return;
+  }
+
+  // https://docs.microsoft.com/en-us/windows/console/setconsolemode
+  const int enable_virtual_terminal_processing = 0x0004;
+  const int disable_newline_auto_return = 0x0008;
+  out_mode |= enable_virtual_terminal_processing;
+  out_mode |= disable_newline_auto_return;
+
+  SetConsoleMode(stdout_handle, out_mode);
+}
+#endif
+
+// Position of a color sequence inside the output string. It refers to the
+// output instead of copying it, so tracking it costs no allocation.
+struct ColorSequence {
+  size_t begin = 0;
+  size_t size = 0;
+};
+
+// Append to `ss` the escape sequences switching the style from `prev` to
+// `next`.
+// - `color_support`: the terminal color support, read once per frame.
+// - `last_colors`: the last color sequence written to `ss`.
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+void UpdateCellStyle(const Screen* screen,
+                     std::string& ss,
+                     Terminal::Color color_support,
+                     ColorSequence& last_colors,
+                     const Cell& prev,
+                     const Cell& next) {
+  // See https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+  if (FTXUI_UNLIKELY(next.hyperlink != prev.hyperlink)) {
+    ss += "\x1B]8;;";
+    ss += screen->Hyperlink(next.hyperlink);
+    ss += "\x1B\\";
+  }
+
+  // Bold
+  if (FTXUI_UNLIKELY((next.bold ^ prev.bold) | (next.dim ^ prev.dim))) {
+    // BOLD_AND_DIM_RESET:
+    if ((prev.bold && !next.bold) || (prev.dim && !next.dim)) {
+      ss += "\x1B[22m";
+    }
+    if (next.bold) {
+      ss += "\x1B[1m";  // BOLD_SET
+    }
+    if (next.dim) {
+      ss += "\x1B[2m";  // DIM_SET
+    }
+  }
+
+  // Underline
+  if (FTXUI_UNLIKELY(next.underlined != prev.underlined ||
+                     next.underlined_double != prev.underlined_double)) {
+    ss += (next.underlined          ? "\x1B[4m"     // UNDERLINE
+           : next.underlined_double ? "\x1B[21m"    // UNDERLINE_DOUBLE
+                                    : "\x1B[24m");  // UNDERLINE_RESET
+  }
+
+  // Blink
+  if (FTXUI_UNLIKELY(next.blink != prev.blink)) {
+    ss += (next.blink ? "\x1B[5m"     // BLINK_SET
+                      : "\x1B[25m");  // BLINK_RESET
+  }
+
+  // Inverted
+  if (FTXUI_UNLIKELY(next.inverted != prev.inverted)) {
+    ss += (next.inverted ? "\x1B[7m"     // INVERTED_SET
+                         : "\x1B[27m");  // INVERTED_RESET
+  }
+
+  // Italics
+  if (FTXUI_UNLIKELY(next.italic != prev.italic)) {
+    ss += (next.italic ? "\x1B[3m"     // ITALIC_SET
+                       : "\x1B[23m");  // ITALIC_RESET
+  }
+
+  // StrikeThrough
+  if (FTXUI_UNLIKELY(next.strikethrough != prev.strikethrough)) {
+    ss += (next.strikethrough ? "\x1B[9m"     // CROSSED_OUT
+                              : "\x1B[29m");  // CROSSED_OUT_RESET
+  }
+
+  if (FTXUI_UNLIKELY(next.foreground_color != prev.foreground_color ||
+                     next.background_color != prev.background_color)) {
+    const size_t begin = ss.size();
+    ss += "\x1B[";
+    next.foreground_color.PrintTo(ss, false, color_support);
+    ss += 'm';
+    ss += "\x1B[";
+    next.background_color.PrintTo(ss, true, color_support);
+    ss += 'm';
+
+    // Colors are degraded to the terminal color support when printed, so
+    // distinct colors can print the same sequence. e.g. RGB(1,2,3) and
+    // RGB(2,3,4) both print "38;5;16" on a 256-color terminal. Drop the new
+    // sequence when it repeats the last one. This can't happen with
+    // TrueColor, so skip the comparison there.
+    if (color_support != Terminal::Color::TrueColor) {
+      const size_t size = ss.size() - begin;
+      if (size == last_colors.size &&
+          ss.compare(begin, size, ss, last_colors.begin, size) == 0) {
+        ss.resize(begin);
+      } else {
+        last_colors.begin = begin;
+        last_colors.size = size;
+      }
+    }
+  }
+}
+
+struct TileEncoding {
+  std::uint8_t left : 2;
+  std::uint8_t top : 2;
+  std::uint8_t right : 2;
+  std::uint8_t down : 2;
+  std::uint8_t round : 1;
+
+  // clang-format off
+  bool operator<(const TileEncoding& other) const {
+    if (left < other.left)   { return  true;  }
+    if (left > other.left)   { return  false; }
+    if (top < other.top)     { return  true;  }
+    if (top > other.top)     { return  false; }
+    if (right < other.right) { return  true;  }
+    if (right > other.right) { return  false; }
+    if (down < other.down)   { return  true;  }
+    if (down > other.down)   { return  false; }
+    if (round < other.round) { return  true;  }
+    if (round > other.round) { return  false; }
+      return false;
+  }
+  // clang-format on
+};
+
+// clang-format off
+const std::map<std::string, TileEncoding> tile_encoding = { // NOLINT
+    {"─", {1, 0, 1, 0, 0}},
+    {"━", {2, 0, 2, 0, 0}},
+    {"╍", {2, 0, 2, 0, 0}},
+
+    {"│", {0, 1, 0, 1, 0}},
+    {"┃", {0, 2, 0, 2, 0}},
+    {"╏", {0, 2, 0, 2, 0}},
+
+    {"┌", {0, 0, 1, 1, 0}},
+    {"┍", {0, 0, 2, 1, 0}},
+    {"┎", {0, 0, 1, 2, 0}},
+    {"┏", {0, 0, 2, 2, 0}},
+
+    {"┐", {1, 0, 0, 1, 0}},
+    {"┑", {2, 0, 0, 1, 0}},
+    {"┒", {1, 0, 0, 2, 0}},
+    {"┓", {2, 0, 0, 2, 0}},
+
+    {"└", {0, 1, 1, 0, 0}},
+    {"┕", {0, 1, 2, 0, 0}},
+    {"┖", {0, 2, 1, 0, 0}},
+    {"┗", {0, 2, 2, 0, 0}},
+
+    {"┘", {1, 1, 0, 0, 0}},
+    {"┙", {2, 1, 0, 0, 0}},
+    {"┚", {1, 2, 0, 0, 0}},
+    {"┛", {2, 2, 0, 0, 0}},
+
+    {"├", {0, 1, 1, 1, 0}},
+    {"┝", {0, 1, 2, 1, 0}},
+    {"┞", {0, 2, 1, 1, 0}},
+    {"┟", {0, 1, 1, 2, 0}},
+    {"┠", {0, 2, 1, 2, 0}},
+    {"┡", {0, 2, 2, 1, 0}},
+    {"┢", {0, 1, 2, 2, 0}},
+    {"┣", {0, 2, 2, 2, 0}},
+
+    {"┤", {1, 1, 0, 1, 0}},
+    {"┥", {2, 1, 0, 1, 0}},
+    {"┦", {1, 2, 0, 1, 0}},
+    {"┧", {1, 1, 0, 2, 0}},
+    {"┨", {1, 2, 0, 2, 0}},
+    {"┩", {2, 2, 0, 1, 0}},
+    {"┪", {2, 1, 0, 2, 0}},
+    {"┫", {2, 2, 0, 2, 0}},
+
+    {"┬", {1, 0, 1, 1, 0}},
+    {"┭", {2, 0, 1, 1, 0}},
+    {"┮", {1, 0, 2, 1, 0}},
+    {"┯", {2, 0, 2, 1, 0}},
+    {"┰", {1, 0, 1, 2, 0}},
+    {"┱", {2, 0, 1, 2, 0}},
+    {"┲", {1, 0, 2, 2, 0}},
+    {"┳", {2, 0, 2, 2, 0}},
+
+    {"┴", {1, 1, 1, 0, 0}},
+    {"┵", {2, 1, 1, 0, 0}},
+    {"┶", {1, 1, 2, 0, 0}},
+    {"┷", {2, 1, 2, 0, 0}},
+    {"┸", {1, 2, 1, 0, 0}},
+    {"┹", {2, 2, 1, 0, 0}},
+    {"┺", {1, 2, 2, 0, 0}},
+    {"┻", {2, 2, 2, 0, 0}},
+
+    {"┼", {1, 1, 1, 1, 0}},
+    {"┽", {2, 1, 1, 1, 0}},
+    {"┾", {1, 1, 2, 1, 0}},
+    {"┿", {2, 1, 2, 1, 0}},
+    {"╀", {1, 2, 1, 1, 0}},
+    {"╁", {1, 1, 1, 2, 0}},
+    {"╂", {1, 2, 1, 2, 0}},
+    {"╃", {2, 2, 1, 1, 0}},
+    {"╄", {1, 2, 2, 1, 0}},
+    {"╅", {2, 1, 1, 2, 0}},
+    {"╆", {1, 1, 2, 2, 0}},
+    {"╇", {2, 2, 2, 1, 0}},
+    {"╈", {2, 1, 2, 2, 0}},
+    {"╉", {2, 2, 1, 2, 0}},
+    {"╊", {1, 2, 2, 2, 0}},
+    {"╋", {2, 2, 2, 2, 0}},
+
+    {"═", {3, 0, 3, 0, 0}},
+    {"║", {0, 3, 0, 3, 0}},
+
+    {"╒", {0, 0, 3, 1, 0}},
+    {"╓", {0, 0, 1, 3, 0}},
+    {"╔", {0, 0, 3, 3, 0}},
+
+    {"╕", {3, 0, 0, 1, 0}},
+    {"╖", {1, 0, 0, 3, 0}},
+    {"╗", {3, 0, 0, 3, 0}},
+
+    {"╘", {0, 1, 3, 0, 0}},
+    {"╙", {0, 3, 1, 0, 0}},
+    {"╚", {0, 3, 3, 0, 0}},
+
+    {"╛", {3, 1, 0, 0, 0}},
+    {"╜", {1, 3, 0, 0, 0}},
+    {"╝", {3, 3, 0, 0, 0}},
+
+    {"╞", {0, 1, 3, 1, 0}},
+    {"╟", {0, 3, 1, 3, 0}},
+    {"╠", {0, 3, 3, 3, 0}},
+
+    {"╡", {3, 1, 0, 1, 0}},
+    {"╢", {1, 3, 0, 3, 0}},
+    {"╣", {3, 3, 0, 3, 0}},
+
+    {"╤", {3, 0, 3, 1, 0}},
+    {"╥", {1, 0, 1, 3, 0}},
+    {"╦", {3, 0, 3, 3, 0}},
+
+    {"╧", {3, 1, 3, 0, 0}},
+    {"╨", {1, 3, 1, 0, 0}},
+    {"╩", {3, 3, 3, 0, 0}},
+
+    {"╪", {3, 1, 3, 1, 0}},
+    {"╫", {1, 3, 1, 3, 0}},
+    {"╬", {3, 3, 3, 3, 0}},
+
+    {"╭", {0, 0, 1, 1, 1}},
+    {"╮", {1, 0, 0, 1, 1}},
+    {"╯", {1, 1, 0, 0, 1}},
+    {"╰", {0, 1, 1, 0, 1}},
+
+    {"╴", {1, 0, 0, 0, 0}},
+    {"╵", {0, 1, 0, 0, 0}},
+    {"╶", {0, 0, 1, 0, 0}},
+    {"╷", {0, 0, 0, 1, 0}},
+
+    {"╸", {2, 0, 0, 0, 0}},
+    {"╹", {0, 2, 0, 0, 0}},
+    {"╺", {0, 0, 2, 0, 0}},
+    {"╻", {0, 0, 0, 2, 0}},
+
+    {"╼", {1, 0, 2, 0, 0}},
+    {"╽", {0, 1, 0, 2, 0}},
+    {"╾", {2, 0, 1, 0, 0}},
+    {"╿", {0, 2, 0, 1, 0}},
+};
+// clang-format on
+
+template <class A, class B>
+std::map<B, A> InvertMap(const std::map<A, B>& input) {
+  std::map<B, A> output;
+  for (const auto& it : input) {
+    output[it.second] = it.first;
+  }
+  return output;
+}
+
+const std::map<TileEncoding, std::string> tile_encoding_inverse =  // NOLINT
+    InvertMap(tile_encoding);
+
+void UpgradeLeftRight(std::string& left, std::string& right) {
+  const auto it_left = tile_encoding.find(left);
+  if (it_left == tile_encoding.end()) {
+    return;
+  }
+  const auto it_right = tile_encoding.find(right);
+  if (it_right == tile_encoding.end()) {
+    return;
+  }
+
+  if (it_left->second.right == 0 && it_right->second.left != 0) {
+    TileEncoding encoding_left = it_left->second;
+    encoding_left.right = it_right->second.left;
+    const auto it_left_upgrade = tile_encoding_inverse.find(encoding_left);
+    if (it_left_upgrade != tile_encoding_inverse.end()) {
+      left = it_left_upgrade->second;
+    }
+  }
+
+  if (it_right->second.left == 0 && it_left->second.right != 0) {
+    TileEncoding encoding_right = it_right->second;
+    encoding_right.left = it_left->second.right;
+    const auto it_right_upgrade = tile_encoding_inverse.find(encoding_right);
+    if (it_right_upgrade != tile_encoding_inverse.end()) {
+      right = it_right_upgrade->second;
+    }
+  }
+}
+
+void UpgradeTopDown(std::string& top, std::string& down) {
+  const auto it_top = tile_encoding.find(top);
+  if (it_top == tile_encoding.end()) {
+    return;
+  }
+  const auto it_down = tile_encoding.find(down);
+  if (it_down == tile_encoding.end()) {
+    return;
+  }
+
+  if (it_top->second.down == 0 && it_down->second.top != 0) {
+    TileEncoding encoding_top = it_top->second;
+    encoding_top.down = it_down->second.top;
+    const auto it_top_down = tile_encoding_inverse.find(encoding_top);
+    if (it_top_down != tile_encoding_inverse.end()) {
+      top = it_top_down->second;
+    }
+  }
+
+  if (it_down->second.top == 0 && it_top->second.down != 0) {
+    TileEncoding encoding_down = it_down->second;
+    encoding_down.top = it_top->second.down;
+    const auto it_down_top = tile_encoding_inverse.find(encoding_down);
+    if (it_down_top != tile_encoding_inverse.end()) {
+      down = it_down_top->second;
+    }
+  }
+}
+
+bool ShouldAttemptAutoMerge(Cell& cell) {
+  return cell.automerge && cell.character.size() == 3;
+}
+
+// Whether the two cells are printed identically.
+bool SameCell(const Screen& screen_a,
+              const Cell& a,
+              const Screen& screen_b,
+              const Cell& b) {
+  return a.character == b.character &&                //
+         a.foreground_color == b.foreground_color &&  //
+         a.background_color == b.background_color &&  //
+         a.blink == b.blink &&                        //
+         a.bold == b.bold &&                          //
+         a.dim == b.dim &&                            //
+         a.italic == b.italic &&                      //
+         a.inverted == b.inverted &&                  //
+         a.underlined == b.underlined &&              //
+         a.underlined_double == b.underlined_double &&
+         a.strikethrough == b.strikethrough &&
+         screen_a.Hyperlink(a.hyperlink) == screen_b.Hyperlink(b.hyperlink);
+}
+
+// Mark the cells hidden behind the fullwidth character preceding them. They
+// aren't printed. This matches Screen::ToString().
+void HiddenCells(const Cell* row, int dimx, std::vector<bool>& hidden) {
+  hidden.assign(static_cast<size_t>(dimx), false);
+  bool previous_fullwidth = false;
+  for (int x = 0; x < dimx; ++x) {
+    hidden[x] = previous_fullwidth;
+    const std::string& character = row[x].character;
+    previous_fullwidth =
+        !hidden[x] && character.size() > 1 && string_width(character) == 2;
+  }
+}
+
+}  // namespace
+
+/// A fixed dimension.
+/// @see Fit
+/// @see Full
+Dimensions Dimension::Fixed(int v) {
+  return {v, v};
+}
+
+/// Use the terminal dimensions.
+/// @see Fixed
+/// @see Fit
+Dimensions Dimension::Full() {
+  return Terminal::Size();
+}
+
+// static
+/// Create a screen with the given dimension along the x-axis and y-axis.
+Screen Screen::Create(Dimensions width, Dimensions height) {
+  return {width.dimx, height.dimy};
+}
+
+// static
+/// Create a screen with the given dimension.
+Screen Screen::Create(Dimensions dimension) {
+  return {dimension.dimx, dimension.dimy};
+}
+
+Screen::Screen(int dimx, int dimy) : Surface{dimx, dimy} {
+#if defined(_WIN32)
+  // The placement of this call is a bit weird, however we can assume that
+  // anybody who instantiates a Screen object eventually wants to output
+  // something to the console. If that is not the case, use an instance of
+  // Surface instead. As we require UTF8 for all input/output operations we will
+  // just switch to UTF8 encoding here
+  SetConsoleOutputCP(CP_UTF8);
+  SetConsoleCP(CP_UTF8);
+  WindowsEmulateVT100Terminal();
+#endif
+}
+
+/// Produce a std::string that can be used to print the Screen on the
+/// terminal.
+/// @note Don't forget to flush stdout. Alternatively, you can use
+/// Screen::Print();
+std::string Screen::ToString() const {
+  // Pre-allocate: ~30 bytes per cell for character + escape codes.
+  std::string ss;
+  ss.reserve(static_cast<size_t>(dimx_) * static_cast<size_t>(dimy_) * 30);
+  ToString(ss);
+  return ss;
+}
+
+/// Produce a std::string that can be used to print the Screen on the
+/// terminal.
+/// @param ss The string to append to.
+void Screen::ToString(std::string& ss) const {
+  const Cell default_cell;
+  const Cell* previous_cell_ref = &default_cell;
+  const Terminal::Color color_support = Terminal::ColorSupport();
+  ColorSequence last_colors;
+
+  for (int y = 0; y < dimy_; ++y) {
+    // New line in between two lines.
+    if (y != 0) {
+      UpdateCellStyle(this, ss, color_support, last_colors, *previous_cell_ref,
+                      default_cell);
+      previous_cell_ref = &default_cell;
+      ss += "\r\n";
+    }
+
+    // After printing a fullwith character, we need to skip the next cell.
+    bool previous_fullwidth = false;
+    if (dimx_ > 0) {
+      const Cell* line_start = &FastCellAt(0, y);
+      const Cell* line_end = line_start + dimx_;
+      for (const Cell* it = line_start; it != line_end; ++it) {
+        const auto& cell = *it;
+        if (!previous_fullwidth) {
+          UpdateCellStyle(this, ss, color_support, last_colors,
+                          *previous_cell_ref, cell);
+          previous_cell_ref = &cell;
+          if (cell.character.empty()) {
+            ss += ' ';
+          } else {
+            ss += cell.character;
+          }
+        }
+        // A hidden cell can't hide the next one.
+        previous_fullwidth = !previous_fullwidth && cell.character.size() > 1 &&
+                             string_width(cell.character) == 2;
+      }
+    }
+  }
+
+  // Reset the style to default:
+  UpdateCellStyle(this, ss, color_support, last_colors, *previous_cell_ref,
+                  default_cell);
+}
+
+/// Produce a std::string updating the terminal from |previous| to this Screen.
+/// Only the cells that changed are printed.
+/// @param ss The string to append to.
+/// @param previous The Screen currently displayed. The cursor must be at its
+///                 top-left corner. It ends where ToString() would leave it.
+void Screen::ToString(std::string& ss, const Screen& previous) const {
+  if (previous.dimx_ != dimx_ || previous.dimy_ != dimy_ || dimx_ == 0 ||
+      dimy_ == 0) {
+    ToString(ss);
+    return;
+  }
+
+  const Cell default_cell;
+  const Terminal::Color color_support = Terminal::ColorSupport();
+  ColorSequence last_colors;
+  std::vector<bool> hidden;
+  std::vector<bool> previous_hidden;
+  int cursor_y = 0;
+
+  for (int y = 0; y < dimy_; ++y) {
+    const Cell* row = &FastCellAt(0, y);
+    const Cell* previous_row = &previous.FastCellAt(0, y);
+    auto same = [&](int x) {
+      return SameCell(*this, row[x], previous, previous_row[x]);
+    };
+
+    int first = 0;
+    while (first < dimx_ && same(first)) {
+      ++first;
+    }
+    int last = dimx_ - 1;
+    if (y != dimy_ - 1) {
+      if (first == dimx_) {
+        continue;
+      }
+      while (same(last)) {
+        --last;
+      }
+    } else if (first == dimx_) {
+      // Always print the last cell, so the cursor ends like ToString().
+      first = dimx_ - 1;
+    }
+
+    // Don't split fullwidth characters, from either frame. Overwriting half of
+    // one erases the other half, which must be printed again.
+    HiddenCells(row, dimx_, hidden);
+    HiddenCells(previous_row, dimx_, previous_hidden);
+    while (first > 0 && (hidden[first] || previous_hidden[first])) {
+      --first;
+    }
+    while (last + 1 < dimx_ &&
+           (hidden[last + 1] || previous_hidden[last + 1])) {
+      ++last;
+    }
+
+    // Move the cursor to (first, y).
+    if (y != cursor_y) {
+      ss += "\x1B[" + std::to_string(y - cursor_y) + "B";  // MOVE_DOWN
+      cursor_y = y;
+    }
+    ss += '\r';  // MOVE_LEFT
+    if (first != 0) {
+      ss += "\x1B[" + std::to_string(first) + "C";  // MOVE_RIGHT
+    }
+
+    const Cell* previous_cell_ref = &default_cell;
+    for (int x = first; x <= last; ++x) {
+      if (hidden[x]) {
+        continue;
+      }
+      const Cell& cell = row[x];
+      UpdateCellStyle(this, ss, color_support, last_colors, *previous_cell_ref,
+                      cell);
+      previous_cell_ref = &cell;
+      if (cell.character.empty()) {
+        ss += ' ';
+      } else {
+        ss += cell.character;
+      }
+    }
+    UpdateCellStyle(this, ss, color_support, last_colors, *previous_cell_ref,
+                    default_cell);
+  }
+}
+
+// Print the Screen to the terminal.
+void Screen::Print() const {
+  std::cout << ToString() << '\0' << std::flush;
+}
+
+/// @brief Return a string to be printed in order to reset the cursor position
+///        to the beginning of the screen.
+///
+/// ```cpp
+/// std::string reset_position;
+/// while(true) {
+///   auto document = render();
+///   auto screen = Screen::Create(Dimension::Full(), Dimension::Fit(document));
+///   Render(screen, document);
+///   std::cout << reset_position << screen.ToString() << std::flush;
+///   reset_position = screen.ResetPosition();
+///
+///   using namespace std::chrono_literals;
+///   std::this_thread::sleep_for(0.01s);
+/// }
+/// ```
+///
+/// @return The string to print in order to reset the cursor position to the
+///         beginning.
+std::string Screen::ResetPosition(bool clear) const {
+  std::string ss;
+  ss.reserve(static_cast<size_t>(dimy_) * 12);
+  ResetPosition(ss, clear);
+  return ss;
+}
+
+/// @brief Append to a string in order to reset the cursor position to the
+///        beginning of the screen.
+/// @param ss The string to append to.
+/// @param clear Whether to clear the screen or not.
+void Screen::ResetPosition(std::string& ss, bool clear) const {
+  if (clear) {
+    // The clear branch must move up one row at a time, because each row needs
+    // its own CLEAR_LINE (\x1B[2K) erase. It cannot be collapsed into a single
+    // parameterized cursor-up.
+    ss += '\r';       // MOVE_LEFT;
+    ss += "\x1b[2K";  // CLEAR_SCREEN;
+    for (int y = 1; y < dimy_; ++y) {
+      ss += "\x1B[1A";  // MOVE_UP;
+      ss += "\x1B[2K";  // CLEAR_LINE;
+    }
+  } else {
+    // The non-clear branch only needs to reposition the cursor at the top-left,
+    // so the per-row walk-up is collapsed into a single parameterized
+    // CSI cursor-up (\x1B[<n>A), emitting far fewer bytes per frame.
+    ss += '\r';  // MOVE_LEFT;
+    if (dimy_ > 1) {
+      ss += "\x1B[" + std::to_string(dimy_ - 1) + "A";  // MOVE_UP;
+    }
+  }
+}
+
+/// @brief Clear all the cells from the screen.
+void Screen::Clear() {
+  Surface::Clear();
+
+  cursor_.x = dimx_ - 1;
+  cursor_.y = dimy_ - 1;
+
+  hyperlinks_ = {
+      "",
+  };
+}
+
+// clang-format off
+void Screen::ApplyShader() {
+  // Merge box characters together.
+  for (int y = 0; y < dimy_; ++y) {
+    for (int x = 0; x < dimx_; ++x) {
+      // Box drawing character uses exactly 3 byte.
+      Cell& cur = FastCellAt(x, y);
+      if (!ShouldAttemptAutoMerge(cur)) {
+        continue;
+      }
+
+      if (x > 0) {
+        Cell& left = FastCellAt(x - 1, y);
+        if (ShouldAttemptAutoMerge(left)) {
+          UpgradeLeftRight(left.character, cur.character);
+        }
+      }
+      if (y > 0) {
+        Cell& top = FastCellAt(x, y - 1);
+        if (ShouldAttemptAutoMerge(top)) {
+          UpgradeTopDown(top.character, cur.character);
+        }
+      }
+    }
+  }
+}
+// clang-format on
+
+std::uint8_t Screen::RegisterHyperlink(std::string_view link) {
+  for (std::size_t i = 0; i < hyperlinks_.size(); ++i) {
+    if (hyperlinks_[i] == link) {
+      return i;
+    }
+  }
+  if (hyperlinks_.size() == std::numeric_limits<std::uint8_t>::max()) {
+    return 0;
+  }
+  hyperlinks_.emplace_back(link);
+  return hyperlinks_.size() - 1;
+}
+
+const std::string& Screen::Hyperlink(std::uint8_t id) const {
+  if (id >= hyperlinks_.size()) {
+    return hyperlinks_[0];
+  }
+  return hyperlinks_[id];
+}
+
+/// @brief Return the current selection style.
+/// @see SetSelectionStyle
+const Screen::SelectionStyle& Screen::GetSelectionStyle() const {
+  return selection_style_;
+}
+
+/// @brief Set the current selection style.
+/// @see GetSelectionStyle
+void Screen::SetSelectionStyle(SelectionStyle decorator) {
+  selection_style_ = std::move(decorator);
+}
+
+void Screen::Reserved1() {}
+void Screen::Reserved2() {}
+void Screen::Reserved3() {}
+void Screen::Reserved4() {}
+void Screen::Reserved5() {}
+void Screen::Reserved6() {}
+void Screen::Reserved7() {}
+void Screen::Reserved8() {}
+
+}  // namespace ftxui

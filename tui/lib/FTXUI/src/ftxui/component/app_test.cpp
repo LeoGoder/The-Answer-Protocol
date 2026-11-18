@@ -1,0 +1,614 @@
+// Copyright 2021 Arthur Sonzogni. All rights reserved.
+// Use of this source code is governed by the MIT license that can be found in
+// the LICENSE file.
+#include <gtest/gtest.h>  // for Test, TestInfo (ptr only), TEST, EXPECT_EQ, Message, TestPartResult
+#include <chrono>  // for steady_clock, seconds
+#include <csignal>  // for raise, SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM
+#include <ftxui/component/event.hpp>  // for Event, Event::Custom
+#include <thread>                     // for thread
+#include <tuple>                      // for _Swallow_assign, ignore
+
+#include "ftxui/component/app.hpp"
+#include "ftxui/component/component.hpp"  // for Renderer
+#include "ftxui/component/loop.hpp"
+#include "ftxui/dom/elements.hpp"  // for text, Element
+
+#if defined(__unix__)
+#include <fcntl.h>
+#include <unistd.h>
+#include <array>
+#include <cstdio>
+#include <functional>  // for function
+#include <iostream>    // for cout, flush
+#include <string>
+#include <vector>  // for vector
+#endif
+
+namespace ftxui {
+
+namespace {
+#if defined(__unix__)
+
+// Capture the standard output (stdout) to a string.
+class StdCapture {
+ public:
+  explicit StdCapture(std::string* captured) : captured_(captured) {
+    if (pipe(pipefd_) != 0) {
+      return;
+    }
+    old_stdout_ = dup(fileno(stdout));
+    fflush(stdout);
+    dup2(pipefd_[1], fileno(stdout));
+    close(pipefd_[1]);  // Close the write end in the parent
+  }
+
+  ~StdCapture() {
+    fflush(stdout);
+    dup2(old_stdout_, fileno(stdout));
+    close(old_stdout_);
+
+    char buffer[1024];
+    ssize_t count;
+    while ((count = read(pipefd_[0], buffer, sizeof(buffer))) > 0) {
+      captured_->append(buffer, count);
+    }
+
+    close(pipefd_[0]);
+  }
+
+  StdCapture(const StdCapture&) = delete;
+  StdCapture& operator=(const StdCapture&) = delete;
+
+ private:
+  int pipefd_[2]{-1, -1};
+  int old_stdout_{-1};
+  std::string* const captured_;
+};
+
+#endif
+
+static bool g_test_signal_called = false;
+void TestSignalHandler(int) {
+  g_test_signal_called = true;
+  if (App::Active()) {
+    App::Active()->Exit();
+  }
+}
+
+bool TestSignal(int signal) {
+  g_test_signal_called = false;
+  auto old_handler = std::signal(signal, TestSignalHandler);
+
+  int called = 0;
+  // The tree of components. This defines how to navigate using the keyboard.
+  auto component = Renderer([&] {
+    called++;
+    std::ignore = std::raise(signal);
+    called++;
+    return text("");
+  });
+
+  auto screen = App::FitComponent();
+  screen.Loop(component);
+
+  std::signal(signal, old_handler);
+
+  EXPECT_TRUE(g_test_signal_called);
+  EXPECT_GE(called, 2);
+  return true;
+}
+}  // namespace
+
+TEST(App, Signal_SIGTERM) {
+  TestSignal(SIGTERM);
+}
+TEST(App, Signal_SIGSEGV) {
+  TestSignal(SIGSEGV);
+}
+TEST(App, Signal_SIGINT) {
+  TestSignal(SIGINT);
+}
+TEST(App, Signal_SIGILL) {
+  TestSignal(SIGILL);
+}
+TEST(App, Signal_SIGABRT) {
+  TestSignal(SIGABRT);
+}
+TEST(App, Signal_SIGFPE) {
+  TestSignal(SIGFPE);
+}
+#if !defined(_WIN32)
+TEST(App, Signal_SIGBUS) {
+  TestSignal(SIGBUS);
+}
+TEST(App, Signal_SIGSYS) {
+  TestSignal(SIGSYS);
+}
+TEST(App, Signal_SIGQUIT) {
+  TestSignal(SIGQUIT);
+}
+TEST(App, Signal_SIGHUP) {
+  TestSignal(SIGHUP);
+}
+#endif
+
+// Regression test for:
+// https://github.com/ArthurSonzogni/FTXUI/issues/402
+TEST(App, PostEventToNonActive) {
+  auto screen = App::FitComponent();
+  screen.Post(Event::Custom);
+}
+
+// Regression test for:
+// https://github.com/ArthurSonzogni/FTXUI/issues/402
+TEST(App, PostTaskToNonActive) {
+  auto screen = App::FitComponent();
+  screen.Post([] {});
+}
+
+TEST(App, CtrlC) {
+  auto old_handler = std::signal(SIGINT, [](int) {});
+  auto old_abrt_handler = std::signal(SIGABRT, [](int) {});
+
+  auto screen = App::FitComponent();
+  bool called = false;
+  auto component = Renderer([&] {
+    if (!called) {
+      called = true;
+      screen.PostEvent(Event::CtrlC);
+    }
+    return text("");
+  });
+  screen.Loop(component);
+
+  std::signal(SIGINT, old_handler);
+  std::signal(SIGABRT, old_abrt_handler);
+}
+
+TEST(App, CtrlC_Forced) {
+  auto old_handler = std::signal(SIGINT, [](int) {});
+  auto old_abrt_handler = std::signal(SIGABRT, [](int) {});
+
+  auto screen = App::FitComponent();
+  screen.ForceHandleCtrlC(true);
+  auto component = Renderer([&] {
+    screen.PostEvent(Event::CtrlC);
+    return text("");
+  });
+
+  int ctrl_c_count = 0;
+  component |= CatchEvent([&](Event event) {
+    if (event != Event::CtrlC) {
+      return false;
+    }
+
+    ++ctrl_c_count;
+
+    if (ctrl_c_count == 100) {
+      return false;
+    }
+
+    return true;
+  });
+  screen.Loop(component);
+
+  ASSERT_LE(ctrl_c_count, 50);
+
+  std::signal(SIGINT, old_handler);
+  std::signal(SIGABRT, old_abrt_handler);
+}
+
+TEST(App, CtrlC_NotForced) {
+  auto old_handler = std::signal(SIGINT, [](int) {});
+  auto old_abrt_handler = std::signal(SIGABRT, [](int) {});
+
+  auto screen = App::FitComponent();
+  screen.ForceHandleCtrlC(false);
+  auto component = Renderer([&] {
+    screen.PostEvent(Event::CtrlC);
+    return text("");
+  });
+
+  int ctrl_c_count = 0;
+  component |= CatchEvent([&](Event event) {
+    if (event != Event::CtrlC) {
+      return false;
+    }
+
+    ++ctrl_c_count;
+
+    if (ctrl_c_count == 100) {
+      return false;
+    }
+
+    return true;
+  });
+  screen.Loop(component);
+
+  ASSERT_GE(ctrl_c_count, 50);
+
+  std::signal(SIGINT, old_handler);
+  std::signal(SIGABRT, old_abrt_handler);
+}
+
+// Regression test for:
+// https://github.com/ArthurSonzogni/FTXUI/pull/1064/files
+TEST(App, FixedSizeInitialFrame) {
+#if defined(__unix__)
+  std::string output;
+  {
+    auto capture = StdCapture(&output);
+
+    auto screen = App::FixedSize(2, 2);
+    auto component = Renderer([&] { return text("AB"); });
+
+    Loop loop(&screen, component);
+    loop.RunOnce();
+  }
+  using namespace std::string_literals;
+
+  std::string expected;
+  // Install the App.
+  expected += "\0"s;           // Flush stdout.
+  expected += "\x1B[?7l"s;     // Disable line wrapping.
+  expected += "\x1B[?1000h"s;  // Enable mouse tracking.
+  expected += "\x1B[?1003h"s;  // Enable mouse motion tracking.
+  expected += "\x1B[?1015h"s;  // Enable mouse wheel tracking.
+  expected += "\x1B[?1006h"s;  // Enable SGR mouse tracking.
+  expected += "\0"s;           // Flush stdout.
+
+  // Begin the synchronized update.
+  expected += "\x1B[?2026h"s;
+
+  // Reset the screen.
+  expected += "\x1B[?25l"s;  // Hide cursor.
+
+  // Print the document.
+  expected += "AB\r\n"s;  // Print "AB" and move to the next line.
+  expected += "  "s;      // Print two spaces to fill the line.
+
+  // Set cursor position.
+  expected += "\x1B[1D"s;  // Move cursor left one character.
+
+  // End the synchronized update.
+  expected += "\x1B[?2026l"s;
+
+  // Flush
+  expected += "\0"s;  // Flush stdout.
+
+  // Uninstall the App.
+  expected += "\x1B[1C"s;      // Move cursor right one character.
+  expected += "\x1B[?25h"s;    // Show cursor.
+  expected += "\x1B[?1006l"s;  // Disable SGR mouse tracking.
+  expected += "\x1B[?1015l"s;  // Disable mouse wheel tracking.
+  expected += "\x1B[?1003l"s;  // Disable mouse motion tracking.
+  expected += "\x1B[?1000l"s;  // Disable mouse tracking.
+  expected += "\x1B[?7h"s;     // Enable line wrapping.
+  expected += "\0"s;           // Flush stdout.
+
+  // Skip one line to avoid the prompt to be printed over the last drawing.
+  expected += "\r\n"s;
+  ASSERT_EQ(expected, output);
+#endif
+}
+
+TEST(App, PrintAbove) {
+#if defined(__unix__)
+  std::string output;
+  {
+    auto capture = StdCapture(&output);
+
+    auto screen = App::FixedSize(2, 1);
+    auto component = Renderer([&] { return text("AB"); });
+
+    Loop loop(&screen, component);
+    loop.RunOnce();
+    screen.PrintAbove(text("XY"));
+    loop.RunOnce();
+    screen.PostEvent(Event::Custom);
+    loop.RunOnce();
+  }
+
+  // "XY" is printed once, and followed by the frames drawn below it.
+  const size_t xy = output.find("XY");
+  ASSERT_NE(xy, std::string::npos);
+  EXPECT_EQ(output.find("XY", xy + 1), std::string::npos);
+  EXPECT_NE(output.find("AB", xy), std::string::npos);
+#endif
+}
+
+#if defined(__unix__)
+namespace {
+// Draw a frame for each step, and return the output of each.
+std::vector<std::string> DrawFrames(App& screen,
+                                    Component component,
+                                    std::vector<std::function<void()>> steps) {
+  const std::string separator = "<FRAME>";
+  std::string output;
+  {
+    auto capture = StdCapture(&output);
+    Loop loop(&screen, component);
+    for (auto& step : steps) {
+      std::cout << separator << std::flush;
+      step();
+      screen.PostEvent(Event::Custom);
+      loop.RunOnce();
+    }
+    std::cout << separator << std::flush;
+  }
+
+  std::vector<std::string> frames;
+  size_t begin = output.find(separator) + separator.size();
+  size_t end = 0;
+  while ((end = output.find(separator, begin)) != std::string::npos) {
+    frames.push_back(output.substr(begin, end - begin));
+    begin = end + separator.size();
+  }
+  return frames;
+}
+
+Component Lines(int* counter) {
+  return Renderer([counter] {
+    return vbox({
+        text("Header"),
+        text("Counter " + std::to_string(*counter)),
+        text("Footer"),
+    });
+  });
+}
+}  // namespace
+#endif
+
+// Only the cells that changed are printed. See #1304.
+TEST(App, UpdateInPlace) {
+#if defined(__unix__)
+  int counter = 0;
+  auto screen = App::FixedSize(12, 3);
+  auto frames = DrawFrames(screen, Lines(&counter),
+                           {
+                               [] {},
+                               [&] { counter = 1; },
+                               [] {},
+                           });
+  ASSERT_EQ(frames.size(), 3u);
+  EXPECT_NE(frames[0].find("Header"), std::string::npos);
+  EXPECT_NE(frames[0].find("Footer"), std::string::npos);
+
+  // Only the counter changed.
+  EXPECT_EQ(frames[1].find("Header"), std::string::npos);
+  EXPECT_EQ(frames[1].find("Footer"), std::string::npos);
+  EXPECT_EQ(frames[1].find("Counter"), std::string::npos);
+  EXPECT_NE(frames[1].find('1'), std::string::npos);
+
+  // Nothing changed.
+  EXPECT_EQ(frames[2].find("Header"), std::string::npos);
+  EXPECT_EQ(frames[2].find("Footer"), std::string::npos);
+  EXPECT_EQ(frames[2].find("Counter"), std::string::npos);
+#endif
+}
+
+// A resize redraws everything.
+TEST(App, UpdateInPlaceResize) {
+#if defined(__unix__)
+  int counter = 0;
+  auto screen = App::FitComponent();
+  auto frames = DrawFrames(screen, Lines(&counter),
+                           {
+                               [] {},
+                               [&] { counter = 10; },
+                               [&] { counter = 11; },
+                           });
+  ASSERT_EQ(frames.size(), 3u);
+  EXPECT_NE(frames[1].find("Header"), std::string::npos);
+  EXPECT_NE(frames[1].find("Footer"), std::string::npos);
+
+  // The next frame, with the same size, is updated in place.
+  EXPECT_EQ(frames[2].find("Header"), std::string::npos);
+  EXPECT_EQ(frames[2].find("Footer"), std::string::npos);
+  EXPECT_NE(frames[2].find('1'), std::string::npos);
+#endif
+}
+
+// Printing above the frame redraws everything.
+TEST(App, UpdateInPlacePrintAbove) {
+#if defined(__unix__)
+  int counter = 0;
+  auto screen = App::FixedSize(12, 3);
+  auto frames = DrawFrames(screen, Lines(&counter),
+                           {
+                               [] {},
+                               [&] { screen.PrintAbove(text("Above")); },
+                           });
+  ASSERT_EQ(frames.size(), 2u);
+  EXPECT_NE(frames[1].find("Above"), std::string::npos);
+  EXPECT_NE(frames[1].find("Header"), std::string::npos);
+  EXPECT_NE(frames[1].find("Footer"), std::string::npos);
+#endif
+}
+
+// Restoring the terminal for a while redraws everything.
+TEST(App, UpdateInPlaceWithRestoredIO) {
+#if defined(__unix__)
+  int counter = 0;
+  auto screen = App::FixedSize(12, 3);
+  auto frames = DrawFrames(screen, Lines(&counter),
+                           {
+                               [] {},
+                               [&] { screen.WithRestoredIO([] {})(); },
+                           });
+  ASSERT_EQ(frames.size(), 2u);
+  EXPECT_NE(frames[1].find("Header"), std::string::npos);
+  EXPECT_NE(frames[1].find("Footer"), std::string::npos);
+#endif
+}
+
+// A second Loop draws below the last frame of the first one. See #809.
+TEST(App, LoopTwice) {
+#if defined(__unix__)
+  auto screen = App::FixedSize(2, 2);
+  auto component = Renderer([] { return text("AB"); });
+  std::string output;
+  {
+    auto capture = StdCapture(&output);
+    {
+      Loop loop(&screen, component);
+      loop.RunOnce();
+    }
+    std::cout << "<SECOND>" << std::flush;
+    {
+      Loop loop(&screen, component);
+      loop.RunOnce();
+    }
+  }
+  const std::string second = output.substr(output.find("<SECOND>"));
+  EXPECT_NE(second.find("AB"), std::string::npos);
+  // The cursor doesn't move up, over the first frame.
+  EXPECT_EQ(second.find("\x1B[1A"), std::string::npos);
+#endif
+}
+
+// An app suspended before drawing anything has nothing to clear. See #809.
+TEST(App, NestedBeforeFirstFrame) {
+#if defined(__unix__)
+  auto outer = App::FixedSize(2, 2);
+  auto inner = App::FixedSize(2, 2);
+  auto component = Renderer([] { return text("AB"); });
+  std::string output;
+  {
+    auto capture = StdCapture(&output);
+    Loop outer_loop(&outer, component);
+    {
+      Loop inner_loop(&inner, component);
+      inner_loop.RunOnce();
+    }
+    outer_loop.RunOnce();
+  }
+  // Nothing is cleared above the inner frame.
+  const size_t inner_frame = output.find("AB");
+  ASSERT_NE(inner_frame, std::string::npos);
+  EXPECT_EQ(output.substr(0, inner_frame).find("\x1B[1A"), std::string::npos);
+  // The outer frame is drawn after the inner one, with its size.
+  EXPECT_NE(output.find("AB", inner_frame + 1), std::string::npos);
+#endif
+}
+
+// A nested app exiting before drawing anything has nothing to clear.
+TEST(App, NestedExitBeforeFirstFrame) {
+#if defined(__unix__)
+  auto outer = App::FixedSize(2, 2);
+  auto inner = App::FixedSize(2, 2);
+  auto component = Renderer([] { return text("AB"); });
+  std::string output;
+  {
+    auto capture = StdCapture(&output);
+    Loop outer_loop(&outer, component);
+    outer_loop.RunOnce();
+    {
+      Loop inner_loop(&inner, component);
+    }
+    outer_loop.RunOnce();
+  }
+  // Only the outer frame is cleared, moving up one line.
+  size_t move_up = 0;
+  for (size_t i = output.find("\x1B[1A"); i != std::string::npos;
+       i = output.find("\x1B[1A", i + 1)) {
+    move_up++;
+  }
+  EXPECT_EQ(move_up, 1u);
+#endif
+}
+
+// Every frame is wrapped in a synchronized update, so that the terminal
+// presents it atomically.
+TEST(App, SynchronizedOutput) {
+#if defined(__unix__)
+  int counter = 0;
+  auto screen = App::FixedSize(12, 3);
+  auto frames = DrawFrames(screen, Lines(&counter),
+                           {
+                               [] {},
+                               [&] { counter = 1; },
+                               [&] { screen.PrintAbove(text("Above")); },
+                           });
+  ASSERT_EQ(frames.size(), 3u);
+  const std::string begin = "\x1B[?2026h";
+  const std::string end = "\x1B[?2026l";
+  const std::string contents[] = {"Header", "1", "Above"};
+  for (size_t i = 0; i < frames.size(); ++i) {
+    const auto& frame = frames[i];
+    const size_t begin_pos = frame.find(begin);
+    const size_t end_pos = frame.find(end);
+    const size_t content_pos = frame.find(contents[i]);
+    ASSERT_NE(begin_pos, std::string::npos) << "frame " << i;
+    ASSERT_NE(end_pos, std::string::npos) << "frame " << i;
+    ASSERT_NE(content_pos, std::string::npos) << "frame " << i;
+    EXPECT_LT(begin_pos, content_pos) << "frame " << i;
+    EXPECT_LT(content_pos, end_pos) << "frame " << i;
+    EXPECT_EQ(frame.find(begin, begin_pos + 1), std::string::npos);
+    EXPECT_EQ(frame.find(end, end_pos + 1), std::string::npos);
+  }
+#endif
+}
+
+TEST(App, MoveConstructor) {
+  auto screen = App::FixedSize(10, 10);
+  App screen2 = std::move(screen);
+
+  int called = 0;
+  auto component = Renderer([&] {
+    called++;
+    return text("Hello");
+  });
+
+  Loop loop(&screen2, component);
+  loop.RunOnce();
+  EXPECT_EQ(called, 1);
+}
+
+// PostEvent is documented as thread safe. Posting from another thread while
+// the main loop runs must deliver every event, without data races.
+TEST(App, PostEventFromAnotherThread) {
+  int received = 0;
+  auto component =
+      CatchEvent(Renderer([] { return text(""); }), [&](const Event& event) {
+        if (event == Event::Custom) {
+          received++;
+        }
+        return true;
+      });
+  auto screen = App::FixedSize(10, 1);
+  Loop loop(&screen, component);
+
+  constexpr int kCount = 10000;
+  std::thread poster([&] {
+    for (int i = 0; i < kCount; ++i) {
+      screen.PostEvent(Event::Custom);
+    }
+  });
+
+  const auto deadline =
+      std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  while (received < kCount && std::chrono::steady_clock::now() < deadline) {
+    loop.RunOnce();
+  }
+  poster.join();
+  EXPECT_EQ(received, kCount);
+}
+
+TEST(App, MoveAssignment) {
+  auto screen = App::FixedSize(10, 10);
+  auto screen2 = App::FixedSize(5, 5);
+  screen2 = std::move(screen);
+
+  int called = 0;
+  auto component = Renderer([&] {
+    called++;
+    return text("Hello");
+  });
+
+  Loop loop(&screen2, component);
+  loop.RunOnce();
+  EXPECT_EQ(called, 1);
+}
+
+}  // namespace ftxui
