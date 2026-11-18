@@ -40,7 +40,8 @@ type statusResponse struct {
 
 // ------------------------------------------------------------ finding NPCs
 
-// isAlive also respawns a defeated enemy once RespawnAt has passed.
+// isAlive also respawns a defeated enemy once RespawnAt has passed, and announces it
+// here: whoever comes first (a LOOK or Tick), the room gets EVT ROOM NPC SPAWN once.
 func (s *State) isAlive(npc *npcState) bool {
 	if !npc.Def.Hostile || npc.HP > 0 {
 		return true
@@ -52,6 +53,7 @@ func (s *State) isAlive(npc *npcState) bool {
 
 	npc.HP = npc.Def.HP
 	logger.Info("npc_respawned", logger.Fields{"npc": npc.Def.ID, "room": npc.Room})
+	s.queue(s.toRoom(npc.Room, "EVT ROOM NPC SPAWN "+npc.Def.ID, ""))
 
 	return true
 }

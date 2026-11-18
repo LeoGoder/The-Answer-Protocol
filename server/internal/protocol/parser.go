@@ -10,6 +10,7 @@ import (
 type Command struct {
 	Name string
 	Args []string
+	Raw  string // the line as received, without "\r\n" (chat keeps its own spacing)
 }
 
 const MaxLineLength = 1024
@@ -32,8 +33,8 @@ func CheckLine(line string) error {
 }
 
 func Parse(line string) Command {
-	line = strings.TrimSpace(line)
-	parts := strings.Fields(line)
+	raw := strings.TrimRight(line, "\r\n")
+	parts := strings.Fields(raw)
 
 	if len(parts) == 0 {
 		return Command{}
@@ -42,5 +43,6 @@ func Parse(line string) Command {
 	return Command{
 		Name: strings.ToUpper(parts[0]),
 		Args: parts[1:],
+		Raw:  raw,
 	}
 }

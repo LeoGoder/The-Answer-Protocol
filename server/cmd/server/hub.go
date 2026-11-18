@@ -62,6 +62,11 @@ func send(conn net.Conn, username string, message string) bool {
 		logger.Error("send_failed", logger.Fields{
 			"ip": conn.RemoteAddr().String(), "player": username, "error": err.Error(),
 		})
+
+		// A client that does not read (or a dead one) is cut off: it would delay every
+		// later message by WriteTimeout, and a timed-out write may have sent half a line.
+		// Its own goroutine then sees the closed connection and cleans up.
+		conn.Close()
 		return false
 	}
 

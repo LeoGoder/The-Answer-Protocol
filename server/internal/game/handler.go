@@ -61,7 +61,7 @@ func (s *State) handle(username string, cmd protocol.Command) Result {
 	case "WHO":
 		return reply(fmt.Sprintf("OK players=%d", len(s.players)))
 	case "CHAT":
-		return s.chat(player, cmd.Args)
+		return s.chat(player, cmd)
 	case "GROUP":
 		return s.group(player, cmd.Args)
 	case "TAKE":
@@ -224,9 +224,10 @@ func (s *State) changeRoom(player *Player, target string) []Event {
 	}
 }
 
-func (s *State) chat(player *Player, args []string) Result {
-	scope := strings.ToUpper(args[0])
-	message := strings.Join(args[1:], " ")
+// The message is sent as typed: CHAT GLOBAL "a  b" stays "a  b".
+func (s *State) chat(player *Player, cmd protocol.Command) Result {
+	scope := strings.ToUpper(cmd.Args[0])
+	message := cmd.Raw[strings.Index(cmd.Raw, cmd.Args[0])+len(cmd.Args[0])+1:]
 
 	logger.Info("chat", logger.Fields{
 		"player": player.Username, "scope": scope, "message": message,

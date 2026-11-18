@@ -53,7 +53,9 @@ func (s *State) quest(player *Player, typed string) Result {
 			"player": player.Username, "quest": id, "npc": npc.Def.ID,
 		})
 
-		return reply(s.questReply(player, quest, progress, "active"))
+		// A new quest is "available", as in RFC 5.4.7; it is accepted at once, so the
+		// next QUEST / QUESTS show it "active".
+		return reply(s.questReply(player, quest, progress, "available"))
 	}
 
 	return reply(protocol.ErrNoQuestAvailable)
