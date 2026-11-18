@@ -568,8 +568,8 @@ UNKNOWN_COMMAND`), a broken `world.json` (the server refuses to start and says w
 ### AI usage
 
 AI was used as an assistant, never as a replacement for understanding: everything it
-produced was read, questioned, tested by hand and reviewed by another member before being
-merged, and each of us can explain their own part.
+produced was read, questioned and tested by hand, and each of us can explain their own
+part.
 
 - **Server (zqian)**: explaining Go concepts (goroutines, mutexes, `atomic`, `bufio`);
   reviewing the code and the pull requests against the RFC and the subject; finding edge
@@ -577,5 +577,9 @@ merged, and each of us can explain their own part.
   some small changes once the design was decided; fixing environment problems (Go 1.18
   on the school machines, line endings with Git on WSL); the Makefile; preparing test
   scenarios; drafting this README.
-- **GUI client (lgoderne)**: TODO.
-- **CLI client (opernod)**: TODO.
+- **GUI client (lgoderne)**: reviewing the client for crashes and protocol issues, helping
+  write the fixes, drafting the GUI README; details in
+  [`gui/README.md`](gui/README.md#ai-usage).
+- **CLI client (opernod)**: reviewing the client against the RFC and finding edge cases
+  (line framing, connection timeouts, UTF-8 input, reconnection after a lost connection);
+  helping write the fixes; drafting the CLI README.
