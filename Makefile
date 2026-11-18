@@ -1,5 +1,5 @@
 SERVER_DIR = server
-GUI_DIR = new_gui
+GUI_DIR = gui
 TUI_DIR = tui
 MAKEFLAGS += --no-print-directory
 
