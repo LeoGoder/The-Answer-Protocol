@@ -8,9 +8,15 @@
 #include <utility>
 #include <vector>
 
+#include "../includes/map_resolver.hpp"
+
+namespace {
+constexpr size_t kMaxHistoryMessages = 500;
+}  // namespace
+
 // Constructor initializing default map path and active interface flag
 AppState::AppState()
-    : current_map_image_("assets/maps/default.png"),
+    : current_map_image_(resolveMapPath("", "")),
       pending_command_(CMD_NONE),
       interface_active_(true) {}
 
@@ -20,6 +26,11 @@ void AppState::addMessage(const std::string& pseudo,
                           bool is_local) {
     std::lock_guard<std::mutex> lock(messages_mutex_);
     messages_.push_back({pseudo, content, "", is_local});
+    if (messages_.size() > kMaxHistoryMessages) {
+        size_t excess = messages_.size() - kMaxHistoryMessages;
+        messages_.erase(messages_.begin(),
+                        messages_.begin() + excess);
+    }
 }
 
 // Thread-safe copy of terminal messages
@@ -41,6 +52,11 @@ void AppState::addChatMessage(const std::string& pseudo,
                               bool is_local) {
     std::lock_guard<std::mutex> lock(chat_mutex_);
     chat_messages_.push_back({pseudo, content, channel, is_local});
+    if (chat_messages_.size() > kMaxHistoryMessages) {
+        size_t excess = chat_messages_.size() - kMaxHistoryMessages;
+        chat_messages_.erase(chat_messages_.begin(),
+                             chat_messages_.begin() + excess);
+    }
 }
 
 // Thread-safe copy of all chat messages

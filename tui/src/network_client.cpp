@@ -9,12 +9,16 @@
 #include "../includes/network_client.hpp"
 
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <exception>
 #include <memory>
 #include <string>
 #include <utility>
@@ -25,6 +29,25 @@
 #include "../includes/map_resolver.hpp"
 #include "../includes/protocol.hpp"
 #include "../includes/ui_helpers.hpp"
+
+namespace {
+bool isOkResponse(const std::string& line) {
+    if (line == "OK") return true;
+    if (line.size() >= 3 && line[0] == 'O' && line[1] == 'K' &&
+        (line[2] == ' ' || line[2] == '[')) {
+        return true;
+    }
+    return false;
+}
+
+bool isErrResponse(const std::string& line) {
+    if (line == "ERR") return true;
+    if (line.size() >= 4 && line.rfind("ERR ", 0) == 0) return true;
+    return false;
+}
+}  // namespace
+
+std::atomic<int> NetworkClient::active_socket_fd_{-1};
 
 /**
  * @brief Default constructor initializing socket file descriptor and atomic flags.
@@ -42,15 +65,17 @@ NetworkClient::~NetworkClient() {
 /**
  * @brief Connects to the remote TAP server and performs the initial handshake.
  *
- * Resolves IP, connects the TCP socket, and sends "CONNECT <pseudo>\n".
- * Expects the server greeting and confirmation response ("OK ...").
+ * Resolves IP, connects TCP socket within timeout, and sends "CONNECT <pseudo>\n".
+ * Expects the server greeting and confirmation response within timeout_seconds.
  *
  * @param config Connection configuration including host IP, port, and pseudo.
  * @param error_message Output string populated if connection fails.
+ * @param timeout_seconds Connection timeout in seconds.
  * @return True if connected and authenticated successfully, false otherwise.
  */
 bool NetworkClient::connectToServer(const ConnectionConfig& config,
-                                    std::string& error_message) {
+                                    std::string& error_message,
+                                    int timeout_seconds) {
     disconnect();
     connection_lost_.store(false);
     user_quit_.store(false);
@@ -82,58 +107,178 @@ bool NetworkClient::connectToServer(const ConnectionConfig& config,
         return false;
     }
 
-    if (connect(socket_fd_, reinterpret_cast<sockaddr*>(&serv_addr),
-                sizeof(serv_addr)) < 0) {
-        error_message = "Failed to connect to server.";
+    // Monotonic deadline tracking total connection + handshake timeout
+    using clock = std::chrono::steady_clock;
+    auto deadline = clock::now() + std::chrono::seconds(timeout_seconds);
+    auto get_remaining_ms = [&deadline]() -> int {
+        auto now = clock::now();
+        if (now >= deadline) return 0;
+        return static_cast<int>(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                deadline - now).count());
+    };
+
+    // Put socket in non-blocking mode for connect timeout
+    int orig_flags = fcntl(socket_fd_, F_GETFL, 0);
+    if (orig_flags < 0 ||
+        fcntl(socket_fd_, F_SETFL, orig_flags | O_NONBLOCK) < 0) {
+        error_message = "Failed to set socket flags.";
         close(socket_fd_);
         socket_fd_ = -1;
         return false;
     }
 
-    // Send initial CONNECT handshake
-    std::string cmd_connect = "CONNECT " + config.pseudo + "\n";
-    send(socket_fd_, cmd_connect.c_str(), cmd_connect.size(), 0);
+    int conn_res = connect(socket_fd_,
+                           reinterpret_cast<sockaddr*>(&serv_addr),
+                           sizeof(serv_addr));
+    if (conn_res < 0) {
+        if (errno != EINPROGRESS) {
+            error_message = "Failed to connect to server.";
+            close(socket_fd_);
+            socket_fd_ = -1;
+            return false;
+        }
 
-    // Read initial greeting and connection acknowledgment
+        int rem_ms = get_remaining_ms();
+        if (rem_ms <= 0) {
+            error_message = "Server is not responding.";
+            close(socket_fd_);
+            socket_fd_ = -1;
+            return false;
+        }
+
+        struct pollfd pfd;
+        pfd.fd = socket_fd_;
+        pfd.events = POLLOUT;
+        pfd.revents = 0;
+
+        int poll_res = poll(&pfd, 1, rem_ms);
+        if (poll_res == 0) {
+            error_message = "Server is not responding.";
+            close(socket_fd_);
+            socket_fd_ = -1;
+            return false;
+        }
+        if (poll_res < 0) {
+            error_message = "Connection error.";
+            close(socket_fd_);
+            socket_fd_ = -1;
+            return false;
+        }
+
+        int so_error = 0;
+        socklen_t optlen = sizeof(so_error);
+        if (getsockopt(socket_fd_, SOL_SOCKET, SO_ERROR,
+                       &so_error, &optlen) < 0 || so_error != 0) {
+            if (so_error == ETIMEDOUT) {
+                error_message = "Server is not responding.";
+            } else {
+                error_message = "Failed to connect to server.";
+            }
+            close(socket_fd_);
+            socket_fd_ = -1;
+            return false;
+        }
+    }
+
     std::string stream_buffer;
     char buf[1024];
-    int lines_read = 0;
-    bool connection_ok = false;
 
-    while (lines_read < 2) {
-        ssize_t n = recv(socket_fd_, buf, sizeof(buf), 0);
-        if (n <= 0) {
-            error_message = "Server closed the connection.";
-            break;
-        }
-        stream_buffer.append(buf, static_cast<size_t>(n));
-
-        size_t pos;
-        while ((pos = stream_buffer.find('\n')) != std::string::npos &&
-               lines_read < 2) {
-            std::string line = stream_buffer.substr(0, pos);
-            stream_buffer.erase(0, pos + 1);
-            if (!line.empty() && line.back() == '\r') line.pop_back();
-
-            lines_read++;
-            if (lines_read == 1) {
-                // First line is server greeting banner
-                continue;
+    auto read_line = [&](std::string& out_line) -> bool {
+        while (true) {
+            size_t pos = stream_buffer.find('\n');
+            if (pos != std::string::npos) {
+                out_line = stream_buffer.substr(0, pos);
+                stream_buffer.erase(0, pos + 1);
+                if (!out_line.empty() && out_line.back() == '\r') {
+                    out_line.pop_back();
+                }
+                return true;
             }
-            if (line.substr(0, 2) == "OK") {
-                connection_ok = true;
-            } else {
-                error_message = line;
+
+            int rem_ms = get_remaining_ms();
+            if (rem_ms <= 0) {
+                error_message = "Server is not responding.";
+                return false;
             }
+
+            struct pollfd pfd;
+            pfd.fd = socket_fd_;
+            pfd.events = POLLIN;
+            pfd.revents = 0;
+
+            int poll_res = poll(&pfd, 1, rem_ms);
+            if (poll_res == 0) {
+                error_message = "Server is not responding.";
+                return false;
+            }
+            if (poll_res < 0) {
+                if (errno == EINTR) continue;
+                error_message = "Connection error.";
+                return false;
+            }
+
+            ssize_t n = recv(socket_fd_, buf, sizeof(buf), 0);
+            if (n < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+                error_message = "Server connection read error.";
+                return false;
+            }
+            if (n == 0) {
+                error_message = "Server closed the connection.";
+                return false;
+            }
+            stream_buffer.append(buf, static_cast<size_t>(n));
         }
+    };
+
+    // 1. Read initial server greeting banner
+    std::string greeting;
+    if (!read_line(greeting)) {
+        close(socket_fd_);
+        socket_fd_ = -1;
+        return false;
     }
-
-    if (!connection_ok) {
+    if (!isOkResponse(greeting)) {
+        error_message = greeting;
         close(socket_fd_);
         socket_fd_ = -1;
         return false;
     }
 
+    // 2. Send initial CONNECT handshake with complete write loop
+    std::string cmd_connect = "CONNECT " + config.pseudo + "\n";
+    size_t total_sent = 0;
+    while (total_sent < cmd_connect.size()) {
+        ssize_t n = send(socket_fd_, cmd_connect.c_str() + total_sent,
+                         cmd_connect.size() - total_sent, 0);
+        if (n <= 0) {
+            error_message = "Failed to send handshake.";
+            close(socket_fd_);
+            socket_fd_ = -1;
+            return false;
+        }
+        total_sent += static_cast<size_t>(n);
+    }
+
+    // 3. Read handshake acknowledgment response
+    std::string connect_ack;
+    if (!read_line(connect_ack)) {
+        close(socket_fd_);
+        socket_fd_ = -1;
+        return false;
+    }
+    if (!isOkResponse(connect_ack)) {
+        error_message = connect_ack;
+        close(socket_fd_);
+        socket_fd_ = -1;
+        return false;
+    }
+
+    // Restore original blocking mode for background listener thread
+    fcntl(socket_fd_, F_SETFL, orig_flags);
+
+    active_socket_fd_.store(socket_fd_);
     return true;
 }
 
@@ -141,6 +286,7 @@ bool NetworkClient::connectToServer(const ConnectionConfig& config,
  * @brief Disconnects the socket and terminates the background listener thread.
  */
 void NetworkClient::disconnect() {
+    active_socket_fd_.store(-1);
     if (socket_fd_ >= 0) {
         shutdown(socket_fd_, SHUT_RDWR);
     }
@@ -152,19 +298,19 @@ void NetworkClient::disconnect() {
 }
 
 /**
- * @brief Checks if the client has an open socket connection.
- * @return True if connected, false otherwise.
- */
-bool NetworkClient::isConnected() const {
-    return socket_fd_ >= 0;
-}
-
-/**
  * @brief Checks whether the connection was dropped unexpectedly by the remote host.
  * @return True if connection was lost, false otherwise.
  */
 bool NetworkClient::isConnectionLost() const {
     return connection_lost_.load();
+}
+
+/**
+ * @brief Checks whether the disconnection was initiated voluntarily by user.
+ * @return True if user requested quit.
+ */
+bool NetworkClient::isUserQuit() const {
+    return user_quit_.load();
 }
 
 /**
@@ -176,9 +322,29 @@ void NetworkClient::setUserQuit(bool val) {
 }
 
 /**
+ * @brief Handles termination signals by sending QUIT to the server if connected.
+ *
+ * Async-signal-safe implementation using write() and _exit().
+ *
+ * @param sig Signal number received.
+ */
+void NetworkClient::handleSignalShutdown(int sig) {
+    (void)sig;
+    int fd = active_socket_fd_.exchange(-1);
+    if (fd >= 0) {
+        const char quit_cmd[] = "QUIT\n";
+        (void)write(fd, quit_cmd, sizeof(quit_cmd) - 1);
+        shutdown(fd, SHUT_WR);
+        usleep(50000);
+        close(fd);
+    }
+    _exit(0);
+}
+
+/**
  * @brief Sends a line of text terminated with a newline across the socket.
  *
- * Thread-safe via internal mutex.
+ * Thread-safe via internal mutex, looping until all bytes are transmitted.
  *
  * @param line String command to send.
  * @return True on success, false if sending failed or socket closed.
@@ -187,7 +353,14 @@ bool NetworkClient::sendLine(const std::string& line) {
     std::lock_guard<std::mutex> lock(send_mutex_);
     if (socket_fd_ < 0) return false;
     std::string data = line + "\n";
-    return send(socket_fd_, data.c_str(), data.size(), 0) >= 0;
+    size_t total_sent = 0;
+    while (total_sent < data.size()) {
+        ssize_t n = send(socket_fd_, data.c_str() + total_sent,
+                         data.size() - total_sent, 0);
+        if (n <= 0) return false;
+        total_sent += static_cast<size_t>(n);
+    }
+    return true;
 }
 
 /**
@@ -231,7 +404,7 @@ void NetworkClient::updateRoomState(const RoomInfo& room, AppState& state) {
 // Handles responses to CMD_MOVE (room JSON or LOOK fallback)
 bool NetworkClient::handleMoveResponse(const std::string& line,
                                        AppState& state) {
-    if (!startsWith(line, "OK")) return false;
+    if (!isOkResponse(line)) return false;
     state.addMessage("Server", line, false);
     if (startsWith(line, "OK ") && line.find('{') != std::string::npos) {
         RoomInfo room;
@@ -251,7 +424,7 @@ bool NetworkClient::handleMoveResponse(const std::string& line,
 bool NetworkClient::handleInventoryResponse(const std::string& line, int cmd,
                                             AppState& state) {
     if (cmd == CMD_TAKE || cmd == CMD_DROP) {
-        if (!startsWith(line, "OK")) return false;
+        if (!isOkResponse(line)) return false;
         state.addMessage("Server", line, false);
         if (startsWith(line, "OK [")) {
             std::vector<std::string> inventory;
@@ -293,7 +466,7 @@ bool NetworkClient::handleInventoryResponse(const std::string& line, int cmd,
 // Handles item consumption responses and triggers automatic inventory update
 bool NetworkClient::handleUseResponse(const std::string& line,
                                       AppState& state) {
-    if (!startsWith(line, "OK")) return false;
+    if (!isOkResponse(line)) return false;
     UseInfo use_info;
     if (parseUseResponse(line, use_info)) {
         addLogLines(state, formatUseInfo(use_info));
@@ -308,7 +481,7 @@ bool NetworkClient::handleUseResponse(const std::string& line,
 // Handles attack replies, formats combat results, and triggers LOOK on victory
 bool NetworkClient::handleAttackResponse(const std::string& line,
                                          AppState& state) {
-    if (!startsWith(line, "OK")) return false;
+    if (!isOkResponse(line)) return false;
     CombatInfo combat_info;
     if (parseCombatResponse(line, combat_info)) {
         addLogLines(state, formatCombatInfo(combat_info));
@@ -407,7 +580,8 @@ bool NetworkClient::handleAsyncEvent(const std::string& line,
                                   : combat_info.attacker;
             std::string tgt = combat_info.target;
             if (!tgt.empty()) {
-                tgt[0] = static_cast<char>(std::toupper(tgt[0]));
+                tgt[0] = static_cast<char>(
+                    std::toupper(static_cast<unsigned char>(tgt[0])));
             }
             std::string msg = "[Combat] " + att + " attacked " + tgt + " (" +
                               std::to_string(combat_info.damage) + " dmg, " +
@@ -456,7 +630,7 @@ bool NetworkClient::handleAsyncEvent(const std::string& line,
 void NetworkClient::processIncomingLine(const std::string& line,
                                         AppState& state,
                                         ftxui::ScreenInteractive& screen) {
-    if (startsWith(line, "ERR")) {
+    if (isErrResponse(line)) {
         state.setPendingCommand(CMD_NONE);
         PendingChat pending;
         if (state.popPendingChat(pending)) {
@@ -467,7 +641,7 @@ void NetworkClient::processIncomingLine(const std::string& line,
     }
 
     // Graceful quit confirmation (RFC 5.1.4)
-    if (line == "OK bye" || startsWith(line, "OK bye")) {
+    if (line == "OK bye" || startsWith(line, "OK bye ")) {
         state.setPendingCommand(CMD_NONE);
         state.addMessage("Server", line, false);
         user_quit_.store(true);
@@ -504,21 +678,47 @@ void NetworkClient::listenerLoop(ftxui::ScreenInteractive& screen,
                                  AppState& state) {
     char buffer[1024];
     std::string stream_buffer;
+    size_t search_start = 0;
 
     while (true) {
         ssize_t n = recv(socket_fd_, buffer, sizeof(buffer), 0);
         if (n <= 0) break;
 
+        size_t old_size = stream_buffer.size();
         stream_buffer.append(buffer, static_cast<size_t>(n));
 
         size_t pos;
-        while ((pos = stream_buffer.find('\n')) != std::string::npos) {
+        while ((pos = stream_buffer.find('\n', search_start)) !=
+               std::string::npos) {
             std::string line = stream_buffer.substr(0, pos);
             stream_buffer.erase(0, pos + 1);
+            search_start = 0;
             if (!line.empty() && line.back() == '\r') line.pop_back();
 
-            processIncomingLine(line, state, screen);
+            try {
+                processIncomingLine(line, state, screen);
+            } catch (const std::exception& e) {
+                std::string err = "Error processing server message: ";
+                err += e.what();
+                state.addMessage("Error", err, false);
+            } catch (...) {
+                state.addMessage(
+                    "Error", "Unknown error processing server message.", false);
+            }
         }
+
+        if (stream_buffer.empty()) {
+            search_start = 0;
+        } else if (stream_buffer.size() > old_size) {
+            search_start = old_size;
+        }
+
+        // Bounded memory: cap un-delimited buffer at 4096 bytes
+        if (stream_buffer.size() > 4096) {
+            stream_buffer.clear();
+            search_start = 0;
+        }
+
         screen.PostEvent(ftxui::Event::Custom);
     }
 

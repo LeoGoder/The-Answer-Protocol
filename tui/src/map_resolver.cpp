@@ -5,7 +5,23 @@
 #include <cctype>
 #include <filesystem>  // NOLINT(build/c++17)
 #include <string>
+#include <system_error>
 #include <vector>
+
+// Resolves the asset directory from binary location or fallback to "."
+static std::string getAssetBaseDir() {
+    std::error_code ec;
+    std::filesystem::path exe_path =
+        std::filesystem::read_symlink("/proc/self/exe", ec);
+    if (!ec) {
+        std::filesystem::path candidate =
+            exe_path.parent_path() / "assets" / "maps";
+        if (std::filesystem::exists(candidate, ec) && !ec) {
+            return exe_path.parent_path().string();
+        }
+    }
+    return ".";
+}
 
 /*
  * Resolves room map image path using a 4-tier fallback cascade:
@@ -16,6 +32,9 @@
  */
 std::string resolveMapPath(const std::string& room_id,
                            const std::string& room_name) {
+    std::string base = getAssetBaseDir();
+    std::string prefix =
+        (base == ".") ? "assets/maps/" : (base + "/assets/maps/");
     std::vector<std::string> candidates;
 
     if (!room_id.empty()) {
@@ -34,20 +53,21 @@ std::string resolveMapPath(const std::string& room_id,
             if (c == ' ' || c == '-' || c == '.') {
                 c = '_';
             } else {
-                c = static_cast<char>(std::tolower(c));
+                c = static_cast<char>(
+                    std::tolower(static_cast<unsigned char>(c)));
             }
         }
 
         if (clean.rfind("room_", 0) == 0) {
-            candidates.push_back("assets/maps/" + clean + ".png");
+            candidates.push_back(prefix + clean + ".png");
         } else {
-            candidates.push_back("assets/maps/room_" + clean + ".png");
-            candidates.push_back("assets/maps/" + clean + ".png");
+            candidates.push_back(prefix + "room_" + clean + ".png");
+            candidates.push_back(prefix + clean + ".png");
         }
 
         // Legacy alias for hub starting room
         if (clean == "hub") {
-            candidates.push_back("assets/maps/room_start.png");
+            candidates.push_back(prefix + "room_start.png");
         }
 
         std::string id_clean = room_id;
@@ -55,11 +75,12 @@ std::string resolveMapPath(const std::string& room_id,
             if (c == '.' || c == ' ' || c == '-') {
                 c = '_';
             } else {
-                c = static_cast<char>(std::tolower(c));
+                c = static_cast<char>(
+                    std::tolower(static_cast<unsigned char>(c)));
             }
         }
         if (id_clean != clean) {
-            candidates.push_back("assets/maps/" + id_clean + ".png");
+            candidates.push_back(prefix + id_clean + ".png");
         }
     }
 
@@ -69,39 +90,44 @@ std::string resolveMapPath(const std::string& room_id,
             if (c == ' ' || c == '-' || c == '.') {
                 c = '_';
             } else {
-                c = static_cast<char>(std::tolower(c));
+                c = static_cast<char>(
+                    std::tolower(static_cast<unsigned char>(c)));
             }
         }
 
         const std::string suffix = "_room";
         if (clean_name.size() > suffix.size() &&
             clean_name.substr(clean_name.size() - suffix.size()) == suffix) {
-            std::string prefix =
+            std::string room_pfx =
                 clean_name.substr(0, clean_name.size() - suffix.size());
-            candidates.push_back("assets/maps/room_" + prefix + ".png");
+            candidates.push_back(prefix + "room_" + room_pfx + ".png");
         } else if (clean_name.rfind("room_", 0) == 0) {
-            candidates.push_back("assets/maps/" + clean_name + ".png");
+            candidates.push_back(prefix + clean_name + ".png");
         } else {
-            candidates.push_back("assets/maps/room_" + clean_name + ".png");
-            candidates.push_back("assets/maps/" + clean_name + ".png");
+            candidates.push_back(prefix + "room_" + clean_name + ".png");
+            candidates.push_back(prefix + clean_name + ".png");
         }
     }
 
     // Check if any candidate exists on disk
+    std::error_code ec;
     for (const auto& path : candidates) {
-        if (std::filesystem::exists(path)) {
+        ec.clear();
+        if (std::filesystem::exists(path, ec) && !ec) {
             return path;
         }
     }
 
     // Fallback default image
-    if (std::filesystem::exists("assets/maps/default.png")) {
-        return "assets/maps/default.png";
+    ec.clear();
+    std::string default_path = prefix + "default.png";
+    if (std::filesystem::exists(default_path, ec) && !ec) {
+        return default_path;
     }
 
     if (!candidates.empty()) {
         return candidates[0];
     }
 
-    return "assets/maps/default.png";
+    return default_path;
 }

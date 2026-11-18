@@ -1,6 +1,7 @@
 // Application entry point and lifecycle orchestration
 
 #include <csignal>
+#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -23,6 +24,17 @@ int main() {
     // Ignore SIGPIPE to prevent crash on broken socket write
     std::signal(SIGPIPE, SIG_IGN);
 
+    // Register termination handlers for terminal close or external signals
+    struct sigaction sa;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = NetworkClient::handleSignalShutdown;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGHUP, &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGQUIT, &sa, nullptr);
+    sigaction(SIGINT, &sa, nullptr);
+
     ConnectionConfig config;
     std::string error_message;
 
@@ -30,20 +42,12 @@ int main() {
     while (true) {
         NetworkClient client;
 
-        // Login retry loop: prompt until connected or canceled
-        while (true) {
-            // Display login modal
-            if (!showLoginView(config, error_message)) {
-                std::cout << "Connection canceled.\n";
-                return 0;
-            }
-
-            // Connect to remote server
-            if (client.connectToServer(config, error_message)) {
-                error_message.clear();
-                break;
-            }
+        // Display login modal and establish connection
+        if (!showLoginView(client, config, error_message)) {
+            std::cout << "Connection canceled.\n";
+            return 0;
         }
+        error_message.clear();
 
         // Initialize fresh game state and launch interactive game interface
         AppState state;

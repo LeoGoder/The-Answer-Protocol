@@ -32,30 +32,39 @@ class NetworkClient {
     // Destructor ensuring socket and listener thread are cleanly closed
     ~NetworkClient();
 
+    // Connection timeout in seconds.
+    // Modify this value (e.g. 5 to 10) to adjust the connection timeout.
+    static constexpr int kDefaultConnectTimeoutSeconds = 5;
+
     /**
-     * @brief Connects to the remote TAP server and performs the initial authentication handshake.
+     * @brief Connects to the remote TAP server and performs initial handshake.
      *
      * Resolves host address, opens TCP socket, and transmits "CONNECT <pseudo>\n".
-     * Reads initial greeting banner and server OK confirmation.
+     * Reads greeting banner and server OK confirmation within timeout_seconds.
      *
      * @param config Target connection parameters (host IP, port, pseudo).
-     * @param error_message Output string populated if connection or authentication fails.
+     * @param error_message Output string populated on connection failure.
+     * @param timeout_seconds Timeout in seconds (default: 5s).
      * @return True if connected and authenticated successfully, false otherwise.
      */
     bool connectToServer(const ConnectionConfig& config,
-                         std::string& error_message);
+                         std::string& error_message,
+                         int timeout_seconds = kDefaultConnectTimeoutSeconds);
 
     // Closes the TCP socket connection and terminates background listener
     void disconnect();
 
-    // Checks whether an active socket connection is currently open
-    bool isConnected() const;
-
     // Checks whether the connection was severed unexpectedly by the remote host
     bool isConnectionLost() const;
 
+    // Checks whether disconnect was initiated voluntarily by user
+    bool isUserQuit() const;
+
     // Flag indicating whether disconnect was initiated voluntarily by user
     void setUserQuit(bool val);
+
+    // Static signal handler performing async-safe QUIT transmission on exit
+    static void handleSignalShutdown(int sig);
 
     // Sends a line of text terminated by a newline character across the socket
     bool sendLine(const std::string& line);
@@ -122,4 +131,5 @@ class NetworkClient {
     std::unique_ptr<std::thread> listener_thread_;
     std::atomic<bool> connection_lost_{false};
     std::atomic<bool> user_quit_{false};
+    static std::atomic<int> active_socket_fd_;
 };
