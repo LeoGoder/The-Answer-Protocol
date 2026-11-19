@@ -180,13 +180,14 @@ void GameWorld::net_update() {
         case connection:
             break;
         case connection_loading:
-            for (const auto &msg_split: msg_splits) {
+            for (const auto &msg_split : msg_splits) {
                 if (!msg_split.empty()) {
-                    // "OK hello" can arrive alone before "OK connected": wait until
-                    // one of them or an ERR.
+                    // "OK hello" can arrive alone before "OK connected":
+                    // wait until one of them or an ERR.
                     if (msg_split.find("OK connected") != std::string::npos) {
                         this->intern_scene = in_game;
-                        int res = send_message(this->command.LOOK, "", this->fd);
+                        int res = send_message(this->command.LOOK, "",
+                            this->fd);
 
                         if (res < 0) {
                             std::cout << "Error send\n";
@@ -206,7 +207,7 @@ void GameWorld::net_update() {
         case connection_error:
             break;
         case in_game:
-            for (const std::string &line: lines) {
+            for (const std::string &line : lines) {
                 if (line.rfind("EVT ROOM POSITION ", 0) == 0)
                     update_player_pos(this->room.player, line);
             }
@@ -217,9 +218,11 @@ void GameWorld::net_update() {
                                     &this->player_sprite, this->map);
                 GameWorld::add_log(look);
             }
-            // One server message at a time. Chat lines are skipped: read_chat
-            // already showed them, and their text must never be read as protocol.
-            for (std::string &msg_split: lines) {
+            // One server message at a time.
+            // Chat lines are skipped: read_chat
+            // already showed them, and their text
+            // must never be read as protocol.
+            for (std::string &msg_split : lines) {
                 if (msg_split.rfind("EVT GLOBAL CHAT ", 0) == 0 ||
                     msg_split.rfind("EVT ROOM CHAT ", 0) == 0 ||
                     msg_split.rfind("EVT GROUP CHAT ", 0) == 0)
@@ -230,7 +233,8 @@ void GameWorld::net_update() {
                         parse_move_response(this->player_name, this->room,
                                         this->command, this->fd);
                     }
-                    size_t enter_pos = msg_split.find("EVT ROOM PRESENCE ENTER ");
+                    size_t enter_pos = msg_split.find(
+                        "EVT ROOM PRESENCE ENTER ");
                     if (enter_pos != std::string::npos) {
                         std::string rest = msg_split.substr(enter_pos);
                         std::vector<std::string> parts = split(rest, ' ');
@@ -238,7 +242,8 @@ void GameWorld::net_update() {
                         if (parts.size() >= 5)
                             GameWorld::room_presence_enter(parts[4]);
                     }
-                    size_t leave_pos = msg_split.find("EVT ROOM PRESENCE LEAVE ");
+                    size_t leave_pos = msg_split.find(
+                        "EVT ROOM PRESENCE LEAVE ");
                     if (leave_pos != std::string::npos) {
                         std::string rest = msg_split.substr(leave_pos);
                         std::vector<std::string> parts = split(rest, ' ');
@@ -248,7 +253,8 @@ void GameWorld::net_update() {
                     }
                     GameWorld::update_server_players(msg_split);
                     GameWorld::update_hp(msg_split);
-                    // QUESTS replies "OK [{...}]", INVENTORY "OK ["..."]": only the
+                    // QUESTS replies "OK [{...}]",
+                    // INVENTORY "OK ["..."]": only the
                     // empty "OK []" needs wait_quests.
                     size_t quests_pos = msg_split.find("OK [{");
                     size_t inventory_pos = msg_split.find("OK [\"");
@@ -269,7 +275,8 @@ void GameWorld::net_update() {
                     if (inventory_pos != std::string::npos) {
                         std::string reply = msg_split.substr(inventory_pos);
 
-                        this->player.set_inventory(parse_id_list(reply, "OK ["));
+                        this->player.set_inventory(parse_id_list(
+                            reply, "OK ["));
                     }
                     if (msg_split.find(R"(OK {"hostile")") != std::string::npos) {
                         this->hostile = parse_id_list(msg_split, R"("hostile":[)");
@@ -285,12 +292,16 @@ void GameWorld::net_update() {
                         msg_split.find(R"("status":"completed")", quest_pos) !=
                         std::string::npos) {
                             send_message(this->command.STATUS, "", this->fd);
-                            send_message(this->command.INVENTORY, "", this->fd);
+                            send_message(this->command.INVENTORY, "",
+                                this->fd);
                         }
-                    // A defeated or respawned enemy changes the NPCs of the room.
-                    if (msg_split.find(R"("status":"victory")") !=
+                    // A defeated or respawned enemy
+                    // changes the NPCs of the room.
+                    if (msg_split.find(
+                        R"("status":"victory")") !=
                         std::string::npos ||
-                        msg_split.find("EVT ROOM NPC SPAWN ") != std::string::npos) {
+                        msg_split.find("EVT ROOM NPC SPAWN ")
+                        != std::string::npos) {
                             send_message(this->command.LOOK, "", this->fd);
                             send_message(this->command.INVENTORY, "", this->fd);
                         }

@@ -136,7 +136,8 @@ void SplashScreen::update() {
             SplashScreen::keyboard_input();
             // An empty name would only get ERR 400 from the server.
             if (IsKeyPressed(KEY_ENTER) &&
-                this->save_lst[this->save_slot_choice]->player_name[0] != '\0') {
+                this->save_lst[this->save_slot_choice
+                    ]->player_name[0] != '\0') {
                 save_game(this->save_slot_choice,
                           *this->save_lst[this->save_slot_choice]);
                 game_state->player_name =

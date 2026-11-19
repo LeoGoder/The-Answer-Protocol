@@ -68,12 +68,14 @@ class ShrinkableYNode : public ftxui::Node {
 
 }  // namespace
 
-// Wraps an element into a ShrinkableNode to permit dynamic window compression horizontally
+// Wraps an element into a ShrinkableNode to
+// permit dynamic window compression horizontally
 ftxui::Element shrinkable(ftxui::Element child) {
     return std::make_shared<ShrinkableNode>(std::move(child));
 }
 
-// Wraps an element into a ShrinkableYNode to clamp min_y and permit dynamic window compression vertically
+// Wraps an element into a ShrinkableYNode to clamp
+// min_y and permit dynamic window compression vertically
 ftxui::Element shrinkableY(ftxui::Element child) {
     return std::make_shared<ShrinkableYNode>(std::move(child));
 }
