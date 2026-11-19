@@ -10,12 +10,10 @@ LDLIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 LIB = inc/lib/
 
 INC = inc/button.hpp \
-	 inc/color.hpp \
 	 inc/game_world.hpp \
 	 inc/game_state.hpp \
 	 inc/game_scene.hpp \
 	 inc/helper.hpp \
-	 inc/new_game.hpp \
 	 inc/save_load.hpp \
 	 inc/splash_screen.hpp \
 	 inc/tap.hpp \
@@ -54,7 +52,7 @@ SRC = src/main.cpp \
 	 src/scene/game_world/draw_log.cpp \
 	 src/scene/game_world/draw_dialog.cpp \
 	 src/scene/game_world/draw_minimap.cpp \
-	
+
 OBJ_DIR = obj
 
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
