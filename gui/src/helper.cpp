@@ -170,6 +170,14 @@ void DrawFontText(const Texture2D &font, const std::string &text, float x,
             temp_y += scaled_h;
             continue;
         }
+        // The font has an Omega where '_' should be: draw a line under the
+        // baseline instead (letters use rows 1-8 of their 16x16 cell).
+        if (c == '_') {
+            DrawRectangleRec(Rectangle{temp_x, temp_y + 10 * scale, 6 * scale,
+                                       scale}, color);
+            temp_x += scaled_w;
+            continue;
+        }
 
         int index = static_cast<int>(c) - FIRST_CHAR;
         if (index < 0) {

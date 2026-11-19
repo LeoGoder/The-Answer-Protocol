@@ -134,7 +134,9 @@ void SplashScreen::update() {
                 IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
                 current_state = new_game;
             SplashScreen::keyboard_input();
-            if (IsKeyPressed(KEY_ENTER)) {
+            // An empty name would only get ERR 400 from the server.
+            if (IsKeyPressed(KEY_ENTER) &&
+                this->save_lst[this->save_slot_choice]->player_name[0] != '\0') {
                 save_game(this->save_slot_choice,
                           *this->save_lst[this->save_slot_choice]);
                 game_state->player_name =

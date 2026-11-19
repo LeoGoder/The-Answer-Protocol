@@ -41,26 +41,25 @@ static int last_character(char player_name[P_NAME_LEN]) {
     int position = 0;
 
     for (size_t i = 0; i < std::strlen(player_name); i++) {
-        if (!std::isalnum(player_name[i]) && player_name[i] != ' ')
+        if (!std::isalnum(player_name[i]) && player_name[i] != '_')
             break;
         position += 1;
     }
     return position;
 }
 
+// GetCharPressed gives the typed character (case, Shift), not a key code.
+// Only letters, digits and '_' are kept, like the server's username rules.
 void SplashScreen::keyboard_input() {
-    int key_got = GetKeyPressed();
-    if (key_got > 0) {
-        int char_position =
-            last_character(this->save_lst[this->save_slot_choice]->player_name);
+    char *name = this->save_lst[this->save_slot_choice]->player_name;
+    int len = last_character(name);
 
-        if (key_got == KEY_BACKSPACE && char_position > 0) {
-            this->save_lst[this->save_slot_choice]
-                ->player_name[char_position - 1] = '\0';
-        } else if (key_got == KEY_ENTER || key_got == KEY_SPACE) {
-        } else if (char_position < P_NAME_LEN - 1) {
-            this->save_lst[this->save_slot_choice]->player_name[char_position] =
-                key_got;
+    if (IsKeyPressed(KEY_BACKSPACE) && len > 0)
+        name[--len] = '\0';
+    for (int c = GetCharPressed(); c > 0; c = GetCharPressed()) {
+        if (len < P_NAME_LEN - 1 && c < 128 && (std::isalnum(c) || c == '_')) {
+            name[len++] = static_cast<char>(c);
+            name[len] = '\0';
         }
     }
 }
