@@ -587,5 +587,10 @@ part.
 - **GUI client (lgoderne)**: reviewing the client for crashes and protocol issues, helping
   write the fixes, drafting the GUI README; details in
   [`gui/README.md`](gui/README.md#ai-usage).
-- **CLI client (opernod)**: explaining C++ fundamentals from a C background (classes, STL containers, `std::thread`, mutexes, POSIX sockets, FTXUI, `nlohmann/json`); understanding compiler, linker, and `cpplint` (Google C++ Style Guide) errors; troubleshooting build and environment issues (Makefile, FTXUI Git submodule, glibc mismatch); explaining audit findings and edge cases (`std::filesystem::exists`, socket timeouts, UTF-8 cursor, RFC handshake); preparing test scenarios, drafting the TUI README; details in
-  [`tui/README.md`](tui/README.md#ai-usage).
+- **CLI client (opernod)**: explaining C++ fundamentals from a C background 
+  (classes, STL containers, `std::thread`, mutexes, POSIX sockets, FTXUI, `nlohmann/json`);
+  understanding compiler, linker, and `cpplint` (Google C++ Style Guide) errors;
+  troubleshooting build and environment issues (Makefile, FTXUI Git submodule, glibc mismatch);
+  explaining audit findings and edge cases (`std::filesystem::exists`, socket timeouts,
+  UTF-8 cursor, RFC handshake); preparing test scenarios, drafting the TUI README;
+  details in [`tui/README.md`](tui/README.md#ai-usage).
