@@ -132,6 +132,7 @@ void GameWorld::update() {
 
 void GameWorld::net_update() {
     std::vector<std::string> msg_splits;
+    std::vector<std::string> lines;
     std::string msg_copy;
     std::string buffer;
     std::string look;
@@ -139,7 +140,17 @@ void GameWorld::net_update() {
     if (this->fd > 0) {
         // Only complete lines are read: the end of a long line can come in the
         // next recv.
-        this->pending += receiv_msg(this->fd);
+        std::string received = receiv_msg(this->fd);
+
+        // recv() returned 0: the server closed the connection.
+        if (received == "CLOSE") {
+            close(this->fd);
+            this->fd = -1;
+            this->error_log = "Server closed the connection";
+            this->intern_scene = connection_error;
+            return;
+        }
+        this->pending += received;
         size_t end = this->pending.rfind('\n');
 
         if (end != std::string::npos) {
@@ -154,12 +165,10 @@ void GameWorld::net_update() {
             look =
                 buffer.substr(look_pos, buffer.find('\n', look_pos) - look_pos);
     }
-    if (this->fd == 0) {
-        close(fd);
-        this->fd = -1;
-        this->intern_scene = connection_error;
-    }
     if (buffer != "") {
+        // The real lines, before kill_return_line joins them: a chat message
+        // must never be read as an EVT ROOM POSITION.
+        lines = split(buffer, '\n');
         if (this->wait_talk)
             GameWorld::read_talk_reply(buffer);
         GameWorld::read_chat(buffer);
@@ -197,15 +206,25 @@ void GameWorld::net_update() {
         case connection_error:
             break;
         case in_game:
-            for (std::string &msg_split: msg_splits) {
-                if (!msg_split.empty()) {
-                    if (!look.empty()) {
-                        std::vector<std::string> look_split = split(look, ' ', 1);
+            for (const std::string &line: lines) {
+                if (line.rfind("EVT ROOM POSITION ", 0) == 0)
+                    update_player_pos(this->room.player, line);
+            }
+            if (!look.empty()) {
+                std::vector<std::string> look_split = split(look, ' ', 1);
 
-                        parse_look_response(look_split, this->room, &this->font,
-                                        &this->player_sprite, this->map);
-                        GameWorld::add_log(look);
-                    }
+                parse_look_response(look_split, this->room, &this->font,
+                                    &this->player_sprite, this->map);
+                GameWorld::add_log(look);
+            }
+            // One server message at a time. Chat lines are skipped: read_chat
+            // already showed them, and their text must never be read as protocol.
+            for (std::string &msg_split: lines) {
+                if (msg_split.rfind("EVT GLOBAL CHAT ", 0) == 0 ||
+                    msg_split.rfind("EVT ROOM CHAT ", 0) == 0 ||
+                    msg_split.rfind("EVT GROUP CHAT ", 0) == 0)
+                    continue;
+                if (!msg_split.empty()) {
                     size_t move = msg_split.find("OK room=");
                     if (move != std::string::npos) {
                         parse_move_response(this->player_name, this->room,
@@ -226,9 +245,6 @@ void GameWorld::net_update() {
 
                         if (parts.size() >= 5)
                             GameWorld::room_presence_leave(parts[4]);
-                    }
-                    if (msg_split.find("EVT ROOM POSITION {") != std::string::npos) {
-                        update_player_pos(this->room.player, msg_split);
                     }
                     GameWorld::update_server_players(msg_split);
                     GameWorld::update_hp(msg_split);
@@ -278,7 +294,10 @@ void GameWorld::net_update() {
                             send_message(this->command.LOOK, "", this->fd);
                             send_message(this->command.INVENTORY, "", this->fd);
                         }
-                    if (msg_split.find(R"("status":"defeated")") != std::string::npos) {
+                    // Only our own ATTACK reply: "defeated" in another player's
+                    // EVT ROOM COMBAT is not about us.
+                    if (msg_split.rfind(R"(OK {"attacker")", 0) == 0 &&
+                        msg_split.find(R"("status":"defeated")") != std::string::npos) {
                         send_message(this->command.LOOK, "", this->fd);
                         this->player.player_pos = PLAYER_DEFAULT_POS;
                     }
@@ -308,8 +327,7 @@ void GameWorld::net_update() {
                              static_cast<int>(this->player.player_pos.x)) +
                          " " +
                          std::to_string(
-                             static_cast<int>(this->player.player_pos.y)) +
-                         '\n';
+                             static_cast<int>(this->player.player_pos.y));
                 send_message(this->command.POSITION, p_pos, this->fd);
             }
             break;

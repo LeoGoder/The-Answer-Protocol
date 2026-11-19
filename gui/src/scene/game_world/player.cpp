@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -22,8 +23,17 @@ void update_player_pos(std::vector<std::unique_ptr<Player>> &vect_players,
         if (new_position == "")
             continue;
         position_split = split(new_position, ',');
-        vect_players[i]->player_pos.x = std::stof(position_split[0]);
-        vect_players[i]->player_pos.y = std::stof(position_split[1]);
+        if (position_split.size() != 2)
+            continue;
+        try {
+            float x = std::stof(position_split[0]);
+            float y = std::stof(position_split[1]);
+
+            vect_players[i]->player_pos.x = x;
+            vect_players[i]->player_pos.y = y;
+        } catch (const std::exception &) {
+            continue;
+        }
     }
 }
 
@@ -351,7 +361,7 @@ void Player::input_player(float dt, Maps &map, MapData &map_data, int fd) {
             data_change_room(map_data, map, this->player_pos);
 
         if (new_room != "") {
-            std::string command = "MOVE " + new_room + '\n';
+            std::string command = "MOVE " + new_room;
 
             send_message(command, "", fd);
             this->player_pos = PLAYER_DEFAULT_POS;
